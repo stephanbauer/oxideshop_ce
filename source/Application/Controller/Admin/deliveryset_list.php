@@ -21,39 +21,12 @@
  */
 
 /**
- * Admin deliverysetset list manager.
- * Collects deliveryset base information (description), there is ability to
- * filter them by description, title or delete them.
- * Admin Menu: Shop Settings -> Shipping & Handling Sets.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class DeliverySet_List extends oxAdminList
+class DeliverySet_List extends \OxidEsales\Eshop\Application\Controller\Admin\DeliverySetList
 {
-
-    /**
-     * Name of chosen object class (default null).
-     *
-     * @var string
-     */
-    protected $_sListClass = 'oxdeliveryset';
-
-    /**
-     * Type of list.
-     *
-     * @var string
-     */
-    protected $_sListType = 'oxdeliverysetlist';
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'deliveryset_list.tpl';
-
-    /**
-     * Default SQL sorting parameter (default null).
-     *
-     * @var string
-     */
-    protected $_sDefSortField = 'oxpos';
 }

@@ -21,15 +21,12 @@
  */
 
 /**
- * Admin dyn General import manager.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class GenImport extends GenImport_Main
+class GenImport extends \OxidEsales\Eshop\Application\Controller\Admin\GenericImport
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = "genimport_main.tpl";
 }

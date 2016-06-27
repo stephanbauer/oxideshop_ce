@@ -21,83 +21,12 @@
  */
 
 /**
- * Vendor seo config class
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Vendor_Seo extends Object_Seo
+class Vendor_Seo extends \OxidEsales\Eshop\Application\Controller\Admin\VendorSeo
 {
-
-    /**
-     * Updating showsuffix field
-     *
-     * @return null
-     */
-    public function save()
-    {
-        $oVendor = oxNew('oxBase');
-        $oVendor->init('oxvendor');
-        if ($oVendor->load($this->getEditObjectId())) {
-            $sShowSuffixField = 'oxvendor__oxshowsuffix';
-            $blShowSuffixParameter = oxRegistry::getConfig()->getRequestParameter('blShowSuffix');
-            $oVendor->$sShowSuffixField = new oxField((int) $blShowSuffixParameter);
-            $oVendor->save();
-        }
-
-        return parent::save();
-    }
-
-    /**
-     * Returns current object type seo encoder object
-     *
-     * @return oxSeoEncoderVendor
-     */
-    protected function _getEncoder()
-    {
-        return oxRegistry::get("oxSeoEncoderVendor");
-    }
-
-    /**
-     * This SEO object supports suffixes so return TRUE
-     *
-     * @return bool
-     */
-    public function isSuffixSupported()
-    {
-        return true;
-    }
-
-    /**
-     * Returns true if SEO object id has suffix enabled
-     *
-     * @return bool
-     */
-    public function isEntrySuffixed()
-    {
-        $oVendor = oxNew('oxvendor');
-        if ($oVendor->load($this->getEditObjectId())) {
-            return (bool) $oVendor->oxvendor__oxshowsuffix->value;
-        }
-    }
-
-    /**
-     * Returns url type
-     *
-     * @return string
-     */
-    protected function _getType()
-    {
-        return 'oxvendor';
-    }
-
-    /**
-     * Returns seo uri
-     *
-     * @return string
-     */
-    public function getEntryUri()
-    {
-        $oVendor = oxNew('oxvendor');
-        if ($oVendor->load($this->getEditObjectId())) {
-            return $this->_getEncoder()->getVendorUri($oVendor, $this->getEditLang());
-        }
-    }
 }

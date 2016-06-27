@@ -21,67 +21,14 @@
  */
 
 /**
- * Order delivery set manager.
+ * @inheritdoc
  *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
+ * @mixin \OxidEsales\EshopEnterprise\Application\Model\DeliverySet
  */
-class oxDeliverySet extends oxI18n
+class oxDeliverySet extends \OxidEsales\Eshop\Application\Model\DeliverySet
 {
-
-    /**
-     * Current object class name
-     *
-     * @var string
-     */
-    protected $_sClassName = 'oxdeliveryset';
-
-    /**
-     * Class constructor, initiates parent constructor (parent::oxBase()).
-     */
-    public function __construct()
-    {
-        parent::__construct();
-        $this->init('oxdeliveryset');
-    }
-
-    /**
-     * Delete this object from the database, returns true on success.
-     *
-     * @param string $sOxId Object ID(default null)
-     *
-     * @return bool
-     */
-    public function delete($sOxId = null)
-    {
-        if (!$sOxId) {
-            $sOxId = $this->getId();
-        }
-        if (!$sOxId) {
-            return false;
-        }
-
-        $oDb = oxDb::getDb();
-
-        $sOxIdQuoted = $oDb->quote($sOxId);
-        $oDb->execute('delete from oxobject2payment where oxobjectid = ' . $sOxIdQuoted);
-        $oDb->execute('delete from oxobject2delivery where oxdeliveryid = ' . $sOxIdQuoted);
-        $oDb->execute('delete from oxdel2delset where oxdelsetid = ' . $sOxIdQuoted);
-
-        return parent::delete($sOxId);
-    }
-
-    /**
-     * returns delivery set id
-     *
-     * @param string $sTitle delivery name
-     *
-     * @return string
-     */
-    public function getIdByName($sTitle)
-    {
-        $oDb = oxDb::getDb();
-        $sQ = "SELECT `oxid` FROM `" . getViewName('oxdeliveryset') . "` WHERE  `oxtitle` = " . $oDb->quote($sTitle);
-        $sId = $oDb->getOne($sQ);
-
-        return $sId;
-    }
 }

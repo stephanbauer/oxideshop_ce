@@ -21,68 +21,12 @@
  */
 
 /**
- * Admin article main newsletter manager.
- * Performs collection and updatind (on user submit) main item information.
- * Admin Menu: Customer News -> Newsletter -> Main.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Newsletter_Main extends oxAdminDetails
+class Newsletter_Main extends \OxidEsales\Eshop\Application\Controller\Admin\NewsletterMain
 {
-
-    /**
-     * Executes parent method parent::render(), creates oxnewsletter object
-     * and passes it's data to Smarty engine. Returns name of template file
-     * "newsletter_main.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        parent::render();
-
-        $soxId = $this->_aViewData["oxid"] = $this->getEditObjectId();
-        if (isset($soxId) && $soxId != "-1") {
-            // load object
-            $oNewsletter = oxNew("oxnewsletter");
-            $oNewsletter->load($soxId);
-            $this->_aViewData["edit"] = $oNewsletter;
-        }
-
-        // generate editor
-        $this->_aViewData["editor"] = $this->_generateTextEditor(
-            "100%",
-            255,
-            $oNewsletter,
-            "oxnewsletter__oxtemplate"
-        );
-
-        return "newsletter_main.tpl";
-    }
-
-    /**
-     * Saves newsletter HTML format text.
-     */
-    public function save()
-    {
-        $myConfig = $this->getConfig();
-
-        $soxId = $this->getEditObjectId();
-        $aParams = oxRegistry::getConfig()->getRequestParameter("editval");
-
-        // shopid
-        $sShopID = oxRegistry::getSession()->getVariable("actshop");
-        $aParams['oxnewsletter__oxshopid'] = $sShopID;
-
-        $oNewsletter = oxNew("oxnewsletter");
-        if ($soxId != "-1") {
-            $oNewsletter->load($soxId);
-        } else {
-            $aParams['oxnewsletter__oxid'] = null;
-        }
-
-        $oNewsletter->assign($aParams);
-        $oNewsletter->save();
-
-        // set oxid if inserted
-        $this->setEditObjectId($oNewsletter->getId());
-    }
 }

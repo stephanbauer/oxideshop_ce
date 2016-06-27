@@ -21,47 +21,12 @@
  */
 
 /**
- * Admin links collection.
- * Collects list of admin links. Links may be viewed by language, sorted by date,
- * url or any keyword.
- * Admin Menu: Customer News -> Links.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Adminlinks_List extends oxAdminList
+class adminlinks_list extends \OxidEsales\Eshop\Application\Controller\Admin\AdminlinksList
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'adminlinks_list.tpl';
-
-    /**
-     * Name of chosen object class (default null).
-     *
-     * @var string
-     */
-    protected $_sListClass = 'oxlinks';
-
-    /**
-     * Default SQL sorting parameter (default null).
-     *
-     * @var string
-     */
-    protected $_sDefSortField = 'oxinsert';
-
-    /**
-     * Returns sorting fields array
-     *
-     * @return array
-     */
-    public function getListSorting()
-    {
-        $aSorting = parent::getListSorting();
-        if (isset($aSorting["oxlinks"][$this->_sDefSortField])) {
-            $this->_blDesc = true;
-        }
-
-        return $aSorting;
-    }
 }

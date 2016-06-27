@@ -21,18 +21,12 @@
  */
 
 /**
- * Maintenance task handler. Maintenance tasks are called periodically, by cronTab (configure on your needs)
+ * @inheritdoc
  *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class oxMaintenance
+class oxMaintenance extends \OxidEsales\Eshop\Application\Model\Maintenance
 {
-
-    /**
-     * Executes maintenance tasks. Currently calls oxArticleList::updateUpcomingPrices()
-     */
-    public function execute()
-    {
-        // updating upcoming prices
-        oxNew("oxArticleList")->updateUpcomingPrices(true);
-    }
 }

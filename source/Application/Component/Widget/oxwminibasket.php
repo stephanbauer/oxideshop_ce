@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file is part of OXID eShop Community Edition.
  *
@@ -22,23 +21,12 @@
  */
 
 /**
- * Mini basket widget
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
+ * @mixin \OxidEsales\EshopEnterprise\Application\Component\Widget\MiniBasket
  */
-class oxwMiniBasket extends oxWidget
+class oxwMiniBasket extends \OxidEsales\Eshop\Application\Component\Widget\MiniBasket
 {
-    /**
-     * Names of components (classes) that are initiated and executed
-     * before any other regular operation.
-     * User component used in template.
-     *
-     * @var array
-     */
-    protected $_aComponentNames = array('oxcmp_cur' => 1, 'oxcmp_basket' => 1, 'oxcmp_user' => 1);
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'widget/header/minibasket.tpl';
 }

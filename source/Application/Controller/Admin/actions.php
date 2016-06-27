@@ -21,17 +21,11 @@
  */
 
 /**
- * Sets view template, that arranges two other templates ("actions_list.tpl"
- * and "actions_main.tpl") to frame.
- * Admin Menu: Manage Products -> Actions.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class Actions extends oxAdminView
+class Actions extends \OxidEsales\Eshop\Application\Controller\Admin\ActionsController
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'actions.tpl';
 }

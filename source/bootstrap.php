@@ -31,14 +31,14 @@ if (defined('E_DEPRECATED')) {
 }
 
 if (!defined('OX_BASE_PATH')) {
-    define('OX_BASE_PATH', dirname(__FILE__) . DIRECTORY_SEPARATOR);
+    define('OX_BASE_PATH', __DIR__ . DIRECTORY_SEPARATOR);
 }
 
 // custom functions file
 require_once OX_BASE_PATH . 'modules/functions.php';
 
 // Generic utility method file including autoloading definition
-require_once OX_BASE_PATH . 'Core/oxfunctions.php';
+require_once OX_BASE_PATH . 'oxfunctions.php';
 
 // Composer autoloader.
 registerComposerAutoload();
@@ -52,4 +52,7 @@ registerShopAutoLoad();
 registerModuleAutoload();
 
 //sets default PHP ini params
-setPhpIniParams();
+ini_set('session.name', 'sid');
+ini_set('session.use_cookies', 0);
+ini_set('session.use_trans_sid', 0);
+ini_set('url_rewriter.tags', '');

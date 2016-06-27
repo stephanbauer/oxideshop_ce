@@ -21,25 +21,12 @@
  */
 
 /**
- * Admin dynscreen list manager.
- * Arranges controll tabs and sets title.
+ * @inheritdoc
  *
- * @subpackage dyn
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Dynscreen_List extends Dynscreen
+class Dynscreen_List extends \OxidEsales\Eshop\Application\Controller\Admin\DynamicScreenList
 {
-
-    /**
-     * Executes marent method parent::render() and returns mane of template
-     * file "dynscreen_list.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        parent::render();
-        $this->_aViewData['menu'] = basename(oxRegistry::getConfig()->getRequestParameter("menu"));
-
-        return "dynscreen_list.tpl";
-    }
 }

@@ -21,51 +21,11 @@
  */
 
 /**
- * Tag cloud.
- * Shop starter, manages starting visible articles, etc.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxwTagCloud extends oxWidget
+class oxwTagCloud extends \OxidEsales\Eshop\Application\Component\Widget\TagCloud
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'widget/sidebar/tags.tpl';
-
-    /**
-     * Checks if tags list should be displayed in separate box
-     *
-     * @return bool
-     */
-    public function displayInBox()
-    {
-        return (bool) $this->getViewParameter("blShowBox");
-    }
-
-    /**
-     * Returns tag cloud manager class
-     *
-     * @return oxTagCloud
-     */
-    public function getTagCloudManager()
-    {
-        $oTagList = oxNew("oxTagList");
-        //$oTagList->loadList();
-        $oTagCloud = oxNew("oxTagCloud");
-        $oTagCloud->setTagList($oTagList);
-
-        return $oTagCloud;
-    }
-
-    /**
-     * Template variable getter. Returns true
-     *
-     * @return bool
-     */
-    public function isMoreTagsVisible()
-    {
-        return true;
-    }
 }

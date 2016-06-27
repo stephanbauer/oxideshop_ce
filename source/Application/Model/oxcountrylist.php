@@ -21,30 +21,12 @@
  */
 
 /**
- * Country list manager class.
- * Collects a list of countries according to collection rules (active).
+ * @inheritdoc
  *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class oxCountryList extends oxList
+class oxCountryList extends \OxidEsales\Eshop\Application\Model\CountryList
 {
-
-    /**
-     * Call parent class constructor
-     */
-    public function __construct()
-    {
-        parent::__construct('oxcountry');
-    }
-
-    /**
-     * Selects and loads all active countries
-     *
-     * @param integer $iLang language
-     */
-    public function loadActiveCountries($iLang = null)
-    {
-        $sViewName = getViewName('oxcountry', $iLang);
-        $sSelect = "SELECT oxid, oxtitle, oxisoalpha2 FROM {$sViewName} WHERE oxactive = '1' ORDER BY oxorder, oxtitle ";
-        $this->selectString($sSelect);
-    }
 }

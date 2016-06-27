@@ -15,14 +15,6 @@
         [{/if}]
     [{/block}]
 
-    [{block name="sidebar_trustedshopsratings"}]
-        [{if $oView->getClassName() eq "start"}]
-            [{if $oViewConf->showTs("WIDGET")}]
-                [{include file="widget/trustedshops/ratings.tpl"}]
-            [{/if}]
-        [{/if}]
-    [{/block}]
-
     [{block name="sidebar_partners"}]
         [{if $oView->getClassName() eq "start"}]
             [{include file="widget/sidebar/partners.tpl"}]
@@ -55,15 +47,7 @@
         [{/if}]
     [{/block}]
 
-    [{block name="sidebar_facebookfacepile"}]
-          [{if $oView->isActive('FbFacepile') && $oView->isConnectedWithFb()}]
-            <div id="facebookFacepile" class="box">
-                <h3>[{oxmultilang ident="FACEBOOK_FACEPILE"}]</h3>
-                <div class="content" id="productFbFacePile">
-                    [{include file="widget/facebook/enable.tpl" source="widget/facebook/facepile.tpl" ident="#productFbFacePile" type="text"}]
-                </div>
-            </div>
-        [{/if}]
+    [{block name="sidebar_social"}]
     [{/block}]
 
     [{block name="sidebar_shopluperatings"}]

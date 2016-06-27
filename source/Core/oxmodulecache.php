@@ -21,72 +21,11 @@
  */
 
 /**
- * Module cache events handler class.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
  *
- * @internal Do not make a module extension for this class.
- * @see      http://wiki.oxidforge.org/Tutorials/Core_OXID_eShop_classes:_must_not_be_extended
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxModuleCache extends oxSuperCfg
+class oxModuleCache extends \OxidEsales\Eshop\Core\ModuleCache
 {
-
-    /**
-     * @var oxModule
-     */
-    protected $_oModule = null;
-
-    /**
-     * Sets dependencies.
-     *
-     * @param oxModule $_oModule
-     */
-    public function __construct(oxModule $_oModule)
-    {
-        $this->_oModule = $_oModule;
-    }
-
-    /**
-     * Sets module.
-     *
-     * @param oxModule $oModule
-     */
-    public function setModule($oModule)
-    {
-        $this->_oModule = $oModule;
-    }
-
-    /**
-     * Gets module.
-     *
-     * @return oxModule
-     */
-    public function getModule()
-    {
-        return $this->_oModule;
-    }
-
-    /**
-     * Resets template, language and menu xml cache
-     */
-    public function resetCache()
-    {
-        $aTemplates = $this->getModule()->getTemplates();
-        $oUtils = oxRegistry::getUtils();
-        $oUtils->resetTemplateCache($aTemplates);
-        $oUtils->resetLanguageCache();
-        $oUtils->resetMenuCache();
-
-        oxModuleVariablesLocator::resetModuleVariables();
-
-        $this->_clearApcCache();
-    }
-
-    /**
-     * Cleans PHP APC cache
-     */
-    protected function _clearApcCache()
-    {
-        if (extension_loaded('apc') && ini_get('apc.enabled')) {
-            apc_clear_cache();
-        }
-    }
 }

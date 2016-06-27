@@ -21,73 +21,12 @@
  */
 
 /**
- * Admin article main delivery manager.
- * There is possibility to change delivery name, article, user
- * and etc.
- * Admin Menu: Shop settings -> Shipping & Handling -> Main.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Delivery_Users extends oxAdminDetails
+class Delivery_Users extends \OxidEsales\Eshop\Application\Controller\Admin\DeliveryUsers
 {
-
-    /**
-     * Executes parent method parent::render(), creates delivery category tree,
-     * passes data to Smarty engine and returns name of template file "delivery_main.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        parent::render();
-
-        $soxId = $this->getEditObjectId();
-        $sSelGroup = oxRegistry::getConfig()->getRequestParameter("selgroup");
-
-        $sViewName = getViewName("oxgroups", $this->_iEditLang);
-        // all usergroups
-        $oGroups = oxNew("oxlist");
-        $oGroups->init('oxgroups');
-        $oGroups->selectString("select * from {$sViewName}");
-
-        $oRoot = new oxGroups();
-        $oRoot->oxgroups__oxid = new oxField("");
-        $oRoot->oxgroups__oxtitle = new oxField("-- ");
-        // rebuild list as we need the "no value" entry at the first position
-        $aNewList = array();
-        $aNewList[] = $oRoot;
-
-        foreach ($oGroups as $val) {
-            $aNewList[$val->oxgroups__oxid->value] = new oxGroups();
-            $aNewList[$val->oxgroups__oxid->value]->oxgroups__oxid = new oxField($val->oxgroups__oxid->value);
-            $aNewList[$val->oxgroups__oxid->value]->oxgroups__oxtitle = new oxField($val->oxgroups__oxtitle->value);
-        }
-
-        $oGroups = $aNewList;
-
-        if (isset($soxId) && $soxId != "-1") {
-            $oDelivery = oxNew("oxdelivery");
-            $oDelivery->load($soxId);
-
-            //Disable editing for derived articles
-            if ($oDelivery->isDerived()) {
-                $this->_aViewData['readonly'] = true;
-            }
-        }
-
-        $this->_aViewData["allgroups2"] = $oGroups;
-
-        $iAoc = oxRegistry::getConfig()->getRequestParameter("aoc");
-        if ($iAoc == 1) {
-            $oDeliveryUsersAjax = oxNew('delivery_users_ajax');
-            $this->_aViewData['oxajax'] = $oDeliveryUsersAjax->getColumns();
-
-            return "popups/delivery_users.tpl";
-        } elseif ($iAoc == 2) {
-            $oDeliveryGroupsAjax = oxNew('delivery_groups_ajax');
-            $this->_aViewData['oxajax'] = $oDeliveryGroupsAjax->getColumns();
-
-            return "popups/delivery_groups.tpl";
-        }
-
-        return "delivery_users.tpl";
-    }
 }

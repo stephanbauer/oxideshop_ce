@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file is part of OXID eShop Community Edition.
  *
@@ -22,55 +21,11 @@
  */
 
 /**
- * HTTP headers formator.
- * Collects HTTP headers and form HTTP header.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxHeader
+class oxHeader extends \OxidEsales\Eshop\Core\Header
 {
-
-    protected $_aHeader = array();
-
-    /**
-     * Sets header.
-     *
-     * @param string $sHeader header value.
-     */
-    public function setHeader($sHeader)
-    {
-        $sHeader = str_replace(array("\n", "\r"), '', $sHeader);
-        $this->_aHeader[] = (string) $sHeader . "\r\n";
-    }
-
-    /**
-     * Return header.
-     *
-     * @return array
-     */
-    public function getHeader()
-    {
-        return $this->_aHeader;
-    }
-
-    /**
-     * Outputs HTTP header.
-     */
-    public function sendHeader()
-    {
-        foreach ($this->_aHeader as $sHeader) {
-            if (isset($sHeader)) {
-                header($sHeader);
-            }
-        }
-    }
-
-    /**
-     * Set to not cacheable.
-     *
-     * @todo check browser for different no-cache signs.
-     */
-    public function setNonCacheable()
-    {
-        $sHeader = "Cache-Control: no-cache;";
-        $this->setHeader($sHeader);
-    }
 }

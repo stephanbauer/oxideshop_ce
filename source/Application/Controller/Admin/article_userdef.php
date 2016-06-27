@@ -21,34 +21,12 @@
  */
 
 /**
- * Class reserved for extending (for customization - you can add you own fields, etc.).
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Article_Userdef extends oxAdminDetails
+class Article_Userdef extends \OxidEsales\Eshop\Application\Controller\Admin\ArticleUserdef
 {
-
-    /**
-     * Loads article data from DB, passes it to Smarty engine, returns name
-     * of template file "article_userdef.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        parent::render();
-
-        $oArticle = oxNew("oxArticle");
-        $this->_aViewData["edit"] = $oArticle;
-
-        $soxId = $this->getEditObjectId();
-        if (isset($soxId) && $soxId != "-1") {
-            if ($oArticle->isDerived()) {
-                $this->_aViewData['readonly'] = true;
-            }
-
-            // load object
-            $oArticle->load($soxId);
-        }
-
-        return "article_userdef.tpl";
-    }
 }

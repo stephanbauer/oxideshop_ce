@@ -21,52 +21,12 @@
  */
 
 /**
- * Admin shop system setting manager.
- * Collects shop system settings, updates it on user submit, etc.
- * Admin Menu: Main Menu -> Core Settings -> System.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Shop_System extends Shop_Config
+class Shop_System extends \OxidEsales\Eshop\Application\Controller\Admin\ShopSystem
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'shop_system.tpl';
-
-    /**
-     * Executes parent method parent::render(), passes shop configuration parameters
-     * to Smarty and returns name of template file "shop_system.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        $myConfig = $this->getConfig();
-        parent::render();
-
-        $aConfArrs = array();
-
-        $oLang = oxRegistry::getLang();
-
-        $aLanguages = $oLang->getLanguageArray();
-        $sLangAbbr = $aLanguages[$oLang->getObjectTplLanguage()]->abbr;
-
-        // loading shop location countries list (defines in which country shop exists)
-        include "shop_countries.php";
-
-        $soxId = $this->getEditObjectId();
-        if (!$soxId) {
-            $soxId = $myConfig->getShopId();
-        }
-
-        $oDb = oxDb::getDb();
-        $sShopCountry = $oDb->getOne("select DECODE( oxvarvalue, " . $oDb->quote($myConfig->getConfigParam('sConfigKey')) . ") as oxvarvalue from oxconfig where oxshopid = '$soxId' and oxvarname = 'sShopCountry'", false, false);
-
-        $this->_aViewData["shop_countries"] = $aLocationCountries[$sLangAbbr];
-        $this->_aViewData["confstrs"]["sShopCountry"] = $sShopCountry;
-
-        return $this->_sThisTemplate;
-    }
 }

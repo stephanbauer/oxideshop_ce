@@ -21,85 +21,12 @@
  */
 
 /**
- * Category seo config class
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Category_Seo extends Object_Seo
+class Category_Seo extends \OxidEsales\Eshop\Application\Controller\Admin\CategorySeo
 {
-
-    /**
-     * Updating showsuffix field
-     *
-     * @return null
-     */
-    public function save()
-    {
-        $sOxid = $this->getEditObjectId();
-        $oCategory = oxNew('oxCategory');
-        if ($oCategory->load($sOxid)) {
-            $blShowSuffixParameter = oxRegistry::getConfig()->getRequestParameter('blShowSuffix');
-            $sShowSuffixField = 'oxcategories__oxshowsuffix';
-            $oCategory->$sShowSuffixField = new oxField((int) $blShowSuffixParameter);
-            $oCategory->save();
-
-            $this->_getEncoder()->markRelatedAsExpired($oCategory);
-        }
-
-        return parent::save();
-    }
-
-    /**
-     * Returns current object type seo encoder object
-     *
-     * @return oxSeoEncoderCategory
-     */
-    protected function _getEncoder()
-    {
-        return oxRegistry::get("oxSeoEncoderCategory");
-    }
-
-    /**
-     * This SEO object supports suffixes so return TRUE
-     *
-     * @return bool
-     */
-    public function isSuffixSupported()
-    {
-        return true;
-    }
-
-    /**
-     * Returns url type
-     *
-     * @return string
-     */
-    protected function _getType()
-    {
-        return 'oxcategory';
-    }
-
-    /**
-     * Returns true if SEO object id has suffix enabled
-     *
-     * @return bool
-     */
-    public function isEntrySuffixed()
-    {
-        $oCategory = oxNew('oxCategory');
-        if ($oCategory->load($this->getEditObjectId())) {
-            return (bool) $oCategory->oxcategories__oxshowsuffix->value;
-        }
-    }
-
-    /**
-     * Returns seo uri
-     *
-     * @return string
-     */
-    public function getEntryUri()
-    {
-        $oCategory = oxNew('oxCategory');
-        if ($oCategory->load($this->getEditObjectId())) {
-            return $this->_getEncoder()->getCategoryUri($oCategory, $this->getEditLang());
-        }
-    }
 }

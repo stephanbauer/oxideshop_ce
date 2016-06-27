@@ -21,24 +21,12 @@
  */
 
 /**
- * Validates if there are no Javascript.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxNoJsValidator
-{
-    /**
-     * Checks if provided config value is not vulnerable.
-     *
-     * @param string $configValue
-     *
-     * @return bool
-     */
-    public function isValid($configValue)
-    {
-        $isValid = true;
-        if (preg_match('/<script.*>/', $configValue) !== 0) {
-            $isValid = false;
-        }
 
-        return $isValid;
-    }
+class oxNoJsValidator extends \OxidEsales\Eshop\Core\NoJsValidator
+{
 }

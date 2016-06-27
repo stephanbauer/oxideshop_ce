@@ -21,45 +21,11 @@
  */
 
 /**
- * Company VAT identification number (VATIN) checker
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  *
  */
-abstract class oxCompanyVatInChecker
+abstract class oxCompanyVatInChecker extends \OxidEsales\Eshop\Core\CompanyVatInChecker
 {
-
-    /**
-     * Error message
-     *
-     * @var string
-     */
-    protected $_sError = '';
-
-    /**
-     * Error message setter
-     *
-     * @param string $sError
-     */
-    public function setError($sError)
-    {
-        $this->_sError = $sError;
-    }
-
-    /**
-     * Error message getter
-     *
-     * @return string
-     */
-    public function getError()
-    {
-        return $this->_sError;
-    }
-
-    /**
-     * Validates company VAT identification number
-     *
-     * @param oxCompanyVatIn $oVatIn
-     *
-     * @return mixed
-     */
-    abstract public function validate(oxCompanyVatIn $oVatIn);
 }

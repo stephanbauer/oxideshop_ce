@@ -21,32 +21,12 @@
  */
 
 /**
- * Admin attributes manager.
- * Collects attributes base information (Description), there is ability to filter
- * them by Description or delete them.
- * Admin Menu: Manage Products -> Attributes.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Attribute_List extends oxAdminList
+class Attribute_List extends \OxidEsales\Eshop\Application\Controller\Admin\AttributeList
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'attribute_list.tpl';
-
-    /**
-     * Name of chosen object class (default null).
-     *
-     * @var string
-     */
-    protected $_sListClass = 'oxattribute';
-
-    /**
-     * Default SQL sorting parameter (default null).
-     *
-     * @var string
-     */
-    protected $_sDefSortField = 'oxtitle';
 }

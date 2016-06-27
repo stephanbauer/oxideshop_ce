@@ -90,6 +90,8 @@ class AdminView extends \oxView
     /**
      * Shop dynamic pages url
      *
+     * @deprecated since v5.3 (2016-05-20); Dynpages will be removed.
+     *
      * @var string
      */
     protected $_sServiceUrl = null;
@@ -114,6 +116,13 @@ class AdminView extends \oxView
      * @var string
      */
     protected $_sEditObjectId = null;
+
+    /**
+     * Optional view id.
+     *
+     * @var string
+     */
+    protected $viewId = null;
 
     /**
      * Creates oxshop object and loads shop data, sets title of shop
@@ -233,6 +242,8 @@ class AdminView extends \oxView
 
     /**
      * Returns service URL
+     *
+     * @deprecated since v5.3 (2016-05-20); Dynpages will be removed.
      *
      * @param string $sLangAbbr language abbr.
      *
@@ -567,7 +578,7 @@ class AdminView extends \oxView
      */
     public function getViewId()
     {
-        $sClassName = strtolower(get_class($this));
+        $sClassName = is_null($this->viewId) ? strtolower(get_class($this)) : $this->viewId;
 
         return $this->getNavigation()->getClassId($sClassName);
     }
@@ -595,9 +606,11 @@ class AdminView extends \oxView
             $oEncoder->markAsExpired(null, $sShopId, 1, null, "oxtype = '{$sType}'");
         }
 
+        // @deprecated v5.3 (2016-05-04); Tags will be moved to own module.
         // resetting tag cache
         $oTagCloud = oxNew('oxtagcloud');
         $oTagCloud->resetCache();
+        // END deprecated
     }
 
     /**

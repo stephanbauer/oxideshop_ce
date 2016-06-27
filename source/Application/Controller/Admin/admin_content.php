@@ -21,17 +21,12 @@
  */
 
 /**
- * Sets template, that arranges two other templates ("content_list.tpl"
- * and "content_main.tpl") to frame.
- * Admin Menu: Customerinformations -> Content.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Admin_Content extends oxAdminView
+class Admin_Content extends \OxidEsales\Eshop\Application\Controller\Admin\AdminContent
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'content.tpl';
 }

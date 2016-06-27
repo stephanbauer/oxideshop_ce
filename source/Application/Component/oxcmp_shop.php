@@ -21,42 +21,11 @@
  */
 
 /**
- * Translarent shop manager (executed automatically), sets
- * registration information and current shop object.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
  *
- * @subpackage oxcmp
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxcmp_shop extends oxView
+class oxcmp_shop extends \OxidEsales\Eshop\Application\Component\ShopComponent
 {
-
-    /**
-     * Marking object as component
-     *
-     * @var bool
-     */
-    protected $_blIsComponent = true;
-
-    /**
-     * Executes parent::render() and returns active shop object.
-     *
-     * @return  object  $this->oActShop active shop object
-     */
-    public function render()
-    {
-        parent::render();
-
-        $myConfig = $this->getConfig();
-
-        // is shop active?
-        $oShop = $myConfig->getActiveShop();
-        $sActiveField = 'oxshops__oxactive';
-        $sClassName = $myConfig->getActiveView()->getClassName();
-
-        if (!$oShop->$sActiveField->value && 'oxstart' != $sClassName && !$this->isAdmin()) {
-            // redirect to offline if there is no active shop
-            oxRegistry::getUtils()->redirectOffline();
-        }
-
-        return $oShop;
-    }
 }

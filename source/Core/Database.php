@@ -29,12 +29,13 @@ use mysqli_driver_ADOConnection;
 use oxAdoDbException;
 use oxConnectionException;
 use oxDb;
+use OxidEsales\Eshop\Core\exception\DatabaseException;
 use oxLegacyDb;
 use oxRegistry;
 use PHPMailer;
 
 // Including main ADODB include
-require_once getShopBasePath() . 'Core/adodblite/adodb.inc.php';
+require_once __DIR__ . '/adodblite/adodb.inc.php';
 
 /**
  * Database connection class
@@ -319,23 +320,8 @@ class Database
      */
     public function escapeString($string)
     {
-        if ('mysql' == self::_getConfigParam("_dbType")) {
-            return mysql_real_escape_string($string, $this->_getConnectionId());
-        } elseif ('mysqli' == self::_getConfigParam("_dbType")) {
-            return mysqli_real_escape_string($this->_getConnectionId(), $string);
-        } else {
-            return mysql_real_escape_string($string, $this->_getConnectionId());
-        }
-    }
-
-    /**
-     * Get connection ID
-     *
-     * @return mysqli identifier
-     */
-    protected function _getConnectionId()
-    {
-        return self::getDb()->getDb()->connectionId;
+        $result = trim(self::getDb()->quote($string), "'");
+        return $result;
     }
 
     /**
@@ -351,14 +337,14 @@ class Database
     /**
      * Return local config value by given name.
      *
-     * @param string $sConfigName returning config name.
+     * @param string $configName returning config name.
      *
      * @return mixed
      */
-    protected static function _getConfigParam($sConfigName)
+    protected static function _getConfigParam($configName)
     {
-        if (isset(self::$$sConfigName)) {
-            return self::$$sConfigName;
+        if (isset(self::$$configName)) {
+            return self::$$configName;
         }
 
         return null;
@@ -436,7 +422,7 @@ class Database
         try {
             $this->connectToDatabase($connection, $instanceType);
         } catch (oxAdoDbException $e) {
-            $this->_onConnectionError($connection);
+            $this->_onConnectionError($e);
         }
         self::_setUp($connection);
 
@@ -490,7 +476,7 @@ class Database
         global $ADODB_EXCEPTION;
         $ADODB_EXCEPTION = 'oxAdoDbException';
 
-        include_once getShopBasePath() . 'Core/adodblite/adodb-exceptions.inc.php';
+        include_once __DIR__ . '/adodblite/adodb-exceptions.inc.php';
     }
 
     /**
@@ -540,23 +526,23 @@ class Database
     }
 
     /**
-     * Returns $oMailer instance
+     * Returns $mailer instance
      *
-     * @param string $sEmail   email address
-     * @param string $sSubject subject
-     * @param string $sBody    email body
+     * @param string $email   email address
+     * @param string $subject subject
+     * @param string $body    email body
      *
      * @return PHPMailer
      */
-    protected function _sendMail($sEmail, $sSubject, $sBody)
+    protected function _sendMail($email, $subject, $body)
     {
         $mailer = new PHPMailer();
         $mailer->isMail();
 
-        $mailer->From = $sEmail;
-        $mailer->AddAddress($sEmail);
-        $mailer->Subject = $sSubject;
-        $mailer->Body = $sBody;
+        $mailer->From = $email;
+        $mailer->AddAddress($email);
+        $mailer->Subject = $subject;
+        $mailer->Body = $body;
 
         return $mailer->send();
     }
@@ -564,11 +550,11 @@ class Database
     /**
      * Notifying shop owner about connection problems
      *
-     * @param ADOConnection $connection database connection instance
+     * @param \Exception $exception Database exception
      *
-     * @throws oxConnectionException
+     * @throws DatabaseException
      */
-    protected function _notifyConnectionErrors($connection)
+    protected function _notifyConnectionErrors(\Exception $exception)
     {
         // notifying shop owner about connection problems
         if (($adminEmail = self::_getConfigParam('_sAdminEmail'))) {
@@ -585,8 +571,8 @@ class Database
                 Date: {$date}
                 Shop: {$failedShop}
 
-                mysql error: " . $connection->errorMsg() . "
-                mysql error no: " . $connection->errorNo() . "
+                mysql error: " . $exception->getMessage() . "
+                mysql error no: " . $exception->getCode() . "
 
                 Script: {$script}
                 Referer: {$referer}";
@@ -594,10 +580,14 @@ class Database
             $this->_sendMail($adminEmail, $warningSubject, $warningBody);
         }
 
-        //only exception to default construction method
-        $exception = new oxConnectionException();
-        $exception->setMessage('EXCEPTION_CONNECTION_NODB');
-        $exception->setConnectionError(self::_getConfigParam('_dbUser') . 's' . getShopBasePath() . $connection->errorMsg());
+        // Re throw the exception
+        $message = 'EXCEPTION_CONNECTION_NODB';
+        $code = $exception->getCode();
+        // @todo Add DatabaseConnectionException, which implements oxConnectionException methods and is used instead
+        //$exception = oxNew('\OxidEsales\Eshop\Core\exception\DatabaseException', $message, $code, $exception);
+        $exception = oxNew('oxConnectionException', $message, $code, $exception);
+
+        // $exception->setConnectionError(self::_getConfigParam('_dbUser') . 's' . getShopBasePath() . $exception->getMessage());
         throw $exception;
     }
 
@@ -605,9 +595,9 @@ class Database
      * In case of connection error - redirects to setup
      * or send notification message for shop owner
      *
-     * @param ADOConnection $connection database connection instance
+     * @param \Exception $exception Database exception
      */
-    protected function _onConnectionError($connection)
+    protected function _onConnectionError(\Exception $exception)
     {
         $config = join('', file(getShopBasePath() . 'config.inc.php'));
 
@@ -623,7 +613,7 @@ class Database
             exit();
         } else {
             // notifying about connection problems
-            $this->_notifyConnectionErrors($connection);
+            $this->_notifyConnectionErrors($exception);
         }
     }
 

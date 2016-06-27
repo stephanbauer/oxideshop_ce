@@ -21,18 +21,12 @@
  */
 
 /**
- * Admins links manager.
- * Sets template, that arranges two other templates ("adminlinks_lis.tpl"
- * and "adminlinks_main.tpl") to frame.
- * Admin Menu: Customer News -> Links.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Admin_Links extends oxAdminView
+class Admin_Links extends \OxidEsales\Eshop\Application\Controller\Admin\AdminLinks
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'admin_links.tpl';
 }

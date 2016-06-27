@@ -21,25 +21,12 @@
  */
 
 /**
- * Admin admin_pricealarm manager.
- * Returns template, that arranges two other templates ("apricealarm_list.tpl"
- * and "pricealarm_main.tpl") to frame.
- * Admin Menu: Customer News -> admin_pricealarm.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Admin_Pricealarm extends oxAdminView
+class Admin_Pricealarm extends \OxidEsales\Eshop\Application\Controller\Admin\AdminPricealarm
 {
-
-    /**
-     * Default active tab number
-     *
-     * @var int
-     */
-    protected $_iDefEdit = 1;
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'admin_pricealarm.tpl';
 }

@@ -21,91 +21,12 @@
  */
 
 /**
- * Admin article categories text manager.
- * Category text/description manager, enables editing of text.
- * Admin Menu: Manage Products -> Categories -> Text.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Category_Text extends oxAdminDetails
+class Category_Text extends \OxidEsales\Eshop\Application\Controller\Admin\CategoryText
 {
-
-    /**
-     * Loads category object data, pases it to Smarty engine and returns
-     * name of template file "category_text.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        parent::render();
-
-        $this->_aViewData['edit'] = $oCategory = oxNew('oxCategory');
-
-        $soxId = $this->_aViewData["oxid"] = $this->getEditObjectId();
-        if (isset($soxId) && $soxId != "-1") {
-            // load object
-            $iCatLang = oxRegistry::getConfig()->getRequestParameter("catlang");
-
-            if (!isset($iCatLang)) {
-                $iCatLang = $this->_iEditLang;
-            }
-
-            $this->_aViewData["catlang"] = $iCatLang;
-
-            $oCategory->loadInLang($iCatLang, $soxId);
-
-            //Disable editing for derived items
-            if ($oCategory->isDerived()) {
-                $this->_aViewData['readonly'] = true;
-            }
-
-            foreach (oxRegistry::getLang()->getLanguageNames() as $id => $language) {
-                $oLang = new stdClass();
-                $oLang->sLangDesc = $language;
-                $oLang->selected = ($id == $this->_iEditLang);
-                $this->_aViewData["otherlang"][$id] = clone $oLang;
-            }
-        }
-
-        $this->_aViewData["editor"] = $this->_generateTextEditor("100%", 300, $oCategory, "oxcategories__oxlongdesc", "list.tpl.css");
-
-        return "category_text.tpl";
-    }
-
-    /**
-     * Saves category description text to DB.
-     *
-     * @return mixed
-     */
-    public function save()
-    {
-        parent::save();
-
-        $myConfig = $this->getConfig();
-
-        $soxId = $this->getEditObjectId();
-        $aParams = oxRegistry::getConfig()->getRequestParameter("editval");
-
-        $oCategory = oxNew("oxCategory");
-        $iCatLang = oxRegistry::getConfig()->getRequestParameter("catlang");
-        $iCatLang = $iCatLang ? $iCatLang : 0;
-
-        if ($soxId != "-1") {
-            $oCategory->loadInLang($iCatLang, $soxId);
-        } else {
-            $aParams['oxcategories__oxid'] = null;
-        }
-
-        //Disable editing for derived items
-        if ($oCategory->isDerived()) {
-            return;
-        }
-
-        $oCategory->setLanguage(0);
-        $oCategory->assign($aParams);
-        $oCategory->setLanguage($iCatLang);
-        $oCategory->save();
-
-        // set oxid if inserted
-        $this->setEditObjectId($oCategory->getId());
-    }
 }

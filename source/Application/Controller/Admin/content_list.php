@@ -21,76 +21,14 @@
  */
 
 /**
- * Admin Contents manager.
- * Collects Content base information (Description), there is ability to filter
- * them by Description or delete them.
- * Admin Menu: Customerinformations -> Content.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
+ * @mixin \OxidEsales\EshopEnterprise\Application\Controller\Admin\ContentList
  */
-class Content_List extends oxAdminList
+class Content_List extends \OxidEsales\Eshop\Application\Controller\Admin\ContentList
 {
-
-    /**
-     * Name of chosen object class (default null).
-     *
-     * @var string
-     */
-    protected $_sListClass = 'oxcontent';
-
-    /**
-     * Type of list.
-     *
-     * @var string
-     */
-    protected $_sListType = 'oxcontentlist';
-    
-    /**
-     * Current class template name.
-     * 
-     * @var string
-     */
-    protected $_sThisTemplate = "content_list.tpl";
-
-    /**
-     * Executes parent method parent::render() and returns current class template
-     * name.
-     *
-     * @return string
-     */
-    public function render()
-    {
-        parent::render();
-
-        $sFolder = oxRegistry::getConfig()->getRequestParameter("folder");
-        $sFolder = $sFolder ? $sFolder : -1;
-
-        $this->_aViewData["folder"] = $sFolder;
-        $this->_aViewData["afolder"] = $this->getConfig()->getConfigParam('aCMSfolder');
-
-        return $this->_sThisTemplate;
-    }
-
-    /**
-     * Adding folder check and empty folder field check.
-     *
-     * @param array  $aWhere  SQL condition array
-     * @param string $sqlFull SQL query string
-     *
-     * @return string
-     */
-    protected function _prepareWhereQuery($aWhere, $sqlFull)
-    {
-        $sQ = parent::_prepareWhereQuery($aWhere, $sqlFull);
-        $sFolder = oxRegistry::getConfig()->getRequestParameter('folder');
-        $sViewName = getviewName("oxcontents");
-
-        //searchong for empty oxfolder fields
-        if ($sFolder == 'CMSFOLDER_NONE' || $sFolder == 'CMSFOLDER_NONE_RR') {
-            $sQ .= " and {$sViewName}.oxfolder = '' ";
-        } elseif ($sFolder && $sFolder != '-1') {
-            $sFolder = oxDb::getDb()->quote($sFolder);
-            $sQ .= " and {$sViewName}.oxfolder = {$sFolder}";
-        }
-
-        return $sQ;
-    }
 }

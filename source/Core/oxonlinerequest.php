@@ -21,85 +21,12 @@
  */
 
 /**
- * Online check base request class.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
  *
- * @internal Do not make a module extension for this class.
- * @see      http://wiki.oxidforge.org/Tutorials/Core_OXID_eShop_classes:_must_not_be_extended
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  *
- * @ignore   This class will not be included in documentation.
  */
-class oxOnlineRequest
+
+class oxOnlineRequest extends \OxidEsales\Eshop\Core\OnlineRequest
 {
-
-    /**
-     * OXID eShop servers cluster id.
-     *
-     * @var string
-     */
-    public $clusterId;
-
-    /**
-     * OXID eShop edition.
-     *
-     * @var string
-     */
-    public $edition;
-
-    /**
-     * Shops version number.
-     *
-     * @var string
-     */
-    public $version;
-
-    /**
-     * @var string
-     */
-    public $shopUrl;
-
-    /**
-     * Web service protocol version.
-     *
-     * @var string
-     */
-    public $pVersion;
-
-    /**
-     * Product ID. Intended for possible partner modules in future.
-     *
-     * @var string
-     */
-    public $productId = 'eShop';
-
-    /**
-     * Class constructor, initiates public class parameters.
-     */
-    public function __construct()
-    {
-        $oConfig = oxRegistry::getConfig();
-        $this->clusterId = $this->_getClusterId();
-        $this->edition = $oConfig->getEdition();
-        $this->version = $oConfig->getVersion();
-        $this->shopUrl = $oConfig->getShopUrl();
-    }
-
-    /**
-     * Returns cluster id.
-     * Takes cluster id from configuration if set, otherwise generates it.
-     *
-     * @return string
-     */
-    private function _getClusterId()
-    {
-        $oConfig = oxRegistry::getConfig();
-        $sBaseShop = $oConfig->getBaseShopId();
-        $sClusterId = $oConfig->getShopConfVar('sClusterId', $sBaseShop);
-        if (!$sClusterId) {
-            $oUUIDGenerator = oxNew('oxUniversallyUniqueIdGenerator');
-            $sClusterId = $oUUIDGenerator->generate();
-            $oConfig->saveShopConfVar("str", 'sClusterId', $sClusterId, $sBaseShop);
-        }
-
-        return $sClusterId;
-    }
 }

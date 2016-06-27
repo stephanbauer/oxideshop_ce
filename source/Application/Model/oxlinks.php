@@ -21,45 +21,14 @@
  */
 
 /**
- * Links manager.
- * Collects stored in DB links data (URL, description).
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
+ * @mixin \OxidEsales\EshopEnterprise\Application\Model\Links
  */
-class oxLinks extends oxI18n
+class oxLinks extends \OxidEsales\Eshop\Application\Model\Links
 {
-
-    /**
-     * Current class name
-     *
-     * @var string
-     */
-    protected $_sClassName = 'oxlinks';
-
-    /**
-     * Class constructor, initiates parent constructor (parent::oxI18n()).
-     *
-     * @return oxLinks
-     */
-    public function __construct()
-    {
-        parent::__construct();
-        $this->init('oxlinks');
-    }
-
-    /**
-     * Sets data field value
-     *
-     * @param string $sFieldName index OR name (eg. 'oxarticles__oxtitle') of a data field to set
-     * @param string $sValue     value of data field
-     * @param int    $iDataType  field type
-     *
-     * @return null
-     */
-    protected function _setFieldData($sFieldName, $sValue, $iDataType = oxField::T_TEXT)
-    {
-        if ('oxurldesc' === strtolower($sFieldName) || 'oxlinks__oxurldesc' === strtolower($sFieldName)) {
-            $iDataType = oxField::T_RAW;
-        }
-
-        return parent::_setFieldData($sFieldName, $sValue, $iDataType);
-    }
 }

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file is part of OXID eShop Community Edition.
  *
@@ -22,31 +21,12 @@
  */
 
 /**
- * Admin newsletter list manager.
- * Performs collection and managing (such as filtering or deleting) function.
- * Admin Menu: Customer News -> Newsletter.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Newsletter_List extends oxAdminList
+class Newsletter_List extends \OxidEsales\Eshop\Application\Controller\Admin\NewsletterList
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'newsletter_list.tpl';
-
-    /**
-     * Name of chosen object class (default null).
-     *
-     * @var string
-     */
-    protected $_sListClass = 'oxnewsletter';
-
-    /**
-     * Default SQL sorting parameter (default null).
-     *
-     * @var string
-     */
-    protected $_sDefSortField = "oxtitle";
 }

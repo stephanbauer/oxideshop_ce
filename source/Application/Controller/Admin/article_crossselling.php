@@ -21,56 +21,12 @@
  */
 
 /**
- * Admin article crosselling/accesories manager.
- * Creates list of available articles, there is ability to assign or remove
- * assigning of article to crosselling/accesories with other products.
- * Admin Menu: Manage Products -> Articles -> Crosssell.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Article_Crossselling extends oxAdminDetails
+class Article_Crossselling extends \OxidEsales\Eshop\Application\Controller\Admin\ArticleCrossselling
 {
-
-    /**
-     * Collects article crosselling and attributes information, passes
-     * them to Smarty engine and returns name or template file
-     * "article_crossselling.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        parent::render();
-
-        $this->_aViewData['edit'] = $oArticle = oxNew('oxArticle');
-
-        // crossselling
-        $this->_createCategoryTree("artcattree");
-
-        // accessoires
-        $this->_createCategoryTree("artcattree2");
-
-        $soxId = $this->getEditObjectId();
-        if (isset($soxId) && $soxId != "-1") {
-            // load object
-            $oArticle->load($soxId);
-
-            if ($oArticle->isDerived()) {
-                $this->_aViewData['readonly'] = true;
-            }
-        }
-
-        $iAoc = oxRegistry::getConfig()->getRequestParameter("aoc");
-        if ($iAoc == 1) {
-            $oArticleCrossellingAjax = oxNew('article_crossselling_ajax');
-            $this->_aViewData['oxajax'] = $oArticleCrossellingAjax->getColumns();
-
-            return "popups/article_crossselling.tpl";
-        } elseif ($iAoc == 2) {
-            $oArticleAccessoriesAjax = oxNew('article_accessories_ajax');
-            $this->_aViewData['oxajax'] = $oArticleAccessoriesAjax->getColumns();
-
-            return "popups/article_accessories.tpl";
-        }
-
-        return "article_crossselling.tpl";
-    }
 }

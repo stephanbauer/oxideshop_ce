@@ -21,53 +21,12 @@
  */
 
 /**
- * Admin news list manager.
- * Performs collection and managing (such as filtering or deleting) function.
- * Admin Menu: Customer News -> News.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated since v.5.3.0 (2016-06-17); The Admin Menu: Customer Info -> News feature will be moved to a module in v6.0.0
  */
-class News_List extends oxAdminList
+class News_List extends \OxidEsales\Eshop\Application\Controller\Admin\NewsList
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'news_list.tpl';
-
-    /**
-     * Name of chosen object class (default null).
-     *
-     * @var string
-     */
-    protected $_sListClass = 'oxnews';
-
-    /**
-     * Type of list.
-     *
-     * @var string
-     */
-    protected $_sListType = 'oxnewslist';
-
-    /**
-     * Default SQL sorting parameter (default null).
-     *
-     * @var string
-     */
-    protected $_sDefSortField = "oxdate";
-
-    /**
-     * Returns sorting fields array
-     *
-     * @return array
-     */
-    public function getListSorting()
-    {
-        $aSorting = parent::getListSorting();
-        if (isset($aSorting["oxnews"][$this->_sDefSortField])) {
-            $this->_blDesc = true;
-        }
-
-        return $aSorting;
-    }
 }

@@ -21,17 +21,12 @@
  */
 
 /**
- * Voucher list manager.
+ * @inheritdoc
  *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class oxVoucherList extends oxList
+class oxVoucherList extends \OxidEsales\Eshop\Application\Model\VoucherList
 {
-
-    /**
-     * Calls parent constructor
-     */
-    public function __construct()
-    {
-        parent::__construct('oxvoucher');
-    }
 }

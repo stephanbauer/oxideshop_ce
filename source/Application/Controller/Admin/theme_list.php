@@ -21,28 +21,12 @@
  */
 
 /**
- * Admin actionss manager.
- * Sets list template, list object class ('oxactions') and default sorting
- * field ('oxactions.oxtitle').
- * Admin Menu: Manage Products -> Actions.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Theme_List extends oxAdminList
+class Theme_List extends \OxidEsales\Eshop\Application\Controller\Admin\ThemeList
 {
-
-    /**
-     * Calls parent::render() and returns name of template to render
-     *
-     * @return string
-     */
-    public function render()
-    {
-        $oTheme = oxNew('oxtheme');
-
-        parent::render();
-
-        // assign our list
-        $this->_aViewData['mylist'] = $oTheme->getList();
-
-        return 'theme_list.tpl';
-    }
 }

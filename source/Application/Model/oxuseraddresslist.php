@@ -21,35 +21,12 @@
  */
 
 /**
- * Class oxUserAddressList
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class oxUserAddressList extends oxList
+class oxUserAddressList extends \OxidEsales\Eshop\Application\Model\UserAddressList
 {
-
-    /**
-     * Call parent class constructor
-     */
-    public function __construct()
-    {
-        parent::__construct('oxaddress');
-    }
-
-    /**
-     * Selects and loads all address for particular user.
-     *
-     * @param string $sUserId user id
-     */
-    public function load($sUserId)
-    {
-        $sViewName = getViewName('oxcountry');
-        $oBaseObject = $this->getBaseObject();
-        $sSelectFields = $oBaseObject->getSelectFields();
-
-        $sSelect = "
-                SELECT {$sSelectFields}, `oxcountry`.`oxtitle` AS oxcountry
-                FROM oxaddress
-                LEFT JOIN {$sViewName} AS oxcountry ON oxaddress.oxcountryid = oxcountry.oxid
-                WHERE oxaddress.oxuserid = " . oxDb::getDb()->quote($sUserId);
-        $this->selectString($sSelect);
-    }
 }

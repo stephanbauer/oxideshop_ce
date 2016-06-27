@@ -22,6 +22,9 @@
 
 namespace OxidEsales\Eshop\Core\Edition;
 
+use OxidEsales\Eshop\Core\ConfigFile;
+use OxidEsales\Eshop\Core\Registry;
+
 /**
  * Class is responsible for returning edition directory path.
  *
@@ -30,11 +33,11 @@ namespace OxidEsales\Eshop\Core\Edition;
  */
 class EditionRootPathProvider
 {
-    const EDITIONS_DIRECTORY = 'Edition';
+    const EDITIONS_DIRECTORY = 'oxid-esales';
 
-    const ENTERPRISE_DIRECTORY = 'Enterprise';
+    const ENTERPRISE_DIRECTORY = 'oxideshop-ee';
 
-    const PROFESSIONAL_DIRECTORY = 'Professional';
+    const PROFESSIONAL_DIRECTORY = 'oxideshop-pe';
 
     /** @var EditionSelector */
     private $editionSelector;
@@ -48,22 +51,27 @@ class EditionRootPathProvider
     }
 
     /**
-     * Forms path to edition directory.
+     * Returns path to edition directory. If no additional editions are found, returns base path.
      *
      * @return string
      */
     public function getDirectoryPath()
     {
-        $path = rtrim(getShopBasePath(), DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+        if (Registry::instanceExists('oxConfigFile')) {
+            $configFile = Registry::get('oxConfigFile');
+        } else {
+            $configFile = new ConfigFile(getShopBasePath() . '/config.inc.php');
+            Registry::set('oxConfigFile', $configFile);
+        }
+        $editionsPath = $configFile->getVar('vendorDirectory')  .'/'. static::EDITIONS_DIRECTORY;
+        $path = getShopBasePath();
         if ($this->getEditionSelector()->isEnterprise()) {
-            $path .= static::EDITIONS_DIRECTORY . DIRECTORY_SEPARATOR . static::ENTERPRISE_DIRECTORY . DIRECTORY_SEPARATOR;
+            $path = $editionsPath  .'/'. static::ENTERPRISE_DIRECTORY;
+        } else if ($this->getEditionSelector()->isProfessional()) {
+            $path = $editionsPath .'/'.  static::PROFESSIONAL_DIRECTORY;
         }
 
-        if ($this->getEditionSelector()->isProfessional()) {
-            $path .= static::EDITIONS_DIRECTORY . DIRECTORY_SEPARATOR . static::PROFESSIONAL_DIRECTORY . DIRECTORY_SEPARATOR;
-        }
-
-        return $path;
+        return realpath($path) . DIRECTORY_SEPARATOR;
     }
 
     /**

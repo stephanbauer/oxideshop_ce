@@ -21,38 +21,12 @@
  */
 
 /**
- * Admin voucherserie list manager.
- * Collects voucherserie base information (serie no., discount, valid from, etc.),
- * there is ability to filter them by deiscount, serie no. or delete them.
- * Admin Menu: Shop Settings -> Vouchers.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class VoucherSerie_List extends oxAdminList
+class VoucherSerie_List extends \OxidEsales\Eshop\Application\Controller\Admin\VoucherSerieList
 {
-
-    /**
-     * Name of chosen object class (default null).
-     *
-     * @var string
-     */
-    protected $_sListClass = 'oxvoucherserie';
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'voucherserie_list.tpl';
-
-    /**
-     * Deletes selected Voucherserie.
-     */
-    public function deleteEntry()
-    {
-        // first we remove vouchers
-        $oVoucherSerie = oxNew("oxvoucherserie");
-        $oVoucherSerie->load($this->getEditObjectId());
-        $oVoucherSerie->deleteVoucherList();
-
-        parent::deleteEntry();
-    }
 }

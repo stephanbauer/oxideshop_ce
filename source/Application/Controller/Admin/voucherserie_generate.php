@@ -21,120 +21,12 @@
  */
 
 /**
- * Voucher Serie generator class
+ * @inheritdoc
  *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class VoucherSerie_Generate extends VoucherSerie_Main
+class VoucherSerie_Generate extends \OxidEsales\Eshop\Application\Controller\Admin\VoucherSerieGenerate
 {
-
-    /**
-     * Voucher generator class name
-     *
-     * @var string
-     */
-    public $sClassDo = "voucherserie_generate";
-
-    /**
-     * Number of vouchers to generate per tick
-     *
-     * @var int
-     */
-    public $iGeneratePerTick = 100;
-
-    /**
-     * Current class template name
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = "voucherserie_generate.tpl";
-
-    /**
-     * Voucher serie object
-     *
-     * @var oxvoucherserie
-     */
-    protected $_oVoucherSerie = null;
-
-    /**
-     * Generated vouchers count
-     *
-     * @var int
-     */
-    protected $_iGenerated = false;
-
-    /**
-     * Generates vouchers by offset iCnt
-     *
-     * @param integer $iCnt voucher offset
-     *
-     * @return bool
-     */
-    public function nextTick($iCnt)
-    {
-        if ($iGeneratedItems = $this->generateVoucher($iCnt)) {
-            return $iGeneratedItems;
-        }
-
-        return false;
-    }
-
-    /**
-     * Generates and saves vouchers. Returns number of saved records
-     *
-     * @param int $iCnt voucher counter offset
-     *
-     * @return int saved record count
-     */
-    public function generateVoucher($iCnt)
-    {
-        $iAmount = abs((int) oxRegistry::getSession()->getVariable("voucherAmount"));
-
-        // creating new vouchers
-        if ($iCnt < $iAmount && ($oVoucherSerie = $this->_getVoucherSerie())) {
-
-            if (!$this->_iGenerated) {
-                $this->_iGenerated = $iCnt;
-            }
-
-            $blRandomNr = ( bool ) oxRegistry::getSession()->getVariable("randomVoucherNr");
-            $sVoucherNr = $blRandomNr ? oxUtilsObject::getInstance()->generateUID() : oxRegistry::getSession()->getVariable("voucherNr");
-
-            $oNewVoucher = oxNew("oxvoucher");
-            $oNewVoucher->oxvouchers__oxvoucherserieid = new oxField($oVoucherSerie->getId());
-            $oNewVoucher->oxvouchers__oxvouchernr = new oxField($sVoucherNr);
-            $oNewVoucher->save();
-
-            $this->_iGenerated++;
-        }
-
-        return $this->_iGenerated;
-    }
-
-    /**
-     * Runs voucher generation
-     */
-    public function run()
-    {
-        $blContinue = true;
-        $iExportedItems = 0;
-
-        // file is open
-        $iStart = oxRegistry::getConfig()->getRequestParameter("iStart");
-
-        for ($i = $iStart; $i < $iStart + $this->iGeneratePerTick; $i++) {
-            if (($iExportedItems = $this->nextTick($i)) === false) {
-                // end reached
-                $this->stop(ERR_SUCCESS);
-                $blContinue = false;
-                break;
-            }
-        }
-
-        if ($blContinue) {
-            // make ticker continue
-            $this->_aViewData['refresh'] = 0;
-            $this->_aViewData['iStart'] = $i;
-            $this->_aViewData['iExpItems'] = $iExportedItems;
-        }
-    }
 }

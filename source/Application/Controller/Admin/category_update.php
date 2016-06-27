@@ -21,47 +21,12 @@
  */
 
 /**
- * Class for updating category tree structure in DB.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Category_Update extends oxAdminView
+class Category_Update extends \OxidEsales\Eshop\Application\Controller\Admin\CategoryUpdate
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = "category_update.tpl";
-
-    /**
-     * Category list object
-     *
-     * @var oxCategoryList
-     */
-    protected $_oCatList = null;
-
-    /**
-     * Returns category list object
-     *
-     * @return oxCategoryList
-     */
-    protected function _getCategoryList()
-    {
-        if ($this->_oCatList == null) {
-            $this->_oCatList = oxNew("oxCategoryList");
-            $this->_oCatList->updateCategoryTree(false);
-        }
-
-        return $this->_oCatList;
-    }
-
-    /**
-     * Returns category list object
-     *
-     * @return array
-     */
-    public function getCatListUpdateInfo()
-    {
-        return $this->_getCategoryList()->getUpdateInfo();
-    }
 }

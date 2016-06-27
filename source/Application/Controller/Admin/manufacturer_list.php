@@ -21,29 +21,12 @@
  */
 
 /**
- * Admin Manufacturer list manager.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Manufacturer_List extends oxAdminList
+class Manufacturer_List extends \OxidEsales\Eshop\Application\Controller\Admin\ManufacturerList
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'manufacturer_list.tpl';
-
-    /**
-     * Name of chosen object class (default null).
-     *
-     * @var string
-     */
-    protected $_sListClass = 'oxmanufacturer';
-
-    /**
-     * Default SQL sorting parameter (default null).
-     *
-     * @var string
-     */
-    protected $_sDefSortField = 'oxtitle';
 }

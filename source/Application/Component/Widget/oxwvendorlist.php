@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file is part of OXID eShop Community Edition.
  *
@@ -22,32 +21,11 @@
  */
 
 /**
- * Vendor list widget.
- * Forms vendor list.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxwVendorList extends oxWidget
+class oxwVendorList extends \OxidEsales\Eshop\Application\Component\Widget\VendorList
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'widget/footer/vendorlist.tpl';
-
-    /**
-     * Template variable getter. Returns vendorlist for search
-     *
-     * @return array
-     */
-    public function getVendorlist()
-    {
-        if ($this->_aVendorlist === null) {
-            $oVendorTree = oxNew('oxvendorlist');
-            $oVendorTree->buildVendorTree('vendorlist', null, $this->getConfig()->getShopHomeURL());
-            $this->_aVendorlist = $oVendorTree;
-        }
-
-        return $this->_aVendorlist;
-    }
 }

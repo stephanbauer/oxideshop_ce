@@ -21,17 +21,12 @@
  */
 
 /**
- * Admin shop system setting manager.
- * Collects shop system settings, updates it on user submit, etc.
- * Admin Menu: Main Menu -> Core Settings -> System.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Dynscreen_Local extends oxAdminView
+class Dynscreen_Local extends \OxidEsales\Eshop\Application\Controller\Admin\DynScreenLocal
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'dynscreen_local.tpl';
 }

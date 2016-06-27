@@ -21,32 +21,12 @@
  */
 
 /**
- * Admin user articles setting manager.
- * Collects user articles settings, updates it on user submit, etc.
- * Admin Menu: User Administration -> Users -> Articles.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class User_Article extends oxAdminDetails
+class User_Article extends \OxidEsales\Eshop\Application\Controller\Admin\UserArticle
 {
-
-    /**
-     * Executes parent method parent::render(), creates oxlist object and returns name
-     * of template file "user_article.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        parent::render();
-
-        $soxId = $this->getEditObjectId();
-        if ($soxId && $soxId != '-1') {
-            // load object
-            $oArticlelist = oxNew('oxorderarticlelist');
-            $oArticlelist->loadOrderArticlesForUser($soxId);
-
-            $this->_aViewData['oArticlelist'] = $oArticlelist;
-        }
-
-        return 'user_article.tpl';
-    }
 }

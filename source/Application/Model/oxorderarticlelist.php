@@ -21,41 +21,12 @@
  */
 
 /**
- * Order article list manager.
+ * @inheritdoc
  *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class oxOrderArticleList extends oxList
+class oxOrderArticleList extends \OxidEsales\Eshop\Application\Model\OrderArticleList
 {
-
-    /**
-     * Class constructor, initiates class constructor (parent::oxbase()).
-     */
-    public function __construct()
-    {
-        parent::__construct('oxorderarticle');
-    }
-
-    /**
-     * Copies passed to method product into $this.
-     *
-     * @param string $sOxId object id
-     *
-     * @return null
-     */
-    public function loadOrderArticlesForUser($sOxId)
-    {
-        if (!$sOxId) {
-            $this->clear();
-
-            return;
-        }
-
-        $sSelect = "SELECT oxorderarticles.* FROM oxorder ";
-        $sSelect .= "left join oxorderarticles on oxorderarticles.oxorderid = oxorder.oxid ";
-        $sSelect .= "left join oxarticles on oxorderarticles.oxartid = oxarticles.oxid ";
-        $sSelect .= "WHERE oxorder.oxuserid = " . oxDb::getDb()->quote($sOxId);
-
-        $this->selectString($sSelect);
-
-    }
 }

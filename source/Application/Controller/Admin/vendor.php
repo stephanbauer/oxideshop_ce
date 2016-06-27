@@ -21,17 +21,12 @@
  */
 
 /**
- * Returns template, that arranges two other templates ("vendor_list.tpl"
- * and "vendor_main.tpl") to frame.
- * Admin Menu: Settings -> Vendors
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Vendor extends oxAdminView
+class Vendor extends \OxidEsales\Eshop\Application\Controller\Admin\VendorController
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'vendor.tpl';
 }

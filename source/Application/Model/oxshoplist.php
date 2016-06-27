@@ -21,33 +21,14 @@
  */
 
 /**
- * Shop list manager.
- * Organizes list of shop objects.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
+ * @mixin \OxidEsales\EshopEnterprise\Application\Model\ShopList
  */
-class oxShopList extends oxList
+class oxShopList extends \OxidEsales\Eshop\Application\Model\ShopList
 {
-    /**
-     * Calls parent constructor
-     */
-    public function __construct()
-    {
-        return parent::__construct('oxshop');
-    }
-
-    /**
-     * Loads all shops to list
-     */
-    public function getAll()
-    {
-        $this->selectString('SELECT `oxshops`.* FROM `oxshops`');
-    }
-
-    /**
-     * Gets shop list into object
-     */
-    public function getIdTitleList()
-    {
-        $this->setBaseObject(oxNew('oxListObject', 'oxshops'));
-        $this->selectString('SELECT `OXID`, `OXNAME` FROM `oxshops`');
-    }
 }

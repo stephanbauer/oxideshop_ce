@@ -179,31 +179,6 @@ $aLang =  array(
                                                  'User gets credit points only if invited user registers into shop. Aquired ' .
                                                  'credit points are stored in user record and can be used by shop owner for any purpose.',
 
-'HELP_SHOP_CONFIG_SHOP_CONFIG_FACEBOOKAPPID'  => 'To connect your website to Facebook you need to enter the Application ID. ' .
-                                                 'How to connect your website to Facebook, you can read in ' .
-                                                 '<a href="http://wiki.oxidforge.org/Tutorials/Connecting_website_to_facebook" target="_blank">tutorial</a>.',
-
-'HELP_SHOP_CONFIG_SHOP_CONFIG_FACEBOOKCONFIRM'=> 'To protect customer privacy, the display of the Facebook social plugins must be explicitly confirmed. Only after confirmation data is shared with Facebook.',
-
-'HELP_SHOP_CONFIG_SHOP_CONFIG_FBSECRETKEY'    => 'To ensure secure connection between your site and Facebook, you must ' .
-                                                 'enter the Secure Key which you get when registering your website to ' .
-                                                 'Facebook. Read in <a href="http://wiki.oxidforge.org/Tutorials/Connecting_website_to_facebook" target="_blank">tutorial</a> ' .
-                                                 'how to connect your website to Facebook.',
-
-'HELP_SHOP_CONFIG_FBCOMMENTS'                 => "Comments box easily enables shop visitors to comment on your shop's content.",
-
-'HELP_SHOP_CONFIG_FBFACEPILE'                 => "Facepile shows profile pictures of shops's visitor's friends who " .
-                                                 "have already signed up in Facebook for your site.",
-
-'HELP_SHOP_CONFIG_FBINVITE'                   => 'Shows visitor\'s friends list and allows them to invite friends to your eShop.',
-
-'HELP_SHOP_CONFIG_FBSHARE'                    => 'Shows Facebook share button to share your website content.',
-
-'HELP_SHOP_CONFIG_FBLIKE'                     => 'Enables users to make connections to your pages and share content back to their friends on Facebook with one click.',
-
-'HELP_SHOP_CONFIG_FACEBOOKCONNECT'            => 'Show Facebook Connect box which allows users to log in into eShop using theirs Facebook accunt data.',
-
-
 'HELP_SHOP_CONFIG_ATTENTION'                  => 'Caution: Even if encryption is used, Credit Card contracts usually prohibit this strictly!',
 
 'HELP_SHOP_CONFIG_SHOWTSINTERNATIONALFEESMESSAGE' => 'In the 4th step of the checkout process the CMS page "oxtsinternationalfees" is additionally displayed.',
@@ -288,6 +263,7 @@ $aLang =  array(
 'HELP_SHOP_SEO_RESERVEDWORDS'                 => 'Some URLs are defined in OXID eShop, like www.youreshop.com/admin for accessing eShop admin. If a category was named <span class="filename_filepath_or_italic">admin</span> the SEO URL would be www.youreshop.com/admin too - the category couldn\'t be accessed. Therefore the SEO suffix is attached to these URLs. You can define here which URLs are suffixed automatically.',
 
 'HELP_SHOP_SEO_SKIPTAGS'                      => 'If no META tags are defined for products and categories, the META tags are created automatically. thereby very common words can be omitted. All words entered here are omitted when creating the META tags.',
+'HELP_SHOP_SEO_LOWERCASEURLS'                 => 'Lowercase all upper case characters in SEO urls. E.g. www.youreshop.com/Kiteboarding/Kites/ transforms to www.youreshop.com/kiteboarding/kites/.',
 
 'HELP_SHOP_SEO_STATICURLS'                    => 'For special pages (e. g. general terms and conditions) you can enter fixed SEO URLs. When selecting a static URL, the normal URL is shown in <span class="navipath_or_inputname">Standard URL</span>. In the input fields below you can define a SEO URL for each language.',
 
@@ -568,20 +544,6 @@ $aLang =  array(
 'HELP_VOUCHERSERIE_MAIN_CALCULATEONCE'        => 'If you assign products or categories to your coupon, deactivate this option to calculate this coupon to each product per cart position. Activate if the coupon shall be valid only once per cart position.',
 
 'HELP_WRAPPING_MAIN_PICTURE'                  => 'With <span class="navipath_or_inputname">Picture</span> and <span class="navipath_or_inputname">Upload Picture</span> you can upload a picture for the gift wrapping. In <span class="navipath_or_inputname">Upload Picture</span>, select the picture to upload. When clicking on <span class="navipath_or_inputname">Save</span>, the picture is uploaded. After uploading, the filename is shown in <span class="navipath_or_inputname">Picture</span>.',
-
-
-
-'HELP_DYN_TRUSTED_RATINGS_ID'                 => 'You will receive your Trusted Shops ID for Customer Ratings in the order conformation e-mail. If you are already a member of Trusted Shops, please use your known Trusted Shops ID. The green light indicates that the Customer Ratings have been verified and enabled after saving your settings.',
-'HELP_DYN_TRUSTED_RATINGS_WIDGET'             => 'Enable the Customer Ratings Widget by switching this option on.',
-'HELP_DYN_TRUSTED_RATINGS_THANKYOU'           => 'Enable the button "Write a review!" on "Order completed" page subsequent to an order by switching this option on.',
-'HELP_DYN_TRUSTED_RATINGS_ORDEREMAIL'         => 'Enable the button "Write a review!" in "Order confirmation" e-mail subsequent to an order by switching this option on.',
-'HELP_DYN_TRUSTED_RATINGS_ORDERSENDEMAIL'     => 'Enable the button "Write a review!" in "Order sent" e-mail after dispatch of the order.',
-'HELP_DYN_TRUSTED_TSID'                       => 'Trusted Shops ID of the online shop (for language).',
-'HELP_DYN_TRUSTED_USER'                       => 'A user name (wsUser) for the Trusted Shops webservice is required if you offer the Trusted Shops Buyer Protection Excellence to your customers. Buyer Protection Classic does not require a user name.',
-'HELP_DYN_TRUSTED_PASSWORD'                   => 'A password (wsPassword) for the Trusted Shops webservice is required if you offer the Trusted Shops Buyer Protection Excellence to your customers. Buyer Protection Classic does not require a password.',
-'HELP_DYN_TRUSTED_TESTMODUS'                  => 'Test environment ("Sandbox") on. After completion of the certification Trusted Shops will send you login details by e-mail.',
-'HELP_DYN_TRUSTED_ACTIVE'                     => 'Check this option to display the Trusted Shops Seal on shop.',
-'HELP_DYN_TRUSTED_TSPAYMENT'                  => 'Assign the shop offered payment types at the appropriate payment to Trusted Store.',
 
 'HELP_PROMOTIONS_BANNER_PICTUREANDLINK'       => 'Upload banner image and enter banner URL which will be used when clicking on banner. If product is assigned to banner and URL is not entered, link to assigned product will be used when clicking on banner.',
 'HELP_SHOP_PERF_SEO_CACHE'                    => 'Enabled SEO cache increases performance, but requires a lot of disk space in /tmp directory.',

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file is part of OXID eShop Community Edition.
  *
@@ -22,50 +21,12 @@
  */
 
 /**
- * Class for validating address
+ * @inheritdoc
  *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class oxRequiredFieldValidator
+class oxRequiredFieldValidator extends \OxidEsales\Eshop\Application\Model\RequiredFieldValidator
 {
-
-    /**
-     * Validates field value.
-     *
-     * @param string $sFieldValue Field value
-     *
-     * @return bool
-     */
-    public function validateFieldValue($sFieldValue)
-    {
-        $blValid = true;
-        if (is_array($sFieldValue)) {
-            $blValid = $this->_validateFieldValueArray($sFieldValue);
-        } else {
-            if (!trim($sFieldValue)) {
-                $blValid = false;
-            }
-        }
-
-        return $blValid;
-    }
-
-    /**
-     * Checks if all values are filled up
-     *
-     * @param array $aFieldValues field values
-     *
-     * @return bool
-     */
-    private function _validateFieldValueArray($aFieldValues)
-    {
-        $blValid = true;
-        foreach ($aFieldValues as $sValue) {
-            if (!trim($sValue)) {
-                $blValid = false;
-                break;
-            }
-        }
-
-        return $blValid;
-    }
 }

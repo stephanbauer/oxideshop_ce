@@ -21,69 +21,14 @@
  */
 
 /**
- * Extensions sorting list handler.
- * Admin Menu: Extensions -> Module -> Installed Shop Modules.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
+ * @mixin \OxidEsales\EshopEnterprise\Application\Controller\Admin\ModuleSortList
  */
-class Module_SortList extends oxAdminDetails
+class Module_SortList extends \OxidEsales\Eshop\Application\Controller\Admin\ModuleSortList
 {
-
-    /**
-     * Executes parent method parent::render(), loads active and disabled extensions,
-     * checks if there are some deleted and registered modules and returns name of template file "module_sortlist.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        parent::render();
-
-        $oModuleList = oxNew("oxModuleList");
-
-        $this->_aViewData["aExtClasses"] = $this->getConfig()->getModulesWithExtendedClass();
-        $this->_aViewData["aDisabledModules"] = $oModuleList->getDisabledModuleClasses();
-
-        // checking if there are any deleted extensions
-        if (oxRegistry::getSession()->getVariable("blSkipDeletedExtChecking") == false) {
-            $aDeletedExt = $oModuleList->getDeletedExtensions();
-        }
-
-        if (!empty($aDeletedExt)) {
-            $this->_aViewData["aDeletedExt"] = $aDeletedExt;
-        }
-
-        return 'module_sortlist.tpl';
-    }
-
-    /**
-     * Saves updated aModules config var
-     */
-    public function save()
-    {
-        $aModule = oxRegistry::getConfig()->getRequestParameter("aModules");
-
-        $aModules = json_decode($aModule, true);
-
-        $oModuleInstaller = oxNew('oxModuleInstaller');
-        $aModules = $oModuleInstaller->buildModuleChains($aModules);
-
-        $this->getConfig()->saveShopConfVar("aarr", "aModules", $aModules);
-    }
-
-    /**
-     * Removes extension metadata from eShop
-     *
-     * @return null
-     */
-    public function remove()
-    {
-        //if user selected not to update modules, skipping all updates
-        if (oxRegistry::getConfig()->getRequestParameter("noButton")) {
-            oxRegistry::getSession()->setVariable("blSkipDeletedExtChecking", true);
-
-            return;
-        }
-
-        $oModuleList = oxNew("oxModuleList");
-        $oModuleList->cleanup();
-    }
 }

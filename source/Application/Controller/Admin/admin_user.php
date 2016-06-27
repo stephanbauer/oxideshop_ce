@@ -21,18 +21,12 @@
  */
 
 /**
- * Admin user manager.
- * Returns template, that arranges two other templates ("user_list.tpl"
- * and "user_main.tpl") to frame.
- * Admin Menu: User Administration -> Users.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Admin_User extends oxAdminView
+class Admin_User extends \OxidEsales\Eshop\Application\Controller\Admin\AdminUser
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'user.tpl';
 }

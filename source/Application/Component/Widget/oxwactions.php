@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file is part of OXID eShop Community Edition.
  *
@@ -17,80 +16,16 @@
  * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
  *
  * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2015
+ * @copyright (C) OXID eSales AG 2003-2016
  * @version   OXID eShop CE
  */
 
 /**
- * Actions widget.
- * Access actions in tpl.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxwActions extends oxWidget
+class oxwActions extends \OxidEsales\Eshop\Application\Component\Widget\Actions
 {
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'widget/product/action.tpl';
-
-    /**
-     * Are actions on
-     *
-     * @var bool
-     */
-    protected $_blLoadActions = null;
-
-    /**
-     * Returns article list with action articles
-     *
-     * @return object
-     */
-    public function getAction()
-    {
-        $actionId = $this->getViewParameter('action');
-        if ($actionId && $this->_getLoadActionsParam()) {
-            $artList = oxNew('oxarticlelist');
-            $artList->loadActionArticles($actionId);
-            if ($artList->count()) {
-                return $artList;
-            }
-        }
-    }
-
-    /**
-     * Returns if actions are ON
-     *
-     * @return string
-     */
-    protected function _getLoadActionsParam()
-    {
-        $this->_blLoadActions = $this->getConfig()->getConfigParam('bl_perfLoadAktion');
-
-        return $this->_blLoadActions;
-    }
-
-    /**
-     * Returns action name
-     *
-     * @return string
-     */
-    public function getActionName()
-    {
-        $actionId = $this->getViewParameter('action');
-        $action   = oxNew('oxactions');
-        if ($action->load($actionId)) {
-            return $action->oxactions__oxtitle->value;
-        }
-    }
-
-    /**
-     * Returns products list type
-     *
-     * @return string
-     */
-    public function getListType()
-    {
-        return $this->getViewParameter('listtype');
-    }
 }

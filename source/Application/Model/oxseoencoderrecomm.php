@@ -21,79 +21,12 @@
  */
 
 /**
- * Seo encoder base
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class oxSeoEncoderRecomm extends oxSeoEncoder
+class oxSeoEncoderRecomm extends \OxidEsales\Eshop\Application\Model\SeoEncoderRecomm
 {
-    /**
-     * Returns SEO uri for tag.
-     *
-     * @param oxRecommList $oRecomm recommendation list object
-     * @param int          $iLang   language
-     *
-     * @return string
-     */
-    public function getRecommUri($oRecomm, $iLang = null)
-    {
-        if (!($sSeoUrl = $this->_loadFromDb('dynamic', $oRecomm->getId(), $iLang))) {
-            $myConfig = $this->getConfig();
-
-            // fetching part of base url
-            $sSeoUrl = $this->_getStaticUri(
-                $oRecomm->getBaseStdLink($iLang, false),
-                $myConfig->getShopId(),
-                $iLang
-            )
-            . $this->_prepareTitle($oRecomm->oxrecommlists__oxtitle->value, false, $iLang);
-
-            // creating unique
-            $sSeoUrl = $this->_processSeoUrl($sSeoUrl, $oRecomm->getId(), $iLang);
-
-            // inserting
-            $this->_saveToDb('dynamic', $oRecomm->getId(), $oRecomm->getBaseStdLink($iLang), $sSeoUrl, $iLang, $myConfig->getShopId());
-        }
-
-        return $sSeoUrl;
-    }
-
-    /**
-     * Returns full url for passed tag
-     *
-     * @param oxRecommList $oRecomm recommendation list object
-     * @param int          $iLang   language
-     *
-     * @return string
-     */
-    public function getRecommUrl($oRecomm, $iLang = null)
-    {
-        if (!isset($iLang)) {
-            $iLang = oxRegistry::getLang()->getBaseLanguage();
-        }
-
-        return $this->_getFullUrl($this->getRecommUri($oRecomm, $iLang), $iLang);
-    }
-
-    /**
-     * Returns tag SEO url for specified page
-     *
-     * @param oxRecommList $oRecomm recommendation list object
-     * @param int          $iPage   page tu prepare number
-     * @param int          $iLang   language
-     * @param bool         $blFixed fixed url marker (default is false)
-     *
-     * @return string
-     */
-    public function getRecommPageUrl($oRecomm, $iPage, $iLang = null, $blFixed = false)
-    {
-        if (!isset($iLang)) {
-            $iLang = oxRegistry::getLang()->getBaseLanguage();
-        }
-        $sStdUrl = $oRecomm->getBaseStdLink($iLang) . '&amp;pgNr=' . $iPage;
-        $sParams = (int) ($iPage + 1);
-
-        $sStdUrl = $this->_trimUrl($sStdUrl, $iLang);
-        $sSeoUrl = $this->getRecommUri($oRecomm, $iLang) . $sParams . "/";
-
-        return $this->_getFullUrl($this->_getPageUri($oRecomm, 'dynamic', $sStdUrl, $sSeoUrl, $sParams, $iLang, $blFixed), $iLang);
-    }
 }
