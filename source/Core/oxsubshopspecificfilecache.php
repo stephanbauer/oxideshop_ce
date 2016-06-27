@@ -21,44 +21,12 @@
  */
 
 /**
- * Cache for storing module variables selected from database.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
  *
- * @internal Do not make a module extension for this class.
- * @see      http://wiki.oxidforge.org/Tutorials/Core_OXID_eShop_classes:_must_not_be_extended
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxSubShopSpecificFileCache extends oxFileCache
+
+class oxSubShopSpecificFileCache extends \OxidEsales\Eshop\Core\SubShopSpecificFileCache
 {
-    /** @var oxShopIdCalculator */
-    private $shopIdCalculator;
-
-    /**
-     * @param oxShopIdCalculator $shopIdCalculator
-     */
-    public function __construct($shopIdCalculator)
-    {
-        $this->shopIdCalculator = $shopIdCalculator;
-    }
-
-    /**
-     * Returns shopId which should be used for cache file name generation.
-     *
-     * @param string $key
-     *
-     * @return string
-     */
-    protected function getCacheFileName($key)
-    {
-        $name = strtolower(basename($key));
-        $shopId = strtolower(basename($this->getShopIdCalculator()->getShopId()));
-
-        return parent::CACHE_FILE_PREFIX . ".$shopId.$name.txt";
-    }
-
-    /**
-     * @return oxShopIdCalculator
-     */
-    protected function getShopIdCalculator()
-    {
-        return $this->shopIdCalculator;
-    }
 }

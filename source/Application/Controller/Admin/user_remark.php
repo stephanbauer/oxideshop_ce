@@ -21,84 +21,12 @@
  */
 
 /**
- * Admin user history settings manager.
- * Collects user history settings, updates it on user submit, etc.
- * Admin Menu: User Administration -> Users -> History.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class User_Remark extends oxAdminDetails
+class User_Remark extends \OxidEsales\Eshop\Application\Controller\Admin\UserRemark
 {
-
-    /**
-     * Executes parent method parent::render(), creates oxuser, oxlist and
-     * oxRemark objects, passes data to Smarty engine and returns name of
-     * template file "user_remark.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        parent::render();
-
-        $soxId = $this->getEditObjectId();
-        $sRemoxId = oxRegistry::getConfig()->getRequestParameter("rem_oxid");
-        if (isset($soxId) && $soxId != "-1") {
-            // load object
-            $oUser = oxNew("oxuser");
-            $oUser->load($soxId);
-            $this->_aViewData["edit"] = $oUser;
-
-            // all remark
-            $oRems = oxNew("oxlist");
-            $oRems->init("oxremark");
-            $sQuotedUserId = oxDb::getDb()->quote($oUser->getId());
-            $sSelect = "select * from oxremark where oxparentid=" . $sQuotedUserId . " order by oxcreate desc";
-            $oRems->selectString($sSelect);
-            foreach ($oRems as $key => $val) {
-                if ($val->oxremark__oxid->value == $sRemoxId) {
-                    $val->selected = 1;
-                    $oRems[$key] = $val;
-                    break;
-                }
-            }
-
-            $this->_aViewData["allremark"] = $oRems;
-
-            if (isset($sRemoxId)) {
-                $oRemark = oxNew("oxRemark");
-                $oRemark->load($sRemoxId);
-                $this->_aViewData["remarktext"] = $oRemark->oxremark__oxtext->value;
-                $this->_aViewData["remarkheader"] = $oRemark->oxremark__oxheader->value;
-            }
-        }
-
-        return "user_remark.tpl";
-    }
-
-    /**
-     * Saves user history text changes.
-     */
-    public function save()
-    {
-        parent::save();
-
-        $oRemark = oxNew("oxremark");
-
-        // try to load if exists
-        $oRemark->load(oxRegistry::getConfig()->getRequestParameter("rem_oxid"));
-
-        $oRemark->oxremark__oxtext = new oxField(oxRegistry::getConfig()->getRequestParameter("remarktext"));
-        $oRemark->oxremark__oxheader = new oxField(oxRegistry::getConfig()->getRequestParameter("remarkheader"));
-        $oRemark->oxremark__oxparentid = new oxField($this->getEditObjectId());
-        $oRemark->oxremark__oxtype = new oxField("r");
-        $oRemark->save();
-    }
-
-    /**
-     * Deletes user actions history record.
-     */
-    public function delete()
-    {
-        $oRemark = oxNew("oxRemark");
-        $oRemark->delete(oxRegistry::getConfig()->getRequestParameter("rem_oxid"));
-    }
 }

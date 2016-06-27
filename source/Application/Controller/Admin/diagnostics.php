@@ -21,16 +21,12 @@
  */
 
 /**
- * Checks Version of System files.
- * Admin Menu: Service -> Diagnostics Tool.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Diagnostics extends oxAdminView
+class Diagnostics extends \OxidEsales\Eshop\Application\Controller\Admin\DiagnosticsController
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'diagnostics.tpl';
 }

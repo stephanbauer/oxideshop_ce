@@ -21,31 +21,12 @@
  */
 
 /**
- * Admin payment list manager.
- * Performs collection and managing (such as filtering or deleting) function.
- * Admin Menu: Shop Settings -> Payment Methods.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Payment_List extends oxAdminList
+class Payment_List extends \OxidEsales\Eshop\Application\Controller\Admin\PaymentList
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'payment_list.tpl';
-
-    /**
-     * Name of chosen object class (default null).
-     *
-     * @var string
-     */
-    protected $_sListClass = 'oxpayment';
-
-    /**
-     * Default SQL sorting parameter (default null).
-     *
-     * @var string
-     */
-    protected $_sDefSortField = "oxdesc";
 }

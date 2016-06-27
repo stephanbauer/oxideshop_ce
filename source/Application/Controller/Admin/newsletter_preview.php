@@ -21,41 +21,12 @@
  */
 
 /**
- * Newsletter preview manager.
- * Creates plaintext and HTML format newsletter preview.
- * Admin Menu: Customer News -> Newsletter -> Preview.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Newsletter_Preview extends oxAdminDetails
+class Newsletter_Preview extends \OxidEsales\Eshop\Application\Controller\Admin\NewsletterPreview
 {
-
-    /**
-     * Executes parent method parent::render(), creates oxnewsletter object
-     * and passes it's data to Smarty engine, returns name of template file
-     * "newsletter_preview.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        parent::render();
-
-        $soxId = $this->getEditObjectId();
-        if ($soxId != "-1" && isset($soxId)) {
-            // load object
-            $oNewsletter = oxNew("oxnewsletter");
-            $oNewsletter->load($soxId);
-            $this->_aViewData["edit"] = $oNewsletter;
-
-            // user
-            $sUserID = oxRegistry::getSession()->getVariable("auth");
-
-            // assign values to the newsletter and show it
-            $oNewsletter->prepare($sUserID, $this->getConfig()->getConfigParam('bl_perfLoadAktion'));
-
-            $this->_aViewData["previewhtml"] = $oNewsletter->getHtmlText();
-            $this->_aViewData["previewtext"] = $oNewsletter->getPlainText();
-        }
-
-        return "newsletter_preview.tpl";
-    }
 }

@@ -21,24 +21,11 @@
  */
 
 /**
- * Admin theme manager.
- * Returns template, that arranges two other templates ("theme_list.tpl"
- * and "theme_main.tpl") to frame.
- * Admin Menu: Main Menu -> Theme.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class Theme extends oxAdminView
+class Theme extends \OxidEsales\Eshop\Application\Controller\Admin\ThemeController
 {
-
-    /**
-     * Executes parent method parent::render() and returns name of template
-     * file "theme.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        parent::render();
-
-        return "theme.tpl";
-    }
 }

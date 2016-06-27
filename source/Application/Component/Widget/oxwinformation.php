@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file is part of OXID eShop Community Edition.
  *
@@ -22,60 +21,11 @@
  */
 
 /**
- * List of additional shop information links widget.
- * Forms info link list.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxwInformation extends oxWidget
+class oxwInformation extends \OxidEsales\Eshop\Application\Component\Widget\Information
 {
-
-    /**
-     * Current class template name
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'widget/footer/info.tpl';
-
-    /**
-     * @var oxContentList
-     */
-    protected $_oContentList;
-
-    /**
-     * Returns service keys.
-     *
-     * @return array
-     */
-    public function getServicesKeys()
-    {
-        $oContentList = $this->_getContentList();
-
-        return $oContentList->getServiceKeys();
-    }
-
-    /**
-     * Get services content list
-     *
-     * @return array
-     */
-    public function getServicesList()
-    {
-        $oContentList = $this->_getContentList();
-        $oContentList->loadServices();
-
-        return $oContentList;
-    }
-
-    /**
-     * Returns content list object.
-     *
-     * @return object|oxContentList
-     */
-    protected function _getContentList()
-    {
-        if (!$this->_oContentList) {
-            $this->_oContentList = oxNew("oxContentList");
-        }
-
-        return $this->_oContentList;
-    }
 }

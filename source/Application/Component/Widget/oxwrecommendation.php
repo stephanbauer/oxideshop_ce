@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file is part of OXID eShop Community Edition.
  *
@@ -22,52 +21,11 @@
  */
 
 /**
- * Recomendation list.
- * Forms recomendation list.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxwRecommendation extends oxWidget
+class oxwRecommendation extends \OxidEsales\Eshop\Application\Component\Widget\Recommendation
 {
-
-    /**
-     * Names of components (classes) that are initiated and executed
-     * before any other regular operation.
-     * User component used in template.
-     *
-     * @var array
-     */
-    protected $_aComponentNames = array('oxcmp_cur' => 1);
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'widget/sidebar/recommendation.tpl';
-
-    /**
-     * Returns similar recommendation list.
-     *
-     * @return array
-     */
-    public function getSimilarRecommLists()
-    {
-        $aArticleIds = $this->getViewParameter("aArticleIds");
-
-        $oRecommList = oxNew('oxrecommlist');
-        $aRecommList = $oRecommList->getRecommListsByIds($aArticleIds);
-
-        return $aRecommList;
-    }
-
-    /**
-     * Return recomm list object.
-     *
-     * @return object
-     */
-    public function getRecommList()
-    {
-        $oRecommList = oxNew('recommlist');
-
-        return $oRecommList;
-    }
 }

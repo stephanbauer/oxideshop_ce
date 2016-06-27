@@ -44,7 +44,7 @@
                 [{block name="admin_order_overview_deliveryaddress"}]
                     <b>[{oxmultilang ident="GENERAL_DELIVERYADDRESS"}]:</b><br>
                     <br>
-                    [{if $edit->oxorder__oxdelcompany->value}]Firma [{$edit->oxorder__oxdelcompany->value}]<br>[{/if}]
+                    [{if $edit->oxorder__oxdelcompany->value}][{oxmultilang ident="GENERAL_COMPANY"}] [{$edit->oxorder__oxdelcompany->value}]<br>[{/if}]
                     [{if $edit->oxorder__oxdeladdinfo->value}][{$edit->oxorder__oxdeladdinfo->value}]<br>[{/if}]
                     [{$edit->oxorder__oxdelsal->value|oxmultilangsal}] [{$edit->oxorder__oxdelfname->value}] [{$edit->oxorder__oxdellname->value}]<br>
                     [{$edit->oxorder__oxdelstreet->value}] [{$edit->oxorder__oxdelstreetnr->value}]<br>
@@ -165,13 +165,6 @@
                 <tr>
                 <td class="edittext" height="15">[{oxmultilang ident="GENERAL_CARD"}]&nbsp;[{if $giftCard}]([{$giftCard->oxwrapping__oxname->value}])[{/if}]&nbsp;</td>
                 <td class="edittext" align="right"><b>[{$edit->getFormattedGiftCardCost()}]</b></td>
-                <td class="edittext">&nbsp;<b>[{if $edit->oxorder__oxcurrency->value}] [{$edit->oxorder__oxcurrency->value}] [{else}] [{$currency->name}] [{/if}]</b></td>
-                </tr>
-                [{/if}]
-                [{if $edit->oxorder__oxtsprotectid->value}]
-                <tr>
-                <td class="edittext" height="15">[{oxmultilang ident=ORDER_OVERVIEW_PROTECTION}]&nbsp;</td>
-                <td class="edittext" align="right"><b>[{$tsprotectcosts}]</b></td>
                 <td class="edittext">&nbsp;<b>[{if $edit->oxorder__oxcurrency->value}] [{$edit->oxorder__oxcurrency->value}] [{else}] [{$currency->name}] [{/if}]</b></td>
                 </tr>
                 [{/if}]

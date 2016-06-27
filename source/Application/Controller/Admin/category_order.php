@@ -21,46 +21,12 @@
  */
 
 /**
- * Admin article categories order manager.
- * There is possibility to change category sorting.
- * Admin Menu: Manage Products -> Categories -> Order.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Category_Order extends oxAdminDetails
+class Category_Order extends \OxidEsales\Eshop\Application\Controller\Admin\CategoryOrder
 {
-
-    /**
-     * Loads article category ordering info, passes it to Smarty
-     * engine and returns name of template file "category_order.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        parent::render();
-
-        $this->_aViewData['edit'] = $oCategory = oxNew('oxCategory');
-
-        // resetting
-        oxRegistry::getSession()->setVariable('neworder_sess', null);
-
-        $soxId = $this->getEditObjectId();
-
-        if (isset($soxId) && $soxId != "-1") {
-            // load object
-            $oCategory->load($soxId);
-
-            //Disable editing for derived items
-            if ($oCategory->isDerived()) {
-                $this->_aViewData['readonly'] = true;
-            }
-        }
-        if (oxRegistry::getConfig()->getRequestParameter("aoc")) {
-            $oCategoryOrderAjax = oxNew('category_order_ajax');
-            $this->_aViewData['oxajax'] = $oCategoryOrderAjax->getColumns();
-
-            return "popups/category_order.tpl";
-        }
-
-        return "category_order.tpl";
-    }
 }

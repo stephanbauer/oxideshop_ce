@@ -21,53 +21,12 @@
  */
 
 /**
- * Class makes call to given URL address and sends request parameter.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
  *
- * The Online Module Version Notification is used for checking if newer versions of modules are available.
- * Will be used by the upcoming online one click installer.
- * Is still under development - still changes at the remote server are necessary - therefore ignoring the results for now
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  *
- * @internal Do not make a module extension for this class.
- * @see      http://wiki.oxidforge.org/Tutorials/Core_OXID_eShop_classes:_must_not_be_extended
- *
- * @ignore   This class will not be included in documentation.
  */
-class oxOnlineModuleVersionNotifierCaller extends oxOnlineCaller
+
+class oxOnlineModuleVersionNotifierCaller extends \OxidEsales\Eshop\Core\OnlineModuleVersionNotifierCaller
 {
-
-    /** Online Module Version Notifier web service url. */
-    const WEB_SERVICE_URL = 'https://omvn.oxid-esales.com/check.php';
-
-    /** XML document tag name. */
-    const XML_DOCUMENT_NAME = 'omvnRequest';
-
-    /**
-     * Performs Web service request
-     *
-     * @param oxOnlineModulesNotifierRequest $oRequest Object with request parameters
-     */
-    public function doRequest(oxOnlineModulesNotifierRequest $oRequest)
-    {
-        $this->call($oRequest);
-    }
-
-    /**
-     * Gets XML document name.
-     *
-     * @return string XML document tag name.
-     */
-    protected function _getXMLDocumentName()
-    {
-        return self::XML_DOCUMENT_NAME;
-    }
-
-    /**
-     * Gets service url.
-     *
-     * @return string Web service url.
-     */
-    protected function _getServiceUrl()
-    {
-        return self::WEB_SERVICE_URL;
-    }
 }

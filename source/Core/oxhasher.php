@@ -21,17 +21,11 @@
  */
 
 /**
- * Hasher abstract class
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-abstract class oxHasher
+abstract class oxHasher extends \OxidEsales\Eshop\Core\Hasher
 {
-
-    /**
-     * Hash string.
-     *
-     * @param string $sString string for hashing.
-     *
-     * @return string
-     */
-    abstract public function hash($sString);
 }

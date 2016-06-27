@@ -20,11 +20,11 @@
 !/source/tmp/.htaccess
 
 # Composer
-/source/vendor/
-/source/composer.lock
+/vendor/
+/composer.lock
 
 # Testing library
-/source/test_config.yml
+/test_config.yml
 /source/Services/
 
 # Editions

@@ -21,43 +21,12 @@
  */
 
 /**
- * Simple variant list.
+ * @inheritdoc
  *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class oxSimpleVariantList extends oxList
+class oxSimpleVariantList extends \OxidEsales\Eshop\Application\Model\SimpleVariantList
 {
-
-    /**
-     * Parent article for list variants
-     */
-    protected $_oParent = null;
-
-    /**
-     * List Object class name
-     *
-     * @var string
-     */
-    protected $_sObjectsInListName = 'oxsimplevariant';
-
-    /**
-     * Sets parent variant
-     *
-     * @param oxArticle $oParent Parent article
-     */
-    public function setParent($oParent)
-    {
-        $this->_oParent = $oParent;
-    }
-
-    /**
-     * Sets parent for variant. This method is invoked for each element in oxList::assign() loop.
-     *
-     * @param oxSimleVariant $oListObject Simple variant
-     * @param array          $aDbFields   Array of available
-     */
-    protected function _assignElement($oListObject, $aDbFields)
-    {
-        $oListObject->setParent($this->_oParent);
-        parent::_assignElement($oListObject, $aDbFields);
-    }
 }

@@ -20,63 +20,12 @@
  * @version   OXID eShop CE
  */
 
-
 /**
- * Company VAT identification number checker. Check if number belongs to the country.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxCompanyVatInCountryChecker extends oxCompanyVatInChecker implements oxICountryAware
+class oxCompanyVatInCountryChecker extends \OxidEsales\Eshop\Core\CompanyVatInCountryChecker
 {
-
-    /**
-     * Error string if country mismatch
-     */
-    const ERROR_ID_NOT_VALID = 'ID_NOT_VALID';
-
-    /**
-     * Country
-     *
-     * @var oxCountry
-     */
-    private $_oCountry = null;
-
-    /**
-     * Country setter
-     *
-     * @param oxCountry $oCountry
-     */
-    public function setCountry(oxCountry $oCountry)
-    {
-        $this->_oCountry = $oCountry;
-    }
-
-    /**
-     * Country getter
-     *
-     * @return oxCountry
-     */
-    public function getCountry()
-    {
-        return $this->_oCountry;
-    }
-
-    /**
-     * Validates.
-     *
-     * @param oxCompanyVatIn $oVatIn
-     *
-     * @return bool
-     */
-    public function validate(oxCompanyVatIn $oVatIn)
-    {
-        $blResult = false;
-        $oCountry = $this->getCountry();
-        if (!is_null($oCountry)) {
-            $blResult = ($oCountry->getVATIdentificationNumberPrefix() === $oVatIn->getCountryCode());
-            if (!$blResult) {
-                $this->setError(self::ERROR_ID_NOT_VALID);
-            }
-        }
-
-        return $blResult;
-    }
 }

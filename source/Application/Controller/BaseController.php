@@ -15,9 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @link      http://www.oxid-esales.com
+ * @link          http://www.oxid-esales.com
  * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * @version       OXID eShop CE
  */
 namespace OxidEsales\Eshop\Application\Controller;
 
@@ -28,6 +28,9 @@ use oxCategory;
 use oxCategoryList;
 use oxContent;
 use oxDb;
+use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\Eshop\Core\Request;
+use OxidEsales\Eshop\Core\Str;
 use oxManufacturer;
 use oxManufacturerList;
 use oxPrice;
@@ -51,13 +54,6 @@ define('VIEW_INDEXSTATE_NOINDEXFOLLOW', 2); //  no index / follow
  */
 class BaseController extends \oxView
 {
-    /**
-     * Facebook widget status marker
-     *
-     * @var bool
-     */
-    protected $_blFbWidgetsOn = null;
-
     /**
      * Characters which should be removed while preparing meta keywords
      *
@@ -315,7 +311,9 @@ class BaseController extends \oxView
         'oxcmp_shop'       => 1,
         'oxcmp_categories' => 0,
         'oxcmp_utils'      => 1,
-        'oxcmp_news'       => 0,
+        // @deprecated since v.5.3.0 (2016-06-17); The Admin Menu: Customer Info -> News feature will be moved to a module in v6.0.0
+        'oxcmp_news' => 0,
+        // END deprecated
         'oxcmp_basket'     => 1
     );
 
@@ -375,7 +373,7 @@ class BaseController extends \oxView
     /** @var string Manufacturer id. */
     protected $_sManufacturerId = null;
 
-    /** @var bool Has user news subscribed. */
+    /** @var bool Has user newsletter subscribed. */
     protected $_blNewsSubscribed = null;
 
     /** @var oxAddress Delivery address. */
@@ -396,7 +394,11 @@ class BaseController extends \oxView
     /** @var array check all "must-be-fields" if they are completely. */
     protected $_aMustFillFields = null;
 
-    /** @var bool Show tags cloud. */
+    /**
+     * @var bool Show tags cloud.
+     *
+     * @deprecated v5.3 (2016-05-04); Tags will be moved to own module.
+     */
     protected $_blShowTagCloud = true;
 
     /** @var bool If active root category was changed. */
@@ -426,7 +428,11 @@ class BaseController extends \oxView
     /** @var integer Number of possible pages. */
     protected $_iCntPages = null;
 
-    /** @var stdClass Active tag. */
+    /**
+     * @var stdClass Active tag.
+     *
+     * @deprecated v5.3 (2016-05-04); Tags will be moved to own module.
+     */
     protected $_oActTag = null;
 
     /** @var string Form id. */
@@ -908,22 +914,24 @@ class BaseController extends \oxView
     public function getUserSelectedSorting()
     {
         $sorting = null;
-        $stringModifier = getStr();
-        $config = oxRegistry::getConfig();
         $sortDirections = array('desc', 'asc');
 
-        $sortBy = $config->getRequestParameter($this->getSortOrderByParameterName());
-        $sortOrder = $config->getRequestParameter($this->getSortOrderParameterName());
+        $request = Registry::get(Request::class);
+        $sortBy = $request->getRequestParameter($this->getSortOrderByParameterName());
+        $sortOrder = $request->getRequestParameter($this->getSortOrderParameterName());
 
-        if ($sortBy && oxDb::getInstance()->isValidFieldName($sortBy) && $sortOrder &&
-            oxRegistry::getUtils()->isValidAlpha($sortOrder) && in_array($stringModifier->strtolower($sortOrder), $sortDirections)
+        if ($sortBy &&
+            oxDb::getInstance()->isValidFieldName($sortBy) &&
+            $sortOrder &&
+            Registry::getUtils()->isValidAlpha($sortOrder) &&
+            in_array(Str::getStr()->strtolower($sortOrder), $sortDirections) &&
+            in_array($sortBy, oxNew('oxArticle')->getFieldNames())
         ) {
             $sorting = array('sortby' => $sortBy, 'sortdir' => $sortOrder);
         }
 
         return $sorting;
     }
-
 
     /**
      * Returns sorting variable from session
@@ -1368,7 +1376,9 @@ class BaseController extends \oxView
 
         $params['searchrecomm'] = $config->getRequestParameter('searchrecomm', true);
         $params['searchparam'] = $config->getRequestParameter('searchparam', true);
+        // @deprecated v5.3 (2016-05-04); Tags will be moved to own module.
         $params['searchtag'] = $config->getRequestParameter('searchtag', true);
+        // END deprecated
 
         $params['searchvendor'] = $config->getRequestParameter('searchvendor');
         $params['searchcnid'] = $config->getRequestParameter('searchcnid');
@@ -1530,12 +1540,14 @@ class BaseController extends \oxView
                     $result .= '&amp;searchmanufacturer=' . rawurlencode(rawurldecode($var));
                 }
                 break;
+            // @deprecated v5.3 (2016-05-04); Will be moved to own module.
             case 'tag':
                 $result .= "&amp;listtype={$listType}";
                 if ($param = rawurlencode($config->getRequestParameter('searchtag', true))) {
                     $result .= "&amp;searchtag={$param}";
                 }
                 break;
+            // END deprecated
         }
 
         return $result;
@@ -1684,11 +1696,11 @@ class BaseController extends \oxView
         if ($value = oxRegistry::getConfig()->getRequestParameter('searchrecomm')) {
             $url .= "&amp;searchrecomm={$value}";
         }
-
+        // @deprecated v5.3 (2016-05-04); Will be moved to own module.
         if ($value = oxRegistry::getConfig()->getRequestParameter('searchtag')) {
             $url .= "&amp;searchtag={$value}";
         }
-
+        // END deprecated
         if ($value = oxRegistry::getConfig()->getRequestParameter('recommid')) {
             $url .= "&amp;recommid={$value}";
         }
@@ -1789,6 +1801,8 @@ class BaseController extends \oxView
 
     /**
      * Returns if tags will be edit
+     *
+     * @deprecated v5.3 (2016-05-04); Tags will be moved to own module.
      */
     public function getEditTags()
     {
@@ -1877,23 +1891,27 @@ class BaseController extends \oxView
 
     /**
      * Returns active lang suffix
-     *
+     * usally it used in html lang attr to allow the browser to interpret the page in the right language
+     * e.g. to support hyphons
      * @return string
      */
     public function getActiveLangAbbr()
     {
-        // Performance
-        if (!$this->getConfig()->getConfigParam('bl_perfLoadLanguages')) {
-            return;
-        }
-
         if (!isset($this->_sActiveLangAbbr)) {
-            $languages = oxRegistry::getLang()->getLanguageArray();
-            while (list($key, $language) = each($languages)) {
-                if ($language->selected) {
-                    $this->_sActiveLangAbbr = $language->abbr;
-                    break;
+            $languageService = oxRegistry::getLang();
+            if ($this->getConfig()->getConfigParam('bl_perfLoadLanguages')) {
+                $languages = $languageService->getLanguageArray();
+                while (list($key, $language) = each($languages)) {
+                    if ($language->selected) {
+                        $this->_sActiveLangAbbr = $language->abbr;
+                        break;
+                    }
                 }
+            } else {
+                // Performance
+                // use oxid shop internal languageAbbr, this might be correct in the most cases but not guaranteed to be that
+                // configured in the admin backend for that language
+                $this->_sActiveLangAbbr = $languageService->getLanguageAbbr();
             }
         }
 
@@ -1933,9 +1951,11 @@ class BaseController extends \oxView
             if (isset($searchParamForLink)) {
                 $this->_sAdditionalParams .= "&amp;searchparam={$searchParamForLink}";
             }
+            // @deprecated v5.3 (2016-05-04); Will be moved to own module.
             if (($value = oxRegistry::getConfig()->getRequestParameter('searchtag'))) {
                 $this->_sAdditionalParams .= '&amp;searchtag=' . rawurlencode(rawurldecode($value));
             }
+            // END deprecated
             if (($value = oxRegistry::getConfig()->getRequestParameter('searchcnid'))) {
                 $this->_sAdditionalParams .= '&amp;searchcnid=' . rawurlencode(rawurldecode($value));
             }
@@ -1998,7 +2018,6 @@ class BaseController extends \oxView
      */
     public function getPageNavigation()
     {
-
     }
 
     /**
@@ -2059,7 +2078,7 @@ class BaseController extends \oxView
                 $startNo = 2;
                 $finishNo = $tmpVal + 1;
                 // actual page is at the end
-            } elseif ($pageNavigation->actPage >= $pageNavigation->NrOfPages - $tmpVal) {
+            } elseif ($pageNavigation->actPage >= $pageNavigation->NrOfPages - $tmpVal + 1) {
                 $startNo = $pageNavigation->NrOfPages - $tmpVal;
                 $finishNo = $pageNavigation->NrOfPages - 1;
                 // actual page is in the middle
@@ -2172,6 +2191,8 @@ class BaseController extends \oxView
      * Active tag info object getter. Object properties:
      *  - sTag current tag
      *  - link link leading to tag article list
+     *
+     * @deprecated v5.3 (2016-05-04); Tags will be moved to own module.
      *
      * @return stdClass
      */
@@ -2626,7 +2647,7 @@ class BaseController extends \oxView
     }
 
     /**
-     * Form id getter. This id used to prevent double guestbook, review entry submit
+     * Form id getter. This id used to prevent double review entry submit
      *
      * @return string
      */
@@ -2726,7 +2747,7 @@ class BaseController extends \oxView
         $this->_blShowPromotions = false;
         if (oxNew('oxActionList')->areAnyActivePromotions()) {
             $this->_blShowPromotions = (count($this->getPromoFinishedList()) + count($this->getPromoCurrentList()) +
-                    count($this->getPromoFutureList())) > 0;
+                                        count($this->getPromoFutureList())) > 0;
         }
 
         return $this->_blShowPromotions;
@@ -2925,23 +2946,6 @@ class BaseController extends \oxView
     }
 
     /**
-     * Returns TRUE if facebook widgets are on
-     *
-     * @return boolean
-     */
-    public function isFbWidgetVisible()
-    {
-        if ($this->_blFbWidgetsOn === null) {
-            $utils = oxRegistry::get("oxUtilsServer");
-
-            // reading ..
-            $this->_blFbWidgetsOn = (bool) $utils->getOxCookie("fbwidgetson");
-        }
-
-        return $this->_blFbWidgetsOn;
-    }
-
-    /**
      * Checks if downloadable files are turned on
      *
      * @return bool
@@ -2996,6 +3000,8 @@ class BaseController extends \oxView
 
     /**
      * Returns true if tags are ON
+     *
+     * @deprecated v5.3 (2016-05-04); Tags will be moved to own module.
      *
      * @return boolean
      */

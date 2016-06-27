@@ -21,109 +21,11 @@
  */
 
 /**
- * Cache for storing module variables selected from database.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
  *
- * @internal Do not make a module extension for this class.
- * @see      http://wiki.oxidforge.org/Tutorials/Core_OXID_eShop_classes:_must_not_be_extended
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxFileCache
+class oxFileCache extends \OxidEsales\Eshop\Core\FileCache
 {
-    /** Cache file prefix */
-    const CACHE_FILE_PREFIX = "config";
-
-    /**
-     * Returns cached item value by given key.
-     * This method is independent from oxConfig class and does not use database.
-     *
-     * @param string $key cached item key.
-     *
-     * @return mixed
-     */
-    public function getFromCache($key)
-    {
-        $fileName = $this->getCacheFilePath($key);
-        $value = null;
-        if (is_readable($fileName)) {
-            $value = file_get_contents($fileName);
-            if ($value == serialize(false)) {
-                return false;
-            }
-
-            $value = unserialize($value);
-            if ($value === false) {
-                $value = null;
-            }
-        }
-
-        return $value;
-    }
-
-    /**
-     * Caches item value by given key.
-     *
-     * @param string $key   cached item key.
-     * @param mixed  $value
-     */
-    public function setToCache($key, $value)
-    {
-        $sFileName = $this->getCacheFilePath($key);
-        file_put_contents($sFileName, serialize($value), LOCK_EX);
-    }
-
-    /**
-     * Clears all cache by deleting cached files.
-     */
-    public static function clearCache()
-    {
-        $tempDirectory = oxRegistry::get("oxConfigFile")->getVar("sCompileDir");
-        $mask = $tempDirectory . "/" . self::CACHE_FILE_PREFIX . ".*.txt";
-        $files = glob($mask);
-        if (is_array($files)) {
-            foreach ($files as $file) {
-                if (is_file($file)) {
-                    @unlink($file);
-                }
-            }
-        }
-    }
-
-    /**
-     * Returns module file cache name.
-     *
-     * @param string $key cached item key. Will be used for file name generation.
-     *
-     * @return string
-     */
-    protected function getCacheFilePath($key)
-    {
-        $sFileName = $this->getCacheDir() . "/" . $this->getCacheFileName($key);
-
-        return $sFileName;
-    }
-
-    /**
-     * Returns cache directory.
-     *
-     * @return string
-     */
-    protected function getCacheDir()
-    {
-        $sDir = oxRegistry::get("oxConfigFile")->getVar("sCompileDir");
-
-        return $sDir;
-    }
-
-    /**
-     * Returns shopId which should be used for cache file name generation.
-     *
-     * @param string $key
-     *
-     * @return string
-     */
-    protected function getCacheFileName($key)
-    {
-        $name = strtolower(basename($key));
-
-        return self::CACHE_FILE_PREFIX .".all.$name.txt";
-    }
 }

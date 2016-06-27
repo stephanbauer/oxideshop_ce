@@ -21,42 +21,12 @@
  */
 
 /**
- * Admin general export manager.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class GenExport_Main extends DynExportBase
+class GenExport_Main extends \OxidEsales\Eshop\Application\Controller\Admin\GenricExportMain
 {
-
-    /**
-     * Export class name
-     *
-     * @var string
-     */
-    public $sClassDo = "genExport_do";
-
-    /**
-     * Export ui class name
-     *
-     * @var string
-     */
-    public $sClassMain = "genExport_main";
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = "dyn_exportdefault.tpl";
-
-    /**
-     * Creates shop object, passes shop data to Smarty engine and returns name of
-     * template file
-     *
-     * @return string
-     */
-    public function render()
-    {
-        $this->createMainExportView();
-
-        return parent::render();
-    }
 }

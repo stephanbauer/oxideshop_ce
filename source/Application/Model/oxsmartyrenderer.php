@@ -21,31 +21,12 @@
  */
 
 /**
- * Smarty renderer class
- * Renders smarty template with given parameters and returns rendered body.
+ * @inheritdoc
  *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class oxSmartyRenderer
+class oxSmartyRenderer extends \OxidEsales\Eshop\Application\Model\SmartyRenderer
 {
-
-    /**
-     * Template renderer
-     *
-     * @param string $sTemplateName Template name.
-     * @param array  $aViewData     Array of view data (optional).
-     *
-     * @return string
-     */
-    public function renderTemplate($sTemplateName, $aViewData = array())
-    {
-        $oSmarty = oxRegistry::get("oxUtilsView")->getSmarty();
-
-        foreach ($aViewData as $key => $value) {
-            $oSmarty->assign($key, $value);
-        }
-
-        $sBody = $oSmarty->fetch($sTemplateName);
-
-        return $sBody;
-    }
 }

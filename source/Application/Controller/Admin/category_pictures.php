@@ -21,31 +21,12 @@
  */
 
 /**
- * Admin article categories thumbnail manager.
- * Category thumbnail manager (Previews assigned pictures).
- * Admin Menu: Manage Products -> Categories -> Thumbnail.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Category_Pictures extends oxAdminDetails
+class Category_Pictures extends \OxidEsales\Eshop\Application\Controller\Admin\CategoryPictures
 {
-
-    /**
-     * Loads category object, passes it to Smarty engine and returns name
-     * of template file "category_pictures.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        parent::render();
-
-        $this->_aViewData['edit'] = $oCategory = oxNew('oxCategory');
-
-        $soxId = $this->getEditObjectId();
-        if (isset($soxId) && $soxId != '-1') {
-            // load object
-            $oCategory->load($soxId);
-        }
-
-        return "category_pictures.tpl";
-    }
 }

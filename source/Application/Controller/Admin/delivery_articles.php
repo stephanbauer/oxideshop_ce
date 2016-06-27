@@ -20,55 +20,13 @@
  * @version   OXID eShop CE
  */
 
-
 /**
- * Admin article main delivery manager.
- * There is possibility to change delivery name, article, user
- * and etc.
- * Admin Menu: Shop settings -> Shipping & Handling -> Main.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Delivery_Articles extends oxAdminDetails
+class delivery_articles extends \OxidEsales\Eshop\Application\Controller\Admin\DeliveryArticles
 {
-
-    /**
-     * Executes parent method parent::render(), creates delivery category tree,
-     * passes data to Smarty engine and returns name of template file "delivery_main.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        parent::render();
-
-        $soxId = $this->getEditObjectId();
-
-        if (isset($soxId) && $soxId != "-1") {
-            $this->_createCategoryTree("artcattree");
-
-            // load object
-            $oDelivery = oxNew("oxdelivery");
-            $oDelivery->load($soxId);
-            $this->_aViewData["edit"] = $oDelivery;
-
-            //Disable editing for derived articles
-            if ($oDelivery->isDerived()) {
-                $this->_aViewData['readonly'] = true;
-            }
-        }
-
-        $iAoc = oxRegistry::getConfig()->getRequestParameter("aoc");
-        if ($iAoc == 1) {
-            $oDeliveryArticlesAjax = oxNew('delivery_articles_ajax');
-            $this->_aViewData['oxajax'] = $oDeliveryArticlesAjax->getColumns();
-
-            return "popups/delivery_articles.tpl";
-        } elseif ($iAoc == 2) {
-            $oDeliveryCategoriesAjax = oxNew('delivery_categories_ajax');
-            $this->_aViewData['oxajax'] = $oDeliveryCategoriesAjax->getColumns();
-
-            return "popups/delivery_categories.tpl";
-        }
-
-        return "delivery_articles.tpl";
-    }
 }

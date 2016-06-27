@@ -21,56 +21,12 @@
  */
 
 /**
- * Admin article main pricealarm manager.
- * Performs collection and updatind (on user submit) main item information.
- * Admin Menu: Customer News -> pricealarm -> Main.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class PriceAlarm_Mail extends oxAdminDetails
+class PriceAlarm_Mail extends \OxidEsales\Eshop\Application\Controller\Admin\PriceAlarmMail
 {
-
-    /**
-     * Executes parent method parent::render(), creates oxpricealarm object
-     * and passes it's data to Smarty engine. Returns name of template file
-     * "pricealarm_main.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        $config = $this->getConfig();
-
-        parent::render();
-
-        $shopId = $config->getShopId();
-        //articles price in subshop and baseshop can be different
-        $this->_aViewData['iAllCnt'] = 0;
-        $query = "
-            SELECT oxprice, oxartid
-            FROM oxpricealarm
-            WHERE oxsended = '000-00-00 00:00:00' AND oxshopid = '$shopId' ";
-        $result = oxDb::getDb()->execute($query);
-        if ($result != false && $result->recordCount() > 0) {
-            $simpleCache = array();
-            while (!$result->EOF) {
-                $price = $result->fields[0];
-                $articleId = $result->fields[1];
-                if (isset($simpleCache[$articleId])) {
-                    if ($simpleCache[$articleId] <= $price) {
-                        $this->_aViewData['iAllCnt'] += 1;
-                    }
-                } else {
-                    $article = oxNew("oxArticle");
-                    if ($article->load($articleId)) {
-                        $articlePrice = $simpleCache[$articleId] = $article->getPrice()->getBruttoPrice();
-                        if ($articlePrice <= $price) {
-                            $this->_aViewData['iAllCnt'] += 1;
-                        }
-                    }
-                }
-                $result->moveNext();
-            }
-        }
-
-        return "pricealarm_mail.tpl";
-    }
 }

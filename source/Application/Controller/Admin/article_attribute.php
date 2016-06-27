@@ -21,49 +21,12 @@
  */
 
 /**
- * Admin article attributes/selections lists manager.
- * Collects available attributes/selections lists for chosen article, may add
- * or remove any of them to article, etc.
- * Admin Menu: Manage Products -> Articles -> Selection.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Article_Attribute extends oxAdminDetails
+class Article_Attribute extends \OxidEsales\Eshop\Application\Controller\Admin\ArticleAttribute
 {
-
-    /**
-     * Collects article attributes and selection lists, passes them to Smarty engine,
-     * returns name of template file "article_attribute.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        parent::render();
-
-        $this->_aViewData['edit'] = $oArticle = oxNew('oxArticle');
-
-        $soxId = $this->getEditObjectId();
-        if (isset($soxId) && $soxId != "-1") {
-            // load object
-            $oArticle->load($soxId);
-
-            if ($oArticle->isDerived()) {
-                $this->_aViewData["readonly"] = true;
-            }
-        }
-
-        $iAoc = oxRegistry::getConfig()->getRequestParameter("aoc");
-        if ($iAoc == 1) {
-            $oArticleAttributeAjax = oxNew('article_attribute_ajax');
-            $this->_aViewData['oxajax'] = $oArticleAttributeAjax->getColumns();
-
-            return "popups/article_attribute.tpl";
-        } elseif ($iAoc == 2) {
-            $oArticleSelectionAjax = oxNew('article_selection_ajax');
-            $this->_aViewData['oxajax'] = $oArticleSelectionAjax->getColumns();
-
-            return "popups/article_selection.tpl";
-        }
-
-        return "article_attribute.tpl";
-    }
 }

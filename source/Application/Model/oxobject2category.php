@@ -21,64 +21,14 @@
  */
 
 /**
- * Manages product assignment to category.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
+ * @mixin \OxidEsales\EshopEnterprise\Application\Model\Object2Category
  */
-class oxObject2Category extends oxBase
+class oxObject2Category extends \OxidEsales\Eshop\Application\Model\Object2Category
 {
-
-    /**
-     * Current class name
-     *
-     * @var string
-     */
-    protected $_sClassName = 'oxobject2category';
-
-    /**
-     * Class constructor, initiates parent constructor (parent::oxBase()) and sets table name.
-     */
-    public function __construct()
-    {
-        parent::__construct();
-        $this->init('oxobject2category');
-    }
-
-    /**
-     * Returns assigned product id
-     *
-     * @return string
-     */
-    public function getProductId()
-    {
-        return $this->oxobject2category__oxobjectid->value;
-    }
-
-    /**
-     * Sets assigned product id
-     *
-     * @param string $sId assigned product id
-     */
-    public function setProductId($sId)
-    {
-        $this->oxobject2category__oxobjectid = new oxField($sId);
-    }
-
-    /**
-     * Returns assigned category id
-     *
-     * @return string
-     */
-    public function getCategoryId()
-    {
-        return $this->oxobject2category__oxcatnid->value;
-    }
-
-    /**
-     * Sets assigned category id
-     *
-     * @param string $sId assigned category id
-     */
-    public function setCategoryId($sId)
-    {
-        $this->oxobject2category__oxcatnid = new oxField($sId);
-    }
 }

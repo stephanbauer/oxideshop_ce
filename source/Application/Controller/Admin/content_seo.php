@@ -21,41 +21,12 @@
  */
 
 /**
- * Content seo config class
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Content_Seo extends Object_Seo
+class Content_Seo extends \OxidEsales\Eshop\Application\Controller\Admin\ContentSeo
 {
-
-    /**
-     * Returns url type
-     *
-     * @return string
-     */
-    protected function _getType()
-    {
-        return 'oxcontent';
-    }
-
-    /**
-     * Returns current object type seo encoder object
-     *
-     * @return oxSeoEncoderContent
-     */
-    protected function _getEncoder()
-    {
-        return oxRegistry::get("oxSeoEncoderContent");
-    }
-
-    /**
-     * Returns seo uri
-     *
-     * @return string
-     */
-    public function getEntryUri()
-    {
-        $oContent = oxNew('oxcontent');
-        if ($oContent->load($this->getEditObjectId())) {
-            return $this->_getEncoder()->getContentUri($oContent, $this->getEditLang());
-        }
-    }
 }

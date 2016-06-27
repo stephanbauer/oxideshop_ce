@@ -21,16 +21,12 @@
  */
 
 /**
- * Collects System information.
- * Admin Menu: Service -> System Requirements.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class sysreq extends oxAdminView
+class sysreq extends \OxidEsales\Eshop\Application\Controller\Admin\SystemRequirements
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'sysreq.tpl';
 }

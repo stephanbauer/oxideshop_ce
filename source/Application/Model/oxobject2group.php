@@ -21,49 +21,12 @@
  */
 
 /**
- * Manages object (users, discounts, deliveries...) assignment to groups.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class oxObject2Group extends oxBase
+class oxObject2Group extends \OxidEsales\Eshop\Application\Model\Object2Group
 {
-    /**
-     * Load the relation even if from other shop
-     *
-     * @var boolean
-     */
-    protected $_blDisableShopCheck = true;
-
-    /**
-     * Current class name
-     *
-     * @var string
-     */
-    protected $_sClassName = 'oxobject2group';
-
-    /**
-     * Class constructor, initiates parent constructor (parent::oxBase()).
-     */
-    public function __construct()
-    {
-        parent::__construct();
-        $this->init('oxobject2group');
-        $this->oxobject2group__oxshopid = new oxField($this->getConfig()->getShopId(), oxField::T_RAW);
-    }
-
-    /**
-     * Extends the default save method.
-     * Saves only if this kind of entry do not exists.
-     *
-     * @return bool
-     */
-    public function save()
-    {
-        $oDb = oxDb::getDb();
-        $sQ = "select 1 from oxobject2group where oxgroupsid = " . $oDb->quote($this->oxobject2group__oxgroupsid->value);
-        $sQ .= " and oxobjectid = " . $oDb->quote($this->oxobject2group__oxobjectid->value);
-
-        // does not exist
-        if (!$oDb->getOne($sQ, false, false)) {
-            return parent::save();
-        }
-    }
 }

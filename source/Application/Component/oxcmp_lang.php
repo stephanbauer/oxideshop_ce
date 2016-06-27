@@ -21,39 +21,11 @@
  */
 
 /**
- * Shop language manager.
- * Performs language manager function: changes template settings, modifies URL's.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
  *
- * @subpackage oxcmp
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxcmp_lang extends oxView
+class oxcmp_lang extends \OxidEsales\Eshop\Application\Component\LanguageComponent
 {
-
-    /**
-     * Marking object as component
-     *
-     * @var bool
-     */
-    protected $_blIsComponent = true;
-
-    /**
-     * Executes parent::render() and returns array with languages.
-     *
-     * @return array $this->aLanguages languages
-     */
-    public function render()
-    {
-        parent::render();
-
-        // Performance
-        if ($this->getConfig()->getConfigParam('bl_perfLoadLanguages')) {
-            $aLanguages = oxRegistry::getLang()->getLanguageArray(null, true, true);
-            reset($aLanguages);
-            while (list($sKey, $oVal) = each($aLanguages)) {
-                $aLanguages[$sKey]->link = $this->getConfig()->getTopActiveView()->getLink($oVal->id);
-            }
-
-            return $aLanguages;
-        }
-    }
 }

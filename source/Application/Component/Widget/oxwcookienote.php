@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file is part of OXID eShop Community Edition.
  *
@@ -22,42 +21,11 @@
  */
 
 /**
- * Cookie note widget
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxwCookieNote extends oxWidget
+class oxwCookieNote extends \OxidEsales\Eshop\Application\Component\Widget\CookieNote
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'widget/header/cookienote.tpl';
-
-    /**
-     * Executes parent::render(). Check if need to hide cookie note.
-     * Returns name of template file to render.
-     *
-     * @return  string  current template file name
-     */
-    public function render()
-    {
-        parent::render();
-
-        return $this->_sThisTemplate;
-    }
-
-    /**
-     * Return if cookie notification is enabled by config.
-     *
-     * @return boolean
-     */
-    public function isEnabled()
-    {
-        if ($this->getConfig()->getConfigParam('blShowCookiesNotification')) {
-            return true;
-        }
-
-        return false;
-    }
 }

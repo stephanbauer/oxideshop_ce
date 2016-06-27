@@ -21,29 +21,12 @@
  */
 
 /**
- * SEPA (Single Euro Payments Area) BIC validation class
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  *
  */
-class oxSepaBICValidator
+
+class oxSepaBICValidator extends \OxidEsales\Eshop\Core\SepaBICValidator
 {
-
-    /**
-     * Business identifier code validation
-     *
-     * Structure
-     *  - 4 letters: Institution Code or bank code.
-     *  - 2 letters: ISO 3166-1 alpha-2 country code
-     *  - 2 letters or digits: location code
-     *  - 3 letters or digits: branch code, optional
-     *
-     * @param string $sBIC code to check
-     *
-     * @return bool
-     */
-    public function isValid($sBIC)
-    {
-        $sBIC = strtoupper(trim($sBIC));
-
-        return (bool) getStr()->preg_match("(^[A-Z]{4}[A-Z]{2}[A-Z0-9]{2}([A-Z0-9]{3})?$)", $sBIC);
-    }
 }

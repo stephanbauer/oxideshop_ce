@@ -19,7 +19,7 @@ UPDATE oxuser
       oxusername = 'admin@myoxideshop.com',
       oxpassword = '6cb4a34e1b66d3445108cd91b67f98b9',
       oxpasssalt = '6631386565336161636139613634663766383538633566623662613036636539'
-  WHERE oxid='oxdefaultadmin';
+  WHERE OXUSERNAME='admin';
 
 #Articles demodata
 REPLACE INTO `oxarticles` (`OXID`,   `OXSHOPID`,   `OXPARENTID`, `OXACTIVE`, `OXARTNUM`, `OXTITLE`,                     `OXSHORTDESC`,                   `OXPRICE`, `OXPRICEA`, `OXPRICEB`, `OXPRICEC`, `OXTPRICE`, `OXUNITNAME`, `OXUNITQUANTITY`, `OXVAT`, `OXWEIGHT`, `OXSTOCK`, `OXSTOCKFLAG`, `OXSTOCKTEXT`, `OXNOSTOCKTEXT`,       `OXDELIVERY`, `OXINSERT`,   `OXTIMESTAMP`,        `OXLENGTH`, `OXWIDTH`, `OXHEIGHT`, `OXSEARCHKEYS`, `OXISSEARCH`, `OXVARNAME`,              `OXVARSTOCK`, `OXVARCOUNT`, `OXVARSELECT`, `OXVARMINPRICE`, `OXVARMAXPRICE`, `OXVARNAME_1`,             `OXVARSELECT_1`,   `OXTITLE_1`,                 `OXSHORTDESC_1`,                        `OXSEARCHKEYS_1`, `OXBUNDLEID`, `OXSTOCKTEXT_1`,       `OXNOSTOCKTEXT_1`,         `OXSORT`, `OXVENDORID`,      `OXMANUFACTURERID`, `OXMINDELTIME`, `OXMAXDELTIME`, `OXDELTIMEUNIT`) VALUES
@@ -272,11 +272,6 @@ REPLACE INTO `oxlinks` (`OXID`,      `OXSHOPID`,  `OXACTIVE`, `OXURL`,          
                       ('testlink7', 'oxbaseshop', 0,         'http://www.zzzgoogle.com', '7 [DE] link description šÄßüл',      '1 [EN] link description šÄßüл',      '2008-01-17 00:00:01'),
                       ('testlink8', 'oxbaseshop', 0,         'http://www.zzgoogle.com',  '8 [DE] link description šÄßüл',      '2 [EN] link description šÄßüл',      '2008-03-01 00:00:01'),
                       ('testlink9', 'oxbaseshop', 0,         'http://www.zgoogle.com',   '[last] [DE] link description šÄßüл', '3 [EN] link description šÄßüл',      '2008-01-01 00:00:03');
-
-#Guestbook demodata
-REPLACE INTO `oxgbentries` (`OXID`,           `OXSHOPID`,   `OXUSERID`,       `OXCONTENT`,                       `OXCREATE`,           `OXACTIVE`, `OXVIEWED`) VALUES
-                          ('testguestbook1', 'oxbaseshop', 'testuser',       'Demo guestbook entry [EN] šÄßüл', '2008-01-01 00:00:01', 1,          1),
-                          ('testguestbook2', 'oxbaseshop', 'oxdefaultadmin', 'Demo guestbook entry [DE] šÄßüл', '2008-01-02 00:00:01', 1,          1);
 
 #Countries demodata
 REPLACE INTO `oxcountry` (`OXID`,        `OXACTIVE`, `OXTITLE`,                     `OXISOALPHA2`, `OXISOALPHA3`, `OXUNNUM3`, `OXORDER`, `OXSHORTDESC`,                 `OXTITLE_1`,                    `OXSHORTDESC_1`,                     `OXVATSTATUS`) VALUES

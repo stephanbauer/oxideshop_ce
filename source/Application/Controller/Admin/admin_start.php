@@ -21,18 +21,12 @@
  */
 
 /**
- * Admin starting page.
- * Returns template, that consists with title-admin-page.
- * Starting admin menu window.
- * Admin Menu.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Admin_Start extends oxAdminView
+class Admin_Start extends \OxidEsales\Eshop\Application\Controller\Admin\AdminStart
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'start.tpl';
 }

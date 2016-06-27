@@ -21,18 +21,12 @@
  */
 
 /**
- * Admin order manager.
- * Returns template, that arranges two other templates ("order_list.tpl"
- * and "order_overview.tpl") to frame.
- * Admin Menu: Orders -> Display Orders.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Admin_Order extends oxAdminView
+class Admin_Order extends \OxidEsales\Eshop\Application\Controller\Admin\AdminOrder
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'order.tpl';
 }

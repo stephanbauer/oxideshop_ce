@@ -21,82 +21,12 @@
  */
 
 /**
- * Collects System information.
- * Admin Menu: Service -> System Requirements -> Main.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class sysreq_main extends oxAdminDetails
+class sysreq_main extends \OxidEsales\Eshop\Application\Controller\Admin\SystemRequirementsMain
 {
-
-    /**
-     * Loads article Mercators info, passes it to Smarty engine and
-     * returns name of template file "Mercator_main.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        parent::render();
-
-        $oSysReq = new oxSysRequirements();
-
-        $this->_aViewData['aInfo'] = $oSysReq->getSystemInfo();
-        $this->_aViewData['aCollations'] = $oSysReq->checkCollation();
-
-        return "sysreq_main.tpl";
-    }
-
-    /**
-     * Returns module state
-     *
-     * @param int $iModuleState state integer value
-     *
-     * @return string
-     */
-    public function getModuleClass($iModuleState)
-    {
-        switch ($iModuleState) {
-            case 2:
-                $sClass = 'pass';
-                break;
-            case 1:
-                $sClass = 'pmin';
-                break;
-            case -1:
-                $sClass = 'null';
-                break;
-            default:
-                $sClass = 'fail';
-                break;
-        }
-        return $sClass;
-    }
-
-    /**
-     * Returns hint URL
-     *
-     * @param string $sIdent Module ident
-     *
-     * @return string
-     */
-    public function getReqInfoUrl($sIdent)
-    {
-        $oSysReq = new oxSysRequirements();
-        $sUrl = $oSysReq->getReqInfoUrl($sIdent);
-
-        return $sUrl;
-    }
-
-    /**
-     * return missing template blocks
-     *
-     * @see oxSysRequirements::getMissingTemplateBlocks
-     *
-     * @return array
-     */
-    public function getMissingTemplateBlocks()
-    {
-        $oSysReq = oxNew('oxSysRequirements');
-
-        return $oSysReq->getMissingTemplateBlocks();
-    }
 }

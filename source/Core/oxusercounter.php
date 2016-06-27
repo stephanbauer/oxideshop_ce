@@ -21,36 +21,12 @@
  */
 
 /**
- * Class used for counting users depending on given attributes.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxUserCounter
+
+class oxUserCounter extends \OxidEsales\Eshop\Core\UserCounter
 {
-
-    /**
-     * Returns count of admins (mall and subshops). Only counts active admins.
-     *
-     * @return int
-     */
-    public function getAdminCount()
-    {
-        $oDb = oxDb::getDb();
-
-        $sQuery = "SELECT COUNT(1) FROM oxuser WHERE oxrights != 'user'";
-
-        return (int) $oDb->getOne($sQuery);
-    }
-
-    /**
-     * Returns count of admins (mall and subshops). Only counts active admins.
-     *
-     * @return int
-     */
-    public function getActiveAdminCount()
-    {
-        $oDb = oxDb::getDb();
-
-        $sQuery = "SELECT COUNT(1) FROM oxuser WHERE oxrights != 'user' AND oxactive = 1 ";
-
-        return (int) $oDb->getOne($sQuery);
-    }
 }

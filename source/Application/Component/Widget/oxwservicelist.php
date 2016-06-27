@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file is part of OXID eShop Community Edition.
  *
@@ -22,16 +21,11 @@
  */
 
 /**
- * List of shop services widget.
- * Forms service list.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxwServiceList extends oxWidget
+class oxwServiceList extends \OxidEsales\Eshop\Application\Component\Widget\ServiceList
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'widget/footer/services.tpl';
 }

@@ -21,22 +21,12 @@
  */
 
 /**
- * Admin dyn General export manager.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class GenExport extends DynExportBase
+class GenExport extends \OxidEsales\Eshop\Application\Controller\Admin\GenericExport
 {
-
-    /**
-     * Export class name
-     *
-     * @var string
-     */
-    public $sClassDo = 'genexport_do';
-
-    /**
-     * Export ui class name
-     *
-     * @var string
-     */
-    public $sClassMain = 'genexport_main';
 }

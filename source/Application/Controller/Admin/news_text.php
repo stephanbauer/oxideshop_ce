@@ -21,88 +21,12 @@
  */
 
 /**
- * Admin Menu: Customer News -> News -> Text.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated since v.5.3.0 (2016-06-17); The Admin Menu: Customer Info -> News feature will be moved to a module in v6.0.0
  */
-class News_Text extends oxAdminDetails
+class News_Text extends \OxidEsales\Eshop\Application\Controller\Admin\NewsText
 {
-    /**
-     * Executes parent method parent::render(), creates oxnews object and
-     * passes news text to smarty. Returns name of template file "news_text.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        parent::render();
-
-        $soxId = $this->_aViewData["oxid"] = $this->getEditObjectId();
-        if (isset($soxId) && $soxId != "-1") {
-            // load object
-            $oNews = oxNew("oxnews");
-            $iNewsLang = oxRegistry::getConfig()->getRequestParameter("newslang");
-
-            if (!isset($iNewsLang)) {
-                $iNewsLang = $this->_iEditLang;
-            }
-
-            $this->_aViewData["newslang"] = $iNewsLang;
-            $oNews->loadInLang($iNewsLang, $soxId);
-
-            foreach (oxRegistry::getLang()->getLanguageNames() as $id => $language) {
-                $oLang = new stdClass();
-                $oLang->sLangDesc = $language;
-                $oLang->selected = ($id == $this->_iEditLang);
-                $this->_aViewData["otherlang"][$id] = clone $oLang;
-            }
-
-            // Disable editing for derived items.
-            if ($oNews->isDerived()) {
-                $this->_aViewData['readonly'] = true;
-            }
-
-            $this->_aViewData["edit"] = $oNews;
-        }
-        $this->_aViewData["editor"] = $this->_generateTextEditor("100%", 255, $oNews, "oxnews__oxlongdesc", "news.tpl.css");
-
-        return "news_text.tpl";
-    }
-
-    /**
-     * Saves news text.
-     *
-     * @return mixed
-     */
-    public function save()
-    {
-        parent::save();
-        $soxId = $this->getEditObjectId();
-        $aParams = oxRegistry::getConfig()->getRequestParameter("editval");
-
-        $oNews = oxNew("oxnews");
-
-        $iNewsLang = oxRegistry::getConfig()->getRequestParameter("newslang");
-
-        if (!isset($iNewsLang)) {
-            $iNewsLang = $this->_iEditLang;
-        }
-
-        if ($soxId != "-1") {
-            $oNews->loadInLang($iNewsLang, $soxId);
-        } else {
-            $aParams['oxnews__oxid'] = null;
-        }
-
-        // Disable editing for derived items.
-        if ($oNews->isDerived()) {
-            return;
-        }
-
-        $oNews->setLanguage(0);
-        $oNews->assign($aParams);
-        $oNews->setLanguage($iNewsLang);
-
-        $oNews->save();
-        // set oxid if inserted
-        $this->setEditObjectId($oNews->getId());
-    }
 }

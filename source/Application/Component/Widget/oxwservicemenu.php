@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file is part of OXID eShop Community Edition.
  *
@@ -22,57 +21,12 @@
  */
 
 /**
- * Recomendation list.
- * Forms recomendation list.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
+ * @mixin \OxidEsales\EshopEnterprise\Application\Component\Widget\ServiceMenu
  */
-class oxwServiceMenu extends oxWidget
+class oxwServiceMenu extends \OxidEsales\Eshop\Application\Component\Widget\ServiceMenu
 {
-
-    /**
-     * Names of components (classes) that are initiated and executed
-     * before any other regular operation.
-     * User component used in template.
-     *
-     * @var array
-     */
-    protected $_aComponentNames = array('oxcmp_user' => 1);
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'widget/header/servicemenu.tpl';
-
-    /**
-     * Template variable getter. Returns article list count in comparison.
-     *
-     * @return integer
-     */
-    public function getCompareItemsCnt()
-    {
-        $oCompare = oxNew("compare");
-        $iCompItemsCnt = $oCompare->getCompareItemsCnt();
-
-        return $iCompItemsCnt;
-    }
-
-    /**
-     * Template variable getter. Returns comparison article list.
-     *
-     * @param bool $blJson return json encoded array
-     *
-     * @return array
-     */
-    public function getCompareItems($blJson = false)
-    {
-        $oCompare = oxNew("compare");
-        $aCompareItems = $oCompare->getCompareItems();
-
-        if ($blJson) {
-            $aCompareItems = json_encode($aCompareItems);
-        }
-
-        return $aCompareItems;
-    }
 }

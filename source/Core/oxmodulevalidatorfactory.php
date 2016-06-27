@@ -21,37 +21,11 @@
  */
 
 /**
- * Module validators factory class.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
  *
- * @internal Do not make a module extension for this class.
- * @see      http://wiki.oxidforge.org/Tutorials/Core_OXID_eShop_classes:_must_not_be_extended
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxModuleValidatorFactory
+class oxModuleValidatorFactory extends \OxidEsales\Eshop\Core\ModuleValidatorFactory
 {
-
-    /**
-     * Return module validator by provided type.
-     * Returned validator implements interface oxIModuleValidator.
-     *
-     * @return oxModuleMetadataValidator
-     */
-    public function getModuleMetadataValidator()
-    {
-        $oModuleValidator = oxNew('oxModuleMetadataValidator');
-
-        return $oModuleValidator;
-    }
-
-    /**
-     * Return module validator by provided type.
-     * Returned validator implements interface oxIModuleValidator.
-     *
-     * @return oxModuleFilesValidator
-     */
-    public function getModuleFilesValidator()
-    {
-        $oModuleValidator = oxNew('oxModuleFilesValidator');
-
-        return $oModuleValidator;
-    }
 }

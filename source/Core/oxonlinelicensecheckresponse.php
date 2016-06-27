@@ -21,27 +21,12 @@
  */
 
 /**
- * Online license check response class.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
  *
- * @internal Do not make a module extension for this class.
- * @see      http://wiki.oxidforge.org/Tutorials/Core_OXID_eShop_classes:_must_not_be_extended
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  *
- * @ignore   This class will not be included in documentation.
  */
-class oxOnlineLicenseCheckResponse
+
+class oxOnlineLicenseCheckResponse extends \OxidEsales\Eshop\Core\OnlineLicenseCheckResponse
 {
-
-    /**
-     * Serial keys.
-     *
-     * @var string
-     */
-    public $code;
-
-    /**
-     * Build revision number.
-     *
-     * @var string
-     */
-    public $message;
 }

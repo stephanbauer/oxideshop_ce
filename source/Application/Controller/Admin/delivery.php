@@ -21,18 +21,12 @@
  */
 
 /**
- * Admin article delivery manager.
- * Returns template, that arranges two other templates ("delivery_list.tpl"
- * and "delivery_main.tpl") to frame.
- * Admin Menu: Shop settings -> Shipping & Handling.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Delivery extends oxAdminView
+class Delivery extends \OxidEsales\Eshop\Application\Controller\Admin\DeliveryController
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'delivery.tpl';
 }

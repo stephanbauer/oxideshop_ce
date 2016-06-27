@@ -21,52 +21,12 @@
  */
 
 /**
- * Simple list object
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class oxListObject
+class oxListObject extends \OxidEsales\Eshop\Application\Model\ListObject
 {
-
-    /**
-     * @var string
-     */
-    private $_sTableName = '';
-
-    /**
-     * Class constructor
-     *
-     * @param string $sTableName Table name
-     */
-    public function __construct($sTableName)
-    {
-        $this->_sTableName = $sTableName;
-    }
-
-    /**
-     * Assigns database record to object
-     *
-     * @param object $aData Database record
-     *
-     * @return null
-     */
-    public function assign($aData)
-    {
-        if (!is_array($aData)) {
-            return;
-        }
-        foreach ($aData as $sKey => $sValue) {
-            $sFieldName = strtolower($this->_sTableName . '__' . $sKey);
-            $this->$sFieldName = new oxField($sValue);
-        }
-    }
-
-    /**
-     * Returns object id
-     *
-     * @return int
-     */
-    public function getId()
-    {
-        $sFieldName = strtolower($this->_sTableName . '__oxid');
-        return $this->$sFieldName->value;
-    }
 }

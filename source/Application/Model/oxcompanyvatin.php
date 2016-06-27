@@ -20,70 +20,13 @@
  * @version   OXID eShop CE
  */
 
-
 /**
- * Company VAT identification number (VATIN)
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class oxCompanyVatIn
+class oxCompanyVatIn extends \OxidEsales\Eshop\Application\Model\CompanyVatIn
 {
-
-    /**
-     * VAT identification number
-     *
-     * @var string
-     */
-    private $_sCompanyVatNumber;
-
-    /**
-     * Constructor
-     *
-     * @param string $sCompanyVatNumber - company vat identification number.
-     */
-    public function __construct($sCompanyVatNumber)
-    {
-        $this->_sCompanyVatNumber = $sCompanyVatNumber;
-    }
-
-    /**
-     * Returns country code from number.
-     *
-     * @return string
-     */
-    public function getCountryCode()
-    {
-        return (string) oxStr::getStr()->strtoupper(oxStr::getStr()->substr($this->_cleanUp($this->_sCompanyVatNumber), 0, 2));
-    }
-
-    /**
-     * Returns country code from number.
-     *
-     * @return string
-     */
-    public function getNumbers()
-    {
-        return (string) oxStr::getStr()->substr($this->_cleanUp($this->_sCompanyVatNumber), 2);
-    }
-
-    /**
-     * Removes spaces and symbols: '-',',','.' from string
-     *
-     * @param string $sValue Value.
-     *
-     * @return string
-     */
-    protected function _cleanUp($sValue)
-    {
-        return (string) oxStr::getStr()->preg_replace("/\s|-/", '', $sValue);
-    }
-
-
-    /**
-     * Cast to string
-     *
-     * @return string
-     */
-    public function __toString()
-    {
-        return $this->_sCompanyVatNumber;
-    }
 }

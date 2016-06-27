@@ -21,84 +21,12 @@
  */
 
 /**
- * Admin article main deliveryset manager.
- * There is possibility to change deliveryset name, article, user
- * and etc.
- * Admin Menu: Shop settings -> Shipping & Handling -> Main Sets.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Theme_Main extends oxAdminDetails
+class Theme_Main extends \OxidEsales\Eshop\Application\Controller\Admin\ThemeMain
 {
-
-    /**
-     * Executes parent method parent::render(), creates deliveryset category tree,
-     * passes data to Smarty engine and returns name of template file "deliveryset_main.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        $soxId = $this->getEditObjectId();
-
-        $oTheme = oxNew('oxTheme');
-
-        if (!$soxId) {
-            $soxId = $oTheme->getActiveThemeId();
-        }
-
-        if ($oTheme->load($soxId)) {
-            $this->_aViewData["oTheme"] = $oTheme;
-        } else {
-            oxRegistry::get("oxUtilsView")->addErrorToDisplay(oxNew("oxException", 'EXCEPTION_THEME_NOT_LOADED'));
-        }
-
-        parent::render();
-
-        if ($this->themeInConfigFile()) {
-            oxRegistry::get("oxUtilsView")->addErrorToDisplay('EXCEPTION_THEME_SHOULD_BE_ONLY_IN_DATABASE');
-        }
-
-        return 'theme_main.tpl';
-    }
-
-    /**
-     * Check if theme config is in config file.
-     *
-     * @return bool
-     */
-    public function themeInConfigFile()
-    {
-        $blThemeSet = isset($this->getConfig()->sTheme);
-        $blCustomThemeSet = isset($this->getConfig()->sCustomTheme);
-
-        if ($blThemeSet || $blCustomThemeSet) {
-            return true;
-        }
-
-        return false;
-    }
-
-
-    /**
-     * Set theme
-     *
-     * @return null
-     */
-    public function setTheme()
-    {
-        $sTheme = $this->getEditObjectId();
-        /** @var oxTheme $oTheme */
-        $oTheme = oxNew('oxtheme');
-        if (!$oTheme->load($sTheme)) {
-            oxRegistry::get("oxUtilsView")->addErrorToDisplay(oxNew("oxException", 'EXCEPTION_THEME_NOT_LOADED'));
-
-            return;
-        }
-        try {
-            $oTheme->activate();
-            $this->resetContentCache();
-        } catch (oxException $oEx) {
-            oxRegistry::get("oxUtilsView")->addErrorToDisplay($oEx);
-            $oEx->debugOut();
-        }
-    }
 }

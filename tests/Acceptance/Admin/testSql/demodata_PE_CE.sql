@@ -19,7 +19,7 @@ UPDATE oxuser
       oxusername = 'admin@myoxideshop.com',
       oxpassword = '6cb4a34e1b66d3445108cd91b67f98b9',
       oxpasssalt = '6631386565336161636139613634663766383538633566623662613036636539'
-  WHERE oxid='oxdefaultadmin';
+  WHERE OXUSERNAME='admin';
 
 #Articles demodata
 REPLACE INTO `oxarticles` (`OXID`,   `OXSHOPID`,   `OXPARENTID`, `OXACTIVE`, `OXARTNUM`, `OXTITLE`,                     `OXSHORTDESC`,                   `OXPRICE`, `OXPRICEA`, `OXPRICEB`, `OXPRICEC`, `OXTPRICE`, `OXUNITNAME`, `OXUNITQUANTITY`, `OXVAT`, `OXWEIGHT`, `OXSTOCK`, `OXSTOCKFLAG`, `OXSTOCKTEXT`, `OXNOSTOCKTEXT`,       `OXDELIVERY`, `OXINSERT`,   `OXTIMESTAMP`,        `OXLENGTH`, `OXWIDTH`, `OXHEIGHT`, `OXSEARCHKEYS`, `OXISSEARCH`, `OXVARNAME`,              `OXVARSTOCK`, `OXVARCOUNT`, `OXVARSELECT`, `OXVARMINPRICE`, `OXVARMAXPRICE`, `OXVARNAME_1`,             `OXVARSELECT_1`,   `OXTITLE_1`,                 `OXSHORTDESC_1`,                        `OXSEARCHKEYS_1`, `OXBUNDLEID`, `OXSTOCKTEXT_1`,       `OXNOSTOCKTEXT_1`,         `OXSORT`, `OXVENDORID`,      `OXMANUFACTURERID`, `OXMINDELTIME`, `OXMAXDELTIME`, `OXDELTIMEUNIT`) VALUES
@@ -274,11 +274,6 @@ REPLACE INTO `oxlinks` (`OXID`,      `OXSHOPID`,  `OXACTIVE`, `OXURL`,          
                       ('testlink8', 'oxbaseshop', 0,         'http://www.zzgoogle.com',  '8 [DE] link description šÄßüл',      '2 [EN] link description šÄßüл',      '2008-03-01 00:00:01'),
                       ('testlink9', 'oxbaseshop', 0,         'http://www.zgoogle.com',   '[last] [DE] link description šÄßüл', '3 [EN] link description šÄßüл',      '2008-01-01 00:00:03');
 
-#Guestbook demodata
-REPLACE INTO `oxgbentries` (`OXID`,           `OXSHOPID`,   `OXUSERID`,       `OXCONTENT`,                       `OXCREATE`,           `OXACTIVE`, `OXVIEWED`) VALUES
-                          ('testguestbook1', 'oxbaseshop', 'testuser',       'Demo guestbook entry [EN] šÄßüл', '2008-01-01 00:00:01', 1,          1),
-                          ('testguestbook2', 'oxbaseshop', 'oxdefaultadmin', 'Demo guestbook entry [DE] šÄßüл', '2008-01-02 00:00:01', 1,          1);
-
 #Countries demodata
 REPLACE INTO `oxcountry` (`OXID`,        `OXACTIVE`, `OXTITLE`,                     `OXISOALPHA2`, `OXISOALPHA3`, `OXUNNUM3`, `OXORDER`, `OXSHORTDESC`,                 `OXTITLE_1`,                    `OXSHORTDESC_1`,                     `OXVATSTATUS`) VALUES
                         ('testcountry1', 0,         '1 DE test Country šÄßüл',      '',           '111',         '',          0,        '[last] DE test Country desc', '[last] EN test Country šÄßüл', '1 EN test Country desc šÄßüл',       0),
@@ -445,6 +440,7 @@ REPLACE INTO `oxcontents` (`OXID`,         `OXLOADID`,          `OXSHOPID`,  `OX
                          ('testcontent2', '1testcontent',      'oxbaseshop', 0,           2,        0,          0,           '[last] [DE] content šÄßüл', '<p>content [DE] last</p>', '3 [EN] content šÄßüл',      '<p>content [EN] last šÄßüл</p>', 'testcategory1',              'CMSFOLDER_USERINFO'),
                          ('testcontent3', 't3testcontent',     'oxbaseshop', 0,           3,        0,          0,           'T2 [DE] content šÄßüл',     '',                         'T4 [EN] content šÄßüл',     '',                               '8a142c3e4143562a5.46426637', 'CMSFOLDER_USERINFO'),
                          ('testcontent4', 't4testcontent',     'oxbaseshop', 0,           3,        0,          0,           'T4 [DE] content šÄßüл',     '',                         'T1 [EN] content šÄßüл',     '',                               '30e44ab834ea42417.86131097', 'CMSFOLDER_USERINFO'),
+                         ('testcontent5', 't9testcontent',     'oxbaseshop', 0,           3,        0,          0,           'T5 [DE] content šÄßüл',     '',                         'T1 [EN] content šÄßüл',     '',                               '30e44ab834ea42417.86131097', 'CMSFOLDER_USERINFO'),
                          ('testcontent6', 't5testcontent',     'oxbaseshop', 0,           3,        0,          0,           'T6 [DE] content šÄßüл',     '',                         'T5 [EN] content šÄßüл',     '',                               '30e44ab834ea42417.86131097', 'CMSFOLDER_USERINFO');
 
 #Price alert demodata

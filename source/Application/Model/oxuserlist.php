@@ -21,42 +21,12 @@
  */
 
 /**
- * User list manager.
+ * @inheritdoc
  *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class oxUserList extends oxList
+class oxUserList extends \OxidEsales\Eshop\Application\Model\UserList
 {
-
-    /**
-     * Class constructor
-     */
-    public function __construct()
-    {
-        parent::__construct('oxuser');
-    }
-
-
-    /**
-     * Load searched user list with wishlist
-     *
-     * @param string $sSearchStr Search string
-     *
-     * @return null;
-     */
-    public function loadWishlistUsers($sSearchStr)
-    {
-        $sSearchStr = oxDb::getInstance()->escapeString($sSearchStr);
-        if (!$sSearchStr) {
-            return;
-        }
-
-        $sSelect = "select oxuser.oxid, oxuser.oxfname, oxuser.oxlname from oxuser ";
-        $sSelect .= "left join oxuserbaskets on oxuserbaskets.oxuserid = oxuser.oxid ";
-        $sSelect .= "where oxuserbaskets.oxid is not null and oxuserbaskets.oxtitle = 'wishlist' ";
-        $sSelect .= "and oxuserbaskets.oxpublic = 1 ";
-        $sSelect .= "and ( oxuser.oxusername like '%$sSearchStr%' or oxuser.oxlname like '%$sSearchStr%')";
-        $sSelect .= "and ( select 1 from oxuserbasketitems where oxuserbasketitems.oxbasketid = oxuserbaskets.oxid limit 1)";
-
-        $this->selectString($sSelect);
-    }
 }

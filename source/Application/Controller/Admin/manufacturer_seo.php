@@ -21,83 +21,12 @@
  */
 
 /**
- * Manufacturer seo config class
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Manufacturer_Seo extends Object_Seo
+class Manufacturer_Seo extends \OxidEsales\Eshop\Application\Controller\Admin\ManufacturerSeo
 {
-
-    /**
-     * Updating showsuffix field
-     *
-     * @return null
-     */
-    public function save()
-    {
-        $oManufacturer = oxNew('oxBase');
-        $oManufacturer->init('oxmanufacturers');
-        if ($oManufacturer->load($this->getEditObjectId())) {
-            $sShowSuffixField = 'oxmanufacturers__oxshowsuffix';
-            $blShowSuffixParameter = oxRegistry::getConfig()->getRequestParameter('blShowSuffix');
-            $oManufacturer->$sShowSuffixField = new oxField((int) $blShowSuffixParameter);
-            $oManufacturer->save();
-        }
-
-        return parent::save();
-    }
-
-    /**
-     * Returns current object type seo encoder object
-     *
-     * @return oxSeoEncoderManufacturer
-     */
-    protected function _getEncoder()
-    {
-        return oxRegistry::get("oxSeoEncoderManufacturer");
-    }
-
-    /**
-     * This SEO object supports suffixes so return TRUE
-     *
-     * @return bool
-     */
-    public function isSuffixSupported()
-    {
-        return true;
-    }
-
-    /**
-     * Returns url type
-     *
-     * @return string
-     */
-    protected function _getType()
-    {
-        return 'oxmanufacturer';
-    }
-
-    /**
-     * Returns true if SEO object id has suffix enabled
-     *
-     * @return bool
-     */
-    public function isEntrySuffixed()
-    {
-        $oManufacturer = oxNew('oxmanufacturer');
-        if ($oManufacturer->load($this->getEditObjectId())) {
-            return (bool) $oManufacturer->oxmanufacturers__oxshowsuffix->value;
-        }
-    }
-
-    /**
-     * Returns seo uri
-     *
-     * @return string
-     */
-    public function getEntryUri()
-    {
-        $oManufacturer = oxNew('oxmanufacturer');
-        if ($oManufacturer->load($this->getEditObjectId())) {
-            return $this->_getEncoder()->getManufacturerUri($oManufacturer, $this->getEditLang());
-        }
-    }
 }

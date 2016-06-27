@@ -21,18 +21,12 @@
  */
 
 /**
- * Class is responsible for openSSL functionality availability checking.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxOpenSSLFunctionalityChecker
-{
 
-    /**
-     * Checks if openssl_random_pseudo_bytes function is available.
-     *
-     * @return bool
-     */
-    public function isOpenSslRandomBytesGeneratorAvailable()
-    {
-        return function_exists('openssl_random_pseudo_bytes');
-    }
+class oxOpenSSLFunctionalityChecker extends \OxidEsales\Eshop\Core\OpenSSLFunctionalityChecker
+{
 }

@@ -21,11 +21,8 @@
  */
 
 /**
- * Standard class.
- *
- * @deprecated since v5.2.0 (2014-09-11); Use stdClass.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
  */
-class oxStdClass
+class oxStdClass extends \OxidEsales\Eshop\Core\StandardClass
 {
-
 }

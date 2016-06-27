@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file is part of OXID eShop Community Edition.
  *
@@ -22,42 +21,11 @@
  */
 
 /**
- * Beta note widget
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxwBetaNote extends oxWidget
+class oxwBetaNote extends \OxidEsales\Eshop\Application\Component\Widget\BetaNote
 {
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'widget/header/betanote.tpl';
-
-    /**
-     * Beta Note link value. Has default value
-     *
-     * @var string
-     */
-    protected $_sBetaNoteLink = 'http://wiki.oxidforge.org/Development/Beta';
-
-    /**
-     * Gets beta note link
-     *
-     * @return string
-     */
-    public function getBetaNoteLink()
-    {
-        return $this->_sBetaNoteLink;
-    }
-
-    /**
-     * Sets beta note link
-     *
-     * @param string $sLink link to set
-     */
-    public function setBetaNoteLink($sLink)
-    {
-        $this->_sBetaNoteLink = $sLink;
-    }
 }

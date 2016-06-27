@@ -21,126 +21,14 @@
  */
 
 /**
- * Class controls article assignment to selection lists
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
+ * @mixin \OxidEsales\EshopEnterprise\Application\Controller\Admin\ArticleSelectionAjax
  */
-class article_selection_ajax extends ajaxListComponent
+class article_selection_ajax extends \OxidEsales\Eshop\Application\Controller\Admin\ArticleSelectionAjax
 {
-
-    /**
-     * Columns array
-     *
-     * @var array
-     */
-    protected $_aColumns = array('container1' => array( // field , table,         visible, multilanguage, ident
-        array('oxtitle', 'oxselectlist', 1, 1, 0),
-        array('oxident', 'oxselectlist', 1, 0, 0),
-        array('oxvaldesc', 'oxselectlist', 1, 0, 0),
-        array('oxid', 'oxselectlist', 0, 0, 1)
-    ),
-                                 'container2' => array(
-                                     array('oxtitle', 'oxselectlist', 1, 1, 0),
-                                     array('oxident', 'oxselectlist', 1, 0, 0),
-                                     array('oxvaldesc', 'oxselectlist', 1, 0, 0),
-                                     array('oxid', 'oxobject2selectlist', 0, 0, 1)
-                                 )
-    );
-
-    /**
-     * Returns SQL query for data to fetc
-     *
-     * @return string
-     */
-    protected function _getQuery()
-    {
-        $sSLViewName = $this->_getViewName('oxselectlist');
-        $sArtViewName = $this->_getViewName('oxarticles');
-        $oDb = oxDb::getDb();
-
-        $sArtId = oxRegistry::getConfig()->getRequestParameter('oxid');
-        $sSynchArtId = oxRegistry::getConfig()->getRequestParameter('synchoxid');
-
-        $sOxid = ($sArtId) ? $sArtId : $sSynchArtId;
-        $sQ = "select oxparentid from {$sArtViewName} where oxid = " . $oDb->quote($sOxid) . " and oxparentid != '' ";
-        $sQ .= "and (select count(oxobjectid) from oxobject2selectlist " .
-               "where oxobjectid = " . $oDb->quote($sOxid) . ") = 0";
-        $sParentId = oxDb::getDb()->getOne($sQ, false, false);
-
-        // all selectlists article is in
-        $sQAdd = " from oxobject2selectlist left join {$sSLViewName} " .
-                 "on {$sSLViewName}.oxid=oxobject2selectlist.oxselnid  " .
-                 "where oxobject2selectlist.oxobjectid = " . $oDb->quote($sOxid) . " ";
-        if ($sParentId) {
-            $sQAdd .= "or oxobject2selectlist.oxobjectid = " . $oDb->quote($sParentId) . " ";
-        }
-        // all not assigned selectlists
-        if ($sSynchArtId) {
-            $sQAdd = " from {$sSLViewName}  " .
-                     "where {$sSLViewName}.oxid not in ( select oxobject2selectlist.oxselnid {$sQAdd} ) ";
-        }
-
-        return $sQAdd;
-    }
-
-    /**
-     * Removes article selection lists.
-     */
-    public function removeSel()
-    {
-        $aChosenArt = $this->_getActionIds('oxobject2selectlist.oxid');
-        if (oxRegistry::getConfig()->getRequestParameter('all')) {
-
-            $sQ = $this->_addFilter("delete oxobject2selectlist.* " . $this->_getQuery());
-            oxDb::getDb()->Execute($sQ);
-        } elseif (is_array($aChosenArt)) {
-            $sChosenArticles = implode(", ", oxDb::getInstance()->quoteArray($aChosenArt));
-            $sQ = "delete from oxobject2selectlist " .
-                  "where oxobject2selectlist.oxid in (" . $sChosenArticles . ") ";
-            oxDb::getDb()->Execute($sQ);
-        }
-
-        $articleId = oxRegistry::getConfig()->getRequestParameter('oxid');
-        $this->onArticleSelectionListChange($articleId);
-    }
-
-    /**
-     * Adds selection lists to article.
-     */
-    public function addSel()
-    {
-        $aAddSel = $this->_getActionIds('oxselectlist.oxid');
-        $soxId = oxRegistry::getConfig()->getRequestParameter('synchoxid');
-
-        // adding
-        if (oxRegistry::getConfig()->getRequestParameter('all')) {
-            $sSLViewName = $this->_getViewName('oxselectlist');
-            $aAddSel = $this->_getAll($this->_addFilter("select $sSLViewName.oxid " . $this->_getQuery()));
-        }
-
-        if ($soxId && $soxId != "-1" && is_array($aAddSel)) {
-            $oDb = oxDb::getDb();
-            foreach ($aAddSel as $sAdd) {
-                $oNew = oxNew("oxBase");
-                $oNew->init("oxobject2selectlist");
-                $sObjectIdField = 'oxobject2selectlist__oxobjectid';
-                $sSelectetionIdField = 'oxobject2selectlist__oxselnid';
-                $sOxSortField = 'oxobject2selectlist__oxsort';
-                $oNew->$sObjectIdField = new oxField($soxId);
-                $oNew->$sSelectetionIdField = new oxField($sAdd);
-                $sSql = "select max(oxsort) + 1 from oxobject2selectlist where oxobjectid =  {$oDb->quote($soxId)} ";
-                $oNew->$sOxSortField = new oxField(( int ) $oDb->getOne($sSql, false, false));
-                $oNew->save();
-            }
-
-            $this->onArticleSelectionListChange($soxId);
-        }
-    }
-
-    /**
-     * Method is used to bind to article selection list change.
-     *
-     * @param string $articleId
-     */
-    protected function onArticleSelectionListChange($articleId)
-    {
-    }
 }

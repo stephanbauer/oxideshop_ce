@@ -21,63 +21,12 @@
  */
 
 /**
- * Class controls article assignment to attributes
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class shop_default_category_ajax extends ajaxListComponent
+class shop_default_category_ajax extends \OxidEsales\Eshop\Application\Controller\Admin\ShopDefaultCategoryAjax
 {
-
-    /**
-     * Columns array
-     *
-     * @var array
-     */
-    protected $_aColumns = array('container1' => array( // field , table,         visible, multilanguage, ident
-        array('oxtitle', 'oxcategories', 1, 1, 0),
-        array('oxdesc', 'oxcategories', 1, 1, 0),
-        array('oxid', 'oxcategories', 0, 0, 0),
-        array('oxid', 'oxcategories', 0, 0, 1)
-    )
-    );
-
-    /**
-     * Returns SQL query for data to fetc
-     *
-     * @return string
-     */
-    protected function _getQuery()
-    {
-        $oCat = oxNew('oxCategory');
-        $oCat->setLanguage(oxRegistry::getConfig()->getRequestParameter('editlanguage'));
-
-        $sCategoriesTable = $oCat->getViewName();
-
-        return " from $sCategoriesTable where " . $oCat->getSqlActiveSnippet();
-    }
-
-    /**
-     * Removing article from corssselling list
-     */
-    public function unassignCat()
-    {
-        $sShopId = oxRegistry::getConfig()->getRequestParameter('oxid');
-        $oShop = oxNew('oxShop');
-        if ($oShop->load($sShopId)) {
-            $oShop->oxshops__oxdefcat = new oxField('');
-            $oShop->save();
-        }
-    }
-
-    /**
-     * Adding article to corssselling list
-     */
-    public function assignCat()
-    {
-        $sChosenCat = oxRegistry::getConfig()->getRequestParameter('oxcatid');
-        $sShopId = oxRegistry::getConfig()->getRequestParameter('oxid');
-        $oShop = oxNew('oxShop');
-        if ($oShop->load($sShopId)) {
-            $oShop->oxshops__oxdefcat = new oxField($sChosenCat);
-            $oShop->save();
-        }
-    }
 }

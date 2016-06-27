@@ -21,45 +21,11 @@
  */
 
 /**
- * Class oxEncryptor
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxEncryptor
+class oxEncryptor extends \OxidEsales\Eshop\Core\Encryptor
 {
-
-    /**
-     * Encrypts string with given key.
-     *
-     * @param string $sString
-     * @param string $sKey
-     *
-     * @return string
-     */
-    public function encrypt($sString, $sKey)
-    {
-        $sString = "ox{$sString}id";
-
-        $sKey = $this->_formKey($sKey, $sString);
-
-        $sString = $sString ^ $sKey;
-        $sString = base64_encode($sString);
-        $sString = str_replace("=", "!", $sString);
-
-        return "ox_$sString";
-    }
-
-    /**
-     * Forms key for use in encoding.
-     *
-     * @param string $sKey
-     * @param string $sString
-     *
-     * @return string
-     */
-    protected function _formKey($sKey, $sString)
-    {
-        $sKey = '_' . $sKey;
-        $iKeyLength = (strlen($sString) / strlen($sKey)) + 5;
-
-        return str_repeat($sKey, $iKeyLength);
-    }
 }

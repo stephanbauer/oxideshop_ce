@@ -21,46 +21,12 @@
  */
 
 /**
- * Hash password together with salt, using set hash algorithm
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxPasswordHasher
+
+class oxPasswordHasher extends \OxidEsales\Eshop\Core\PasswordHasher
 {
-
-    /**
-     * @var oxHasher
-     */
-    private $_ohasher = null;
-
-    /**
-     * Gets hasher.
-     *
-     * @return oxHasher
-     */
-    protected function _getHasher()
-    {
-        return $this->_ohasher;
-    }
-
-    /**
-     * Sets dependencies.
-     *
-     * @param oxHasher $oHasher hasher.
-     */
-    public function __construct($oHasher)
-    {
-        $this->_ohasher = $oHasher;
-    }
-
-    /**
-     * Hash password with a salt.
-     *
-     * @param string $sPassword not hashed password.
-     * @param string $sSalt     salt string.
-     *
-     * @return string
-     */
-    public function hash($sPassword, $sSalt)
-    {
-        return $this->_getHasher()->hash($sPassword . $sSalt);
-    }
 }

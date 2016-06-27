@@ -21,40 +21,12 @@
  */
 
 /**
- * Admin category main attributes manager.
- * There is possibility to change attribute description, assign categories to
- * this attribute, etc.
- * Admin Menu: Manage Products -> Attributes -> Gruppen.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Attribute_Category extends oxAdminDetails
+class Attribute_Category extends \OxidEsales\Eshop\Application\Controller\Admin\AttributeCategory
 {
-
-    /**
-     * Loads Attribute categories info, passes it to Smarty engine and
-     * returns name of template file "attribute_main.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        parent::render();
-
-        $soxId = $this->_aViewData["oxid"] = $this->getEditObjectId();
-
-        if (isset($soxId) && $soxId != "-1") {
-            // load object
-            $oAttr = oxNew("oxattribute");
-            $oAttr->load($soxId);
-            $this->_aViewData["edit"] = $oAttr;
-        }
-
-        if (oxRegistry::getConfig()->getRequestParameter("aoc")) {
-            $oAttributeCategoryAjax = oxNew('attribute_category_ajax');
-            $this->_aViewData['oxajax'] = $oAttributeCategoryAjax->getColumns();
-
-            return "popups/attribute_category.tpl";
-        }
-
-        return "attribute_category.tpl";
-    }
 }

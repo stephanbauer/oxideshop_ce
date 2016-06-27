@@ -21,45 +21,12 @@
  */
 
 /**
- * Admin voucherserie groups manager.
- * Collects and manages information about user groups, added to one or another
- * serie of vouchers.
- * Admin Menu: Shop Settings -> Vouchers -> Groups.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class VoucherSerie_Groups extends oxAdminDetails
+class VoucherSerie_Groups extends \OxidEsales\Eshop\Application\Controller\Admin\VoucherSerieGroups
 {
-
-    /**
-     * Executes parent method parent::render(), creates oxlist and oxvoucherserie
-     * objects, passes it's data to Smarty engine and returns name of template
-     * file "voucherserie_groups.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        parent::render();
-
-        $soxId = $this->getEditObjectId();
-        if (isset($soxId) && $soxId != "-1") {
-            // load object
-            $oVoucherSerie = oxNew("oxvoucherserie");
-            $oVoucherSerie->load($soxId);
-            $oVoucherSerie->setUserGroups();
-            $this->_aViewData["edit"] = $oVoucherSerie;
-
-            //Disable editing for derived items
-            if ($oVoucherSerie->isDerived()) {
-                $this->_aViewData['readonly'] = true;
-            }
-        }
-        if (oxRegistry::getConfig()->getRequestParameter("aoc")) {
-            $oVoucherSerieGroupsAjax = oxNew('voucherserie_groups_ajax');
-            $this->_aViewData['oxajax'] = $oVoucherSerieGroupsAjax->getColumns();
-
-            return "popups/voucherserie_groups.tpl";
-        }
-
-        return "voucherserie_groups.tpl";
-    }
 }

@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file is part of OXID eShop Community Edition.
  *
@@ -22,24 +21,11 @@
  */
 
 /**
- * Language selection list widget
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxwLanguageList extends oxWidget
+class oxwLanguageList extends \OxidEsales\Eshop\Application\Component\Widget\LanguageList
 {
-
-    /**
-     * Names of components (classes) that are initiated and executed
-     * before any other regular operation.
-     * User component used in template.
-     *
-     * @var array
-     */
-    protected $_aComponentNames = array('oxcmp_lang' => 0);
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'widget/header/languages.tpl';
 }

@@ -21,74 +21,11 @@
  */
 
 /**
- * simple class to add a error message to display
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxDisplayError implements oxIDisplayError
+class oxDisplayError extends \OxidEsales\Eshop\Core\DisplayError
 {
-    /**
-     * Error message
-     *
-     * @var string $_sMessage
-     */
-    protected $_sMessage;
-
-    /** @var array */
-    private $_aFormatParameters = array();
-
-    /**
-     * Formats message using vsprintf if property _aFormatParameters was set and returns translated message.
-     *
-     * @return string stored message
-     */
-    public function getOxMessage()
-    {
-        $sTranslatedMessage = oxRegistry::getLang()->translateString($this->_sMessage);
-        if (!empty($this->_aFormatParameters)) {
-            $sTranslatedMessage = vsprintf($sTranslatedMessage, $this->_aFormatParameters);
-        }
-
-        return $sTranslatedMessage;
-    }
-
-    /**
-     * Stored the message.
-     *
-     * @param string $sMessage message
-     */
-    public function setMessage($sMessage)
-    {
-        $this->_sMessage = $sMessage;
-    }
-
-    /**
-     * Stes format parameters for message.
-     *
-     * @param array $aFormatParameters
-     */
-    public function setFormatParameters($aFormatParameters)
-    {
-        $this->_aFormatParameters = $aFormatParameters;
-    }
-
-    /**
-     * Returns errorrous class name (currently returns null)
-     *
-     * @return null
-     */
-    public function getErrorClassType()
-    {
-        return null;
-    }
-
-    /**
-     * Returns value (currently returns empty string)
-     *
-     * @param string $sName value ignored
-     *
-     * @return string
-     */
-    public function getValue($sName)
-    {
-        return '';
-    }
 }

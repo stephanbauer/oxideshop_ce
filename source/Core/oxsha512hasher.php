@@ -21,23 +21,12 @@
  */
 
 /**
- * Encrypt string with sha512 algorithm.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxSha512Hasher extends oxHasher
+
+class oxSha512Hasher extends \OxidEsales\Eshop\Core\Sha512Hasher
 {
-
-    /** Algorithm name. */
-    const HASHING_ALGORITHM_SHA512 = 'sha512';
-
-    /**
-     * Encrypt string.
-     *
-     * @param string $sString
-     *
-     * @return string
-     */
-    public function hash($sString)
-    {
-        return hash(self::HASHING_ALGORITHM_SHA512, $sString);
-    }
 }

@@ -21,58 +21,12 @@
  */
 
 /**
- * Newsletter plain manager.
- * Performs newsletter creation (plain text format, collects neccessary information).
- * Admin Menu: Customer News -> Newsletter -> Text.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Newsletter_Plain extends oxAdminDetails
+class Newsletter_Plain extends \OxidEsales\Eshop\Application\Controller\Admin\NewsletterPlain
 {
-
-    /**
-     * Executes prent method parent::render(), creates oxnewsletter object
-     * and passes it's data to smarty. Returns name of template file
-     * "newsletter_plain.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        parent::render();
-
-        $soxId = $this->_aViewData["oxid"] = $this->getEditObjectId();
-        if (isset($soxId) && $soxId != "-1") {
-            // load object
-            $oNewsletter = oxNew("oxnewsletter");
-            $oNewsletter->load($soxId);
-            $this->_aViewData["edit"] = $oNewsletter;
-        }
-
-        return "newsletter_plain.tpl";
-    }
-
-    /**
-     * Saves newsletter text in plain text format.
-     */
-    public function save()
-    {
-        $soxId = $this->getEditObjectId();
-        $aParams = oxRegistry::getConfig()->getRequestParameter("editval");
-
-        // shopid
-        $sShopID = oxRegistry::getSession()->getVariable("actshop");
-        $aParams['oxnewsletter__oxshopid'] = $sShopID;
-
-        $oNewsletter = oxNew("oxnewsletter");
-        if ($soxId != "-1") {
-            $oNewsletter->load($soxId);
-        } else {
-            $aParams['oxnewsletter__oxid'] = null;
-        }
-        //$aParams = $oNewsletter->ConvertNameArray2Idx( $aParams);
-        $oNewsletter->assign($aParams);
-        $oNewsletter->save();
-
-        // set oxid if inserted
-        $this->setEditObjectId($oNewsletter->getId());
-    }
 }

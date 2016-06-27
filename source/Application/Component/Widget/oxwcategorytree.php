@@ -1,5 +1,4 @@
 <?php
-
 /**
  * This file is part of OXID eShop Community Edition.
  *
@@ -22,54 +21,11 @@
  */
 
 /**
- * Category tree widget.
- * Forms category tree.
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
  */
-class oxwCategoryTree extends oxWidget
+class oxwCategoryTree extends \OxidEsales\Eshop\Application\Component\Widget\CategoryTree
 {
-
-    /**
-     * Names of components (classes) that are initiated and executed
-     * before any other regular operation.
-     * Cartegory component used in template.
-     *
-     * @var array
-     */
-    protected $_aComponentNames = array('oxcmp_categories' => 1);
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'widget/sidebar/categorytree.tpl';
-
-    /**
-     * Executes parent::render(), assigns template name and returns it
-     *
-     * @return string
-     */
-    public function render()
-    {
-        parent::render();
-
-        if ($sTpl = $this->getViewParameter("sWidgetType")) {
-            $sTemplateName = 'widget/' . basename($sTpl) . '/categorylist.tpl';
-            if ($this->getConfig()->getTemplatePath($sTemplateName, $this->isAdmin())) {
-                $this->_sThisTemplate = $sTemplateName;
-            }
-        }
-
-        return $this->_sThisTemplate;
-    }
-
-    /**
-     * Returns the deep level of category tree
-     *
-     * @return null
-     */
-    public function getDeepLevel()
-    {
-        return $this->getViewParameter("deepLevel");
-    }
 }

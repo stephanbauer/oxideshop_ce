@@ -21,107 +21,14 @@
  */
 
 /**
- * Admin shop license setting manager.
- * Collects shop license settings, updates it on user submit, etc.
- * Admin Menu: Main Menu -> Core Settings -> License.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
+ * @mixin \OxidEsales\EshopEnterprise\Application\Controller\Admin\ShopLicense
  */
-class Shop_License extends Shop_Config
+class Shop_License extends \OxidEsales\Eshop\Application\Controller\Admin\ShopLicense
 {
-    /**
-     * Current class template.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = "shop_license.tpl";
-
-    /** @var string Current shop version links for edition. */
-    private $versionCheckLink = 'http://admin.oxid-esales.com/CE/onlinecheck.php';
-
-    /**
-     * Executes parent method parent::render(), creates oxshop object, passes it's
-     * data to Smarty engine and returns name of template file "shop_license.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        $myConfig = $this->getConfig();
-        if ($myConfig->isDemoShop()) {
-            /** @var oxSystemComponentException $oSystemComponentException */
-            $oSystemComponentException = oxNew("oxSystemComponentException", "license");
-            throw $oSystemComponentException;
-        }
-
-        parent::render();
-
-        $soxId = $this->_aViewData["oxid"] = $this->getEditObjectId();
-        if ($soxId != "-1") {
-            // load object
-            $oShop = oxNew("oxshop");
-            $oShop->load($soxId);
-            $this->_aViewData["edit"] = $oShop;
-        }
-
-        $this->_aViewData["version"] = $myConfig->getVersion();
-
-        $this->_aViewData['aCurVersionInfo'] = $this->_fetchCurVersionInfo($this->versionCheckLink);
-
-        if (!$this->_canUpdate()) {
-            $this->_aViewData['readonly'] = true;
-        }
-
-        return $this->_sThisTemplate;
-    }
-
-    /**
-     * Checks if the license key update is allowed.
-     *
-     * @return bool
-     */
-    protected function _canUpdate()
-    {
-        $myConfig = $this->getConfig();
-
-        $blIsMallAdmin = oxRegistry::getSession()->getVariable('malladmin');
-        if (!$blIsMallAdmin) {
-            return false;
-        }
-
-        if ($myConfig->isDemoShop()) {
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Fetch current shop version information from url
-     *
-     * @param string $sUrl current version info fetching url by edition
-     *
-     * @return string
-     */
-    protected function _fetchCurVersionInfo($sUrl)
-    {
-        $aParams = array("myversion" => $this->getConfig()->getVersion());
-        $oLang = oxRegistry::getLang();
-        $iLang = $oLang->getTplLanguage();
-        $sLang = $oLang->getLanguageAbbr($iLang);
-
-        $oCurl = oxNew('oxCurl');
-        $oCurl->setMethod("POST");
-        $oCurl->setUrl($sUrl . "/" . $sLang);
-        $oCurl->setParameters($aParams);
-        $sOutput = $oCurl->execute();
-
-        $sOutput = strip_tags($sOutput, "<br>, <b>");
-        $aResult = explode("<br>", $sOutput);
-        if (strstr($aResult[5], "update")) {
-            $sUpdateLink = oxRegistry::getLang()->translateString("VERSION_UPDATE_LINK");
-            $aResult[5] = "<a id='linkToUpdate' href='$sUpdateLink' target='_blank'>" . $aResult[5] . "</a>";
-        }
-        $sOutput = implode("<br>", $aResult);
-
-        return $sOutput;
-    }
 }

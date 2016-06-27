@@ -21,37 +21,14 @@
  */
 
 /**
- * Admin usergroup list manager.
- * Performs collection and managing (such as filtering or deleting) function.
- * Admin Menu: User Administration -> User Groups.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
+ * @mixin \OxidEsales\EshopEnterprise\Application\Controller\Admin\UserGroupList
  */
-class UserGroup_List extends oxAdminList
+class UserGroup_List extends \OxidEsales\Eshop\Application\Controller\Admin\UserGroupList
 {
-
-    /**
-     * Name of chosen object class (default null).
-     *
-     * @var string
-     */
-    protected $_sListClass = 'oxgroups';
-
-    /**
-     * Default SQL sorting parameter (default null).
-     *
-     * @var string
-     */
-    protected $_sDefSortField = "oxtitle";
-
-    /**
-     * Executes parent method parent::render() and returns name of template
-     * file "usergroup_list.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        parent::render();
-
-        return "usergroup_list.tpl";
-    }
 }

@@ -21,62 +21,14 @@
  */
 
 /**
- * Group manager.
- * Base class for user groups. Does nothing special yet.
+ * @inheritdoc
  *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
+ * @mixin \OxidEsales\EshopEnterprise\Application\Model\Groups
  */
-class oxGroups extends oxI18n
+class oxGroups extends \OxidEsales\Eshop\Application\Model\Groups
 {
-
-    /**
-     * Name of current class
-     *
-     * @var string
-     */
-    protected $_sClassName = 'oxgroups';
-
-    /**
-     * Class constructor, initiates parent constructor (parent::oxBase()).
-     */
-    public function __construct()
-    {
-        parent::__construct();
-        $this->init('oxgroups');
-    }
-
-    /**
-     * Deletes user group from database. Returns true/false, according to deleting status.
-     *
-     * @param string $sOXID Object ID (default null)
-     *
-     * @return bool
-     */
-    public function delete($sOXID = null)
-    {
-        if (!$sOXID) {
-            $sOXID = $this->getId();
-        }
-        if (!$sOXID) {
-            return false;
-        }
-
-        parent::delete($sOXID);
-
-        $oDb = oxDb::getDb();
-
-        // deleting related data records
-        $sDelete = 'delete from oxobject2group where oxobject2group.oxgroupsid = ' . $oDb->quote($sOXID);
-        $rs = $oDb->execute($sDelete);
-
-        $sDelete = 'delete from oxobject2delivery where oxobject2delivery.oxobjectid = ' . $oDb->quote($sOXID);
-        $rs = $oDb->execute($sDelete);
-
-        $sDelete = 'delete from oxobject2discount where oxobject2discount.oxobjectid = ' . $oDb->quote($sOXID);
-        $rs = $oDb->execute($sDelete);
-
-        $sDelete = 'delete from oxobject2payment where oxobject2payment.oxobjectid = ' . $oDb->quote($sOXID);
-        $rs = $oDb->execute($sDelete);
-
-        return $rs->EOF;
-    }
 }

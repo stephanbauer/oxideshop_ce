@@ -21,34 +21,12 @@
  */
 
 /**
- * CVS export manager.
- * Performs export function according to user chosen categories.
- * Admin Menu: Maine Menu -> Im/Export -> Export.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class Tools_Main extends oxAdminDetails
+class Tools_Main extends \OxidEsales\Eshop\Application\Controller\Admin\ToolsMain
 {
-
-    /**
-     * Executes parent method parent::render(), passes data to Smarty engine
-     * and returns name of template file "imex_export.tpl".
-     *
-     * @return string
-     */
-    public function render()
-    {
-        if ($this->getConfig()->isDemoShop()) {
-            oxRegistry::getUtils()->showMessageAndExit("Access denied !");
-        }
-
-        parent::render();
-
-        $oAuthUser = oxNew('oxuser');
-        $oAuthUser->loadAdminUser();
-        $this->_aViewData["blIsMallAdmin"] = $oAuthUser->oxuser__oxrights->value == "malladmin";
-
-        $blShowUpdateViews = $this->getConfig()->getConfigParam('blShowUpdateViews');
-        $this->_aViewData['showViewUpdate'] = (isset($blShowUpdateViews) && !$blShowUpdateViews) ? false : true;
-
-        return "tools_main.tpl";
-    }
 }

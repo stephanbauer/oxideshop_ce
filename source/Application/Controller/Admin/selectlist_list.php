@@ -21,29 +21,12 @@
  */
 
 /**
- * Admin selectlist list manager.
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
  */
-class SelectList_List extends oxAdminList
+class SelectList_List extends \OxidEsales\Eshop\Application\Controller\Admin\SelectListList
 {
-
-    /**
-     * Name of chosen object class (default null).
-     *
-     * @var string
-     */
-    protected $_sListClass = 'oxselectlist';
-
-    /**
-     * Current class template name.
-     *
-     * @var string
-     */
-    protected $_sThisTemplate = 'selectlist_list.tpl';
-
-    /**
-     * Default SQL sorting parameter (default null).
-     *
-     * @var string
-     */
-    protected $_sDefSortField = 'oxtitle';
 }

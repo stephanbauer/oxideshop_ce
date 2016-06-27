@@ -21,106 +21,14 @@
  */
 
 /**
- * Class manages promotion groups
+ * @inheritdoc
+ *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
+ * @mixin \OxidEsales\EshopEnterprise\Application\Controller\Admin\ActionsGroupsAjax
  */
-class actions_groups_ajax extends ajaxListComponent
+class actions_groups_ajax extends \OxidEsales\Eshop\Application\Controller\Admin\ActionsGroupsAjax
 {
-    /**
-     * Columns array
-     *
-     * @var array
-     */
-    protected $_aColumns = array(
-        // field , table,  visible, multilanguage, ident
-        'container1' => array(
-            array('oxtitle', 'oxgroups', 1, 0, 0),
-            array('oxid', 'oxgroups', 0, 0, 0),
-            array('oxid', 'oxgroups', 0, 0, 1),
-        ),
-         'container2' => array(
-             array('oxtitle', 'oxgroups', 1, 0, 0),
-             array('oxid', 'oxgroups', 0, 0, 0),
-             array('oxid', 'oxobject2action', 0, 0, 1),
-         )
-    );
-
-    /**
-     * Returns SQL query for data to fetc
-     *
-     * @return string
-     */
-    protected function _getQuery()
-    {
-        // active AJAX component
-        $sGroupTable = $this->_getViewName('oxgroups');
-        $oDb = oxDb::getDb();
-
-        $sId = oxRegistry::getConfig()->getRequestParameter('oxid');
-        $sSynchId = oxRegistry::getConfig()->getRequestParameter('synchoxid');
-
-        // category selected or not ?
-        if (!$sId) {
-            $sQAdd = " from {$sGroupTable} where 1 ";
-        } else {
-            $sQAdd = " from oxobject2action, {$sGroupTable} where {$sGroupTable}.oxid=oxobject2action.oxobjectid " .
-                      " and oxobject2action.oxactionid = " . $oDb->quote($sId) .
-                      " and oxobject2action.oxclass = 'oxgroups' ";
-        }
-
-        if ($sSynchId && $sSynchId != $sId) {
-            $sQAdd .= " and {$sGroupTable}.oxid not in ( select {$sGroupTable}.oxid " .
-                      "from oxobject2action, {$sGroupTable} where $sGroupTable.oxid=oxobject2action.oxobjectid " .
-                      " and oxobject2action.oxactionid = " . $oDb->quote($sSynchId) .
-                      " and oxobject2action.oxclass = 'oxgroups' ) ";
-        }
-
-        return $sQAdd;
-    }
-
-    /**
-     * Removes user group from promotion
-     */
-    public function removePromotionGroup()
-    {
-        $aRemoveGroups = $this->_getActionIds('oxobject2action.oxid');
-        if ($this->getConfig()->getRequestParameter('all')) {
-            $sQ = $this->_addFilter("delete oxobject2action.* " . $this->_getQuery());
-            oxDb::getDb()->Execute($sQ);
-        } elseif ($aRemoveGroups && is_array($aRemoveGroups)) {
-            $sRemoveGroups = implode(", ", oxDb::getInstance()->quoteArray($aRemoveGroups));
-            $sQ = "delete from oxobject2action where oxobject2action.oxid in (" . $sRemoveGroups . ") ";
-            oxDb::getDb()->Execute($sQ);
-        }
-    }
-
-    /**
-     * Adds user group to promotion
-     *
-     * @return bool Whether at least one promotion was added.
-     */
-    public function addPromotionGroup()
-    {
-        $aChosenGroup = $this->_getActionIds('oxgroups.oxid');
-        $soxId = $this->getConfig()->getRequestParameter('synchoxid');
-
-        if ($this->getConfig()->getRequestParameter('all')) {
-            $sGroupTable = $this->_getViewName('oxgroups');
-            $aChosenGroup = $this->_getAll($this->_addFilter("select $sGroupTable.oxid " . $this->_getQuery()));
-        }
-
-        $promotionAdded = false;
-        if ($soxId && $soxId != "-1" && is_array($aChosenGroup)) {
-            foreach ($aChosenGroup as $sChosenGroup) {
-                $oObject2Promotion = oxNew("oxBase");
-                $oObject2Promotion->init('oxobject2action');
-                $oObject2Promotion->oxobject2action__oxactionid = new oxField($soxId);
-                $oObject2Promotion->oxobject2action__oxobjectid = new oxField($sChosenGroup);
-                $oObject2Promotion->oxobject2action__oxclass = new oxField("oxgroups");
-                $oObject2Promotion->save();
-            }
-            $promotionAdded = true;
-        }
-
-        return $promotionAdded;
-    }
 }

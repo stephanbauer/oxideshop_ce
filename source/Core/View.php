@@ -107,20 +107,6 @@ class View extends \oxSuperCfg
     protected static $_blExecuted = false;
 
     /**
-     * Trusted shop id
-     *
-     * @var string
-     */
-    protected $_sTrustedShopId = null;
-
-    /**
-     * Trusted shop id for excellence product
-     *
-     * @var string
-     */
-    protected $_sTSExcellenceId = null;
-
-    /**
      * Active charset
      *
      * @var string
@@ -271,7 +257,6 @@ class View extends \oxSuperCfg
      * Template variables:
      * <b>isdemoversion</b>, <b>shop</b>, <b>isdemoversion</b>,
      * <b>version</b>,
-     * <b>iShopID_TrustedShops</b>,
      * <b>urlsign</b>
      *
      * @param oxShop $oShop current shop object
@@ -619,59 +604,6 @@ class View extends \oxSuperCfg
     }
 
     /**
-     * Returns shop id in classic trusted shops
-     *
-     * @return string
-     */
-    public function getTrustedShopId()
-    {
-        if ($this->_sTrustedShopId == null) {
-            $this->_sTrustedShopId = false;
-            $oConfig = $this->getConfig();
-            $aTsType = $oConfig->getConfigParam('tsSealType');
-            $sTsActive = $oConfig->getConfigParam('tsSealActive');
-            $aTrustedShopIds = $oConfig->getConfigParam('iShopID_TrustedShops');
-            $iLangId = (int) oxRegistry::getLang()->getBaseLanguage();
-            if ($sTsActive && $aTrustedShopIds && $aTsType[$iLangId] == 'CLASSIC') {
-                // compatibility to old data
-                if (!is_array($aTrustedShopIds) && $iLangId == 0) {
-                    $this->_sTrustedShopId = $aTrustedShopIds;
-                }
-                if (is_array($aTrustedShopIds)) {
-                    $this->_sTrustedShopId = $aTrustedShopIds[$iLangId];
-                }
-                if (strlen($this->_sTrustedShopId) != 33 || substr($this->_sTrustedShopId, 0, 1) != 'X') {
-                    $this->_sTrustedShopId = false;
-                }
-            }
-        }
-
-        return $this->_sTrustedShopId;
-    }
-
-    /**
-     * Returns shop id in trusted shops if excellence product is ordered
-     *
-     * @return string
-     */
-    public function getTSExcellenceId()
-    {
-        if ($this->_sTSExcellenceId == null) {
-            $this->_sTSExcellenceId = false;
-            $oConfig = $this->getConfig();
-            $aTsType = $oConfig->getConfigParam('tsSealType');
-            $sTsActive = $oConfig->getConfigParam('tsSealActive');
-            $aTrustedShopIds = $oConfig->getConfigParam('iShopID_TrustedShops');
-            $iLangId = (int) oxRegistry::getLang()->getBaseLanguage();
-            if ($sTsActive && $aTrustedShopIds && $aTsType[$iLangId] == 'EXCELLENCE') {
-                $this->_sTSExcellenceId = $aTrustedShopIds[$iLangId];
-            }
-        }
-
-        return $this->_sTSExcellenceId;
-    }
-
-    /**
      * Returns active charset
      *
      * @return string
@@ -955,57 +887,6 @@ class View extends \oxSuperCfg
     }
 
     /**
-     * Checks if user is connected via Facebook connect
-     *
-     * @return bool
-     */
-    public function isConnectedWithFb()
-    {
-        $myConfig = $this->getConfig();
-
-        if ($myConfig->getConfigParam("bl_showFbConnect")) {
-            $oFb = oxRegistry::get("oxFb");
-
-            return $oFb->isConnected();
-        }
-
-        return false;
-    }
-
-    /**
-     * Gets get Facebook user id
-     *
-     * @return int
-     */
-    public function getFbUserId()
-    {
-        if ($this->getConfig()->getConfigParam("bl_showFbConnect")) {
-            $oFb = oxRegistry::get("oxFb");
-
-            return $oFb->getUser();
-        }
-    }
-
-    /**
-     * Returns true if popup message about connecting your existing account
-     * to Facebook account must be shown
-     *
-     * @return bool
-     */
-    public function showFbConnectToAccountMsg()
-    {
-        if ($this->getConfig()->getRequestParameter("fblogin")) {
-            if (!$this->getUser() || ($this->getUser() && $this->getSession()->getVariable('_blFbUserIdUpdated'))) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Returns if shop is mall
      *
      * @return bool
@@ -1046,7 +927,7 @@ class View extends \oxSuperCfg
 
     /**
      * Returns whether to show persistent parameter. Returns true as a default.
-     * 
+     *
      * @param string $persParamKey
      *
      * @return bool

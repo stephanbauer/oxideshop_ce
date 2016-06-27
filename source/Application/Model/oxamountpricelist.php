@@ -21,91 +21,14 @@
  */
 
 /**
- * Article amount price list
+ * @inheritdoc
  *
+ * This class must be empty because of others eShop editions classes which can be used instead of it.
+ *
+ * @deprecated on b-dev This class should not be used for direct extending. Please use parent class instead.
+ *
+ * @mixin \OxidEsales\EshopEnterprise\Application\Model\AmountPriceList
  */
-class oxAmountPriceList extends oxList
+class oxAmountPriceList extends \OxidEsales\Eshop\Application\Model\AmountPriceList
 {
-    /**
-     * List Object class name
-     *
-     * @var string
-     */
-    protected $_sObjectsInListName = 'oxprice2article';
-
-    /**
-     * oxArticle object
-     *
-     * @var oxArticle
-     */
-    protected $_oArticle = null;
-
-    /**
-     * Class constructor
-     */
-    public function __construct()
-    {
-        parent::__construct('oxbase');
-        $this->init('oxbase', 'oxprice2article');
-    }
-
-    /**
-     *  Article getter
-     *
-     * @return oxArticle $_oArticle
-     */
-    public function getArticle()
-    {
-        return $this->_oArticle;
-    }
-
-    /**
-     * Article setter
-     *
-     * @param oxArticle $oArticle Article
-     */
-    public function setArticle($oArticle)
-    {
-        $this->_oArticle = $oArticle;
-    }
-
-    /**
-     * Load category list data
-     *
-     * @param oxArticle $article Article
-     */
-    public function load($article)
-    {
-        $this->setArticle($article);
-
-        $aData = $this->_loadFromDb();
-
-        $this->assignArray($aData);
-    }
-
-    /**
-     * Get data from db
-     *
-     * @return array
-     */
-    protected function _loadFromDb()
-    {
-        $sArticleId = $this->getArticle()->getId();
-
-        if (!$this->isAdmin() && $this->getConfig()->getConfigParam('blVariantInheritAmountPrice') && $this->getArticle()->getParentId()) {
-            $sArticleId = $this->getArticle()->getParentId();
-        }
-
-        if ($this->getConfig()->getConfigParam('blMallInterchangeArticles')) {
-            $sShopSelect = '1';
-        } else {
-            $sShopSelect = " `oxshopid` = " . oxDb::getDb()->quote($this->getConfig()->getShopId()) . " ";
-        }
-
-        $sSql = "SELECT * FROM `oxprice2article` WHERE `oxartid` = " . oxDb::getDb()->quote($sArticleId) . " AND $sShopSelect ORDER BY `oxamount` ";
-
-        $aData = oxDb::getDb(oxDb::FETCH_MODE_ASSOC)->getAll($sSql);
-
-        return $aData;
-    }
 }

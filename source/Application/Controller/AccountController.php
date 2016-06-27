@@ -120,6 +120,8 @@ class AccountController extends \oxUBase
     /**
      * Show tags cloud
      *
+     * @deprecated v5.3 (2016-05-04); Tags will be moved to own module.
+     *             
      * @var bool
      */
     protected $_blShowTagCloud = false;
@@ -203,7 +205,7 @@ class AccountController extends \oxUBase
     }
 
     /**
-     * For some user actions (like writing guestbook entry or product
+     * For some user actions (like writing product
      * review) user must be logged in. So e.g. in product details page
      * there is a link leading to current view. Link contains parameter
      * "sourcecl", which tells where to redirect after successfull login.
