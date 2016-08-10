@@ -32,7 +32,7 @@ $sLangName  = 'English';
 // -------------------------------
 $aLang = array(
 
-'charset'                                                  => 'ISO-8859-15',
+'charset'                                                  => 'UTF-8',
 'fullDateFormat'                                           => 'Y-m-d H:i:s',
 'simpleDateFormat'                                         => 'Y-m-d',
 
@@ -1477,8 +1477,8 @@ $aLang = array(
 'SHOP_PERF_USETIMECHECKINARTLOAD'                          => 'Check "Active From/To" when loading Products',
 'SHOP_PERF_DISBASKETSAVING'                                => 'Don\'t save Shopping Carts of registered Users',
 'SHOP_PERF_HIDELEFTCOLUMN'                                 => 'Hide left column',
-'DYNSCREEN_LOCAL_TITLE'                                    => 'eCommerce Services',
-'DYNSCREEN_LOCAL_TEXT'                                     => 'Some general info about eCommerce services ...',
+'DYNSCREEN_LOCAL_TITLE'                                    => 'e-commerce Services',
+'DYNSCREEN_LOCAL_TEXT'                                     => 'Some general info about e-commerce services ...',
 'GENIMPORT_MENUITEM'                                       => 'Service',
 'GENIMPORT_MENUSUBITEM'                                    => 'Generic Import',
 'GENIMPORT_STEP_1_TITLE'                                   => 'Uploading CSV file',
@@ -1535,7 +1535,7 @@ $aLang = array(
 'mxremlist'                                                => 'List All Reviews',
 'mxsellist'                                                => 'Selection Lists',
 'mxservice'                                                => 'Service',
-'mxservicearea'                                            => 'eCommerce Services',
+'mxservicearea'                                            => 'e-commerce Services',
 'mxshipping'                                               => 'Shipping Cost Rules',
 'mxshippingset'                                            => 'Shipping Methods',
 'mxshopsett'                                               => 'Shop Settings',
@@ -1934,8 +1934,8 @@ $aLang = array(
 'OXDIAG_ERRORMESSAGEWEBSERVICERETURNEDNOXML'         => 'Web service returned not a XML.',
 'OXDIAG_ERRORMESSAGEVERSIONDOESNOTEXIST'             => 'OXID eShop %s %s in Revision %s does not exist.',
 'OXDIAG_ERRORVERSIONCOMPARE'                         => 'This text is not supposed to be here. Please try again.',
-'OXDIAG_MODIFIEDHINTS1'                              => 'OXID eShop has sophisticated possibility to extend it by modules without changing shipped files. It\'s not recommended and not needed to change shop files. See also our <a href="http://www.oxidforge.org/wiki/Tutorials#How_to_Extend_OXID_eShop_With_Modules_.28Part_1.29" target=_blank>tutorials</a>.',
-'OXDIAG_MODIFIEDHINTS2'                              => 'Since OXID eShop 4.2.0 it\'s possible to use <a href="http://www.oxidforge.org/wiki/Downloads/4.2.0#New_Features" target=_blank>your own templates without changing shipped ones</a>.',
+'OXDIAG_MODIFIEDHINTS1'                              => 'OXID eShop has sophisticated possibility to extend it by modules without changing shipped files. It\'s not recommended and not needed to change shop files. See also our <a href="http://blog.oxid-esales.com/2009/02/how-extend-oxid-eshop-with-modules-part-1/" target=_blank>tutorials</a>.',
+'OXDIAG_MODIFIEDHINTS2'                              => 'Since OXID eShop 4.2.0 it\'s possible to use <a href="http://oxidforge.org/en/oxid-eshop-version-4-2-0.html#New_Features" target=_blank>your own templates without changing shipped ones</a>.',
 'OXDIAG_VERSIONMISMATCHHINTS'                        => 'Apparently one or more updates went wrong. See details link for more information about more details for each file. A left over file which is not any longer included in OXID eShop could also be a <u>possible</u> reason for version mismatch. Find information about update in our <a href="http://www.oxid-esales.com/en/support-services/documentation-and-help/oxid-eshop/installation/oxid-eshop-update-installation" target=_blank>Documentation and help</a>.',
 
 

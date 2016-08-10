@@ -22,6 +22,7 @@
 
 namespace OxidEsales\Eshop\Tests\Acceptance\Admin;
 
+use OxidEsales\Eshop\Core\ShopIdCalculator;
 use OxidEsales\Eshop\Tests\Acceptance\AdminTestCase;
 
 /** Creating and deleting items. */
@@ -1472,11 +1473,11 @@ class CreatingItemsAdminTest extends AdminTestCase
         $this->selectAndWait("test_editlanguage", "label=English");
         //Extended tab
         $this->openTab("Extended");
-        $this->type("mediaUrl", "http://www.youtube.com/watch?v=OPqV4ipyMsg");
+        $this->type("mediaUrl", "https://www.youtube.com/watch?v=iQ69Hv8WP_g");
         $this->clickAndWait("save");
         $this->assertTextPresent("Please enter description");
         $this->type("mediaDesc", "media file [EN]_šÄßüл");
-        $this->type("mediaUrl", "http://www.youtube.com/watch?v=OPqV4ipyMsg");
+        $this->type("mediaUrl", "https://www.youtube.com/watch?v=iQ69Hv8WP_g");
         $this->clickAndWait("save");
         $this->assertEquals("media file [EN]_šÄßüл", $this->getValue("//fieldset[@title='Media URLs']/table/tbody/tr[1]/td[3]/input"));
         $this->selectAndWait("test_editlanguage", "label=Deutsch");
@@ -1487,12 +1488,18 @@ class CreatingItemsAdminTest extends AdminTestCase
         $this->selectAndWait("test_editlanguage", "label=English");
         $this->assertEquals("media file [EN]_šÄßüл", $this->getValue("//fieldset[@title='Media URLs']/table/tbody/tr[1]/td[3]/input"));
         $this->type("mediaDesc", "second media file");
-        $this->type("mediaUrl", "http://www.youtube.com/watch?v=OPqV4ipyMsg");
+        $this->type("mediaUrl", "https://www.youtube.com/watch?v=iQ69Hv8WP_g");
         $this->clickAndWait("save");
         $this->assertElementPresent("//fieldset[@title='Media URLs']/table/tbody/tr[1]/td[3]/input");
         $this->assertElementPresent("//fieldset[@title='Media URLs']/table/tbody/tr[2]/td[3]/input");
-        $this->assertEquals("media file [EN]_šÄßüл", $this->getValue("//fieldset[@title='Media URLs']/table/tbody/tr[1]/td[3]/input"));
-        $this->assertEquals("second media file", $this->getValue("//fieldset[@title='Media URLs']/table/tbody/tr[2]/td[3]/input"));
+
+        $expected = array('media file [EN]_šÄßüл',
+                          'second media file');
+        $result = array($this->getValue("//fieldset[@title='Media URLs']/table/tbody/tr[1]/td[3]/input"),
+                        $this->getValue("//fieldset[@title='Media URLs']/table/tbody/tr[2]/td[3]/input"));
+        sort($result);
+        $this->assertEquals($expected, $result);
+
         $this->clickAndConfirm("//fieldset[@title='Media URLs']/table/tbody/tr[2]/td[2]/a");
         $this->assertEquals("media file [EN]_šÄßüл", $this->getValue("//fieldset[@title='Media URLs']/table/tbody/tr[1]/td[3]/input"));
         $this->assertElementNotPresent("//fieldset[@title='Media URLs']/table/tbody/tr[2]/td[3]/input");
@@ -1509,7 +1516,7 @@ class CreatingItemsAdminTest extends AdminTestCase
     {
         $this->executeSql("DELETE FROM `oxconfig` WHERE `OXVARNAME`='blUseMultidimensionVariants'");
 
-        $shopId = $this->getTestConfig()->getShopEdition() == 'EE' ? 1 : 'oxbaseshop';
+        $shopId = ShopIdCalculator::BASE_SHOP_ID;
         $shopId = $this->getTestConfig()->isSubShop() ? 2 : $shopId;
         $id = $this->getTestConfig()->isSubShop() ? 'ee3uioiop3795dea7855be2d1e' : '9d1ef0f8237werea96756e2d1e';
         $this->executeSql("INSERT INTO `oxconfig` (`OXID`, `OXSHOPID`, `OXVARNAME`, `OXVARTYPE`, `OXVARVALUE`) VALUES ('$id', '$shopId', 'blUseMultidimensionVariants', 'bool', 0x07);");
@@ -1987,7 +1994,7 @@ class CreatingItemsAdminTest extends AdminTestCase
                                       `OXCUSTNR`, `OXUSTID`, `OXCOMPANY`, `OXFNAME`, `OXLNAME`, `OXSTREET`, `OXSTREETNR`, `OXADDINFO`, `OXCITY`,
                                       `OXCOUNTRYID`, `OXSTATEID`, `OXZIP`, `OXFON`, `OXFAX`, `OXSAL`, `OXBONI`, `OXCREATE`, `OXREGISTER`,
                                       `OXPRIVFON`, `OXMOBFON`, `OXBIRTHDATE`, `OXURL`, `OXUPDATEKEY`, `OXUPDATEEXP`)
-                              VALUES ('kdiruuc', 0, 'malladmin', 'oxbaseshop', 'example00@oxid-esales.dev', '89bb88b81f9b3669fc4c44e082dd9927', '3032396331663033316535343361356231363666653666316533376235353830',
+                              VALUES ('kdiruuc', 0, 'malladmin', ".ShopIdCalculator::BASE_SHOP_ID.", 'example00@oxid-esales.dev', '89bb88b81f9b3669fc4c44e082dd9927', '3032396331663033316535343361356231363666653666316533376235353830',
                                       121, '111222', 'company1', 'Name1', 'Surname1', 'street1', '11', 'additional info1', 'City11',
                                       'a7c40f632e04633c9.47194042', 'BE', '30001', '1112223331', '2223334441', 'MR', 1000, '2010-02-05 10:22:37', '2010-02-05 10:22:48',
                                       '', '', '1979-01-03', '', '', 0);";
@@ -2051,7 +2058,7 @@ class CreatingItemsAdminTest extends AdminTestCase
                                       `OXCUSTNR`, `OXUSTID`, `OXCOMPANY`, `OXFNAME`, `OXLNAME`, `OXSTREET`, `OXSTREETNR`, `OXADDINFO`, `OXCITY`,
                                       `OXCOUNTRYID`, `OXSTATEID`, `OXZIP`, `OXFON`, `OXFAX`, `OXSAL`, `OXBONI`, `OXCREATE`, `OXREGISTER`,
                                       `OXPRIVFON`, `OXMOBFON`, `OXBIRTHDATE`, `OXURL`, `OXUPDATEKEY`, `OXUPDATEEXP`)
-                              VALUES ('kdiruuc', 0, 'malladmin', 'oxbaseshop', 'example00@oxid-esales.dev', '89bb88b81f9b3669fc4c44e082dd9927', '3032396331663033316535343361356231363666653666316533376235353830',
+                              VALUES ('kdiruuc', 0, 'malladmin', 1, 'example00@oxid-esales.dev', '89bb88b81f9b3669fc4c44e082dd9927', '3032396331663033316535343361356231363666653666316533376235353830',
                                       121, '111222', 'company1', 'Name1', 'Surname1', 'street1', '11', 'additional info1', 'City11',
                                        'a7c40f632e04633c9.47194042', 'BE', '30001', '1112223331', '2223334441', 'MR', 1000, '2010-02-05 10:22:37', '2010-02-05 10:22:48',
                                       '5554445551', '6665556661', '1979-01-03', 'http://www.url1.com', '', 0);";
