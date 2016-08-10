@@ -25,7 +25,7 @@
 [{if $oViewConf->getShowVouchers()}]
 [{foreach from=$order->getVoucherList() item=voucher}]
 [{assign var="voucherseries" value=$voucher->getSerie()}]
-[{oxmultilang ident="USED_COUPONS_2"}] [{$voucher->oxvouchers__oxvouchernr->value}] - [{oxmultilang ident="DISCOUNT"}] [{$voucherseries->oxvoucherseries__oxdiscount->value}] [{if $voucherseries->oxvoucherseries__oxdiscounttype->value == "absolute"}][{$currency->sign}][{else}]%[{/if}]
+[{oxmultilang ident="USED_COUPONS_2"}] [{$voucher->oxvouchers__oxvouchernr->value}] - [{oxmultilang ident="DISCOUNT"}] [{$voucher->oxvouchers__oxdiscount->value}] [{$currency->sign}]
 [{/foreach}]
 [{/if}]
 [{/block}]

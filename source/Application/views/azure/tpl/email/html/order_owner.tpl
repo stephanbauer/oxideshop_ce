@@ -172,7 +172,7 @@
                                         </td>
                                         <td style="padding: 5px 20px 5px 5px;">
                                             <p style="font-family: Arial, Helvetica, sans-serif; font-size: 12px; margin: 0;">
-                                                [{$voucherseries->oxvoucherseries__oxdiscount->value}] [{if $voucherseries->oxvoucherseries__oxdiscounttype->value == "absolute"}][{$currency->sign}][{else}]%[{/if}]
+                                                [{$voucher->oxvouchers__oxdiscount->value}] [{$currency->sign}]
                                             </p>
                                         </td>
                                     </tr>
