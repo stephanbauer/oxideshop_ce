@@ -193,4 +193,36 @@ class VoucherSerie extends \oxBase
         //If active status code was reached, return as inactive
         return $iInactive;
     }
+
+
+    /**
+     * Builds and returns SQL query string.
+     *
+     * @param mixed $whereCondition SQL select WHERE conditions array (default false)
+     *
+     * @return array
+     */
+    public function buildSelectString($whereCondition = null)
+    {
+        $database = oxDb::getDb();
+
+        $get = $this->getSelectFields();
+        $query = "select $get, 
+        IF (
+        (oxbegindate = '0000-00-00 00:00:00' && oxenddate = '0000-00-00 00:00:00')
+         || (oxbegindate = '0000-00-00 00:00:00' && NOW() <= oxenddate)
+         || (oxbegindate <= NOW() && oxenddate = '0000-00-00 00:00:00')
+         || (oxbegindate <= NOW() && NOW() <= oxenddate)
+         ,1,0) as oxactive 
+        from " . $this->getViewName() . ' where 1 ';
+
+        if ($whereCondition) {
+            reset($whereCondition);
+            while (list($name, $value) = each($whereCondition)) {
+                $query .= ' and ' . $name . ' = ' . $database->quote($value);
+            }
+        }
+
+        return $query;
+    }
 }

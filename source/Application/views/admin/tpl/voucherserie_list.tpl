@@ -70,7 +70,7 @@ window.onload = function ()
 
 <tr>
     [{block name="admin_voucherserie_list_sorting"}]
-    	<td class="listheader first" height="15" width="30" align="center"><a href="javascript:void(0)" class="listheader">[{oxmultilang ident="GENERAL_ACTIVTITLE"}]</a></td>
+    	<td class="listheader first" height="15" width="30" align="center"><a href="Javascript:top.oxid.admin.setSorting( document.search, '', 'oxactive', 'desc');document.search.submit();" class="listheader">[{oxmultilang ident="GENERAL_ACTIVTITLE"}]</a></td>
         <td class="listheader" height="15">&nbsp;<a href="Javascript:top.oxid.admin.setSorting( document.search, 'oxvoucherseries', 'oxserienr', 'asc');document.search.submit();" class="listheader">[{oxmultilang ident="VOUCHERSERIE_LIST_SERIALNUM"}]</a></td>
         <td class="listheader"><a href="Javascript:top.oxid.admin.setSorting( document.search, 'oxvoucherseries', 'oxdiscount', 'asc');document.search.submit();" class="listheader">[{oxmultilang ident="GENERAL_DISCOUNT"}]</a></td>
         <td class="listheader"><a href="Javascript:top.oxid.admin.setSorting( document.search, 'oxvoucherseries', 'oxbegindate', 'asc');document.search.submit();" class="listheader">[{oxmultilang ident="GENERAL_BEGINDATE"}]</a></td>
