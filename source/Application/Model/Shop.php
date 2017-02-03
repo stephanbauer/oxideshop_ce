@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Model;
+namespace OxidEsales\EshopCommunity\Application\Model;
 
 use oxRegistry;
 use oxDb;
@@ -372,7 +372,10 @@ class Shop extends \oxI18n
         $aQueries = $this->getQueries();
         $bSuccess = true;
         foreach ($aQueries as $sQuery) {
-            if (!$oDb->execute($sQuery)) {
+            try {
+                $oDb->execute($sQuery);
+            } catch (\OxidEsales\EshopCommunity\Core\Exception\StandardException $exception) {
+                $exception->debugOut();
                 $bSuccess = false;
             }
         }

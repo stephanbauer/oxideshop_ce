@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Component\Widget;
+namespace OxidEsales\EshopCommunity\Application\Component\Widget;
 
 /**
  * Cookie note widget
@@ -55,10 +55,6 @@ class CookieNote extends \oxWidget
      */
     public function isEnabled()
     {
-        if ($this->getConfig()->getConfigParam('blShowCookiesNotification')) {
-            return true;
-        }
-
-        return false;
+        return (bool) $this->getConfig()->getConfigParam('blShowCookiesNotification');
     }
 }

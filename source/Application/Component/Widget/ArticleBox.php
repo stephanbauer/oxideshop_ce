@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Component\Widget;
+namespace OxidEsales\EshopCommunity\Application\Component\Widget;
 
 use oxRegistry;
 use oxArticle;
@@ -110,7 +110,6 @@ class ArticleBox extends \oxWidget
     public function getProduct()
     {
         if (is_null($this->_oArticle)) {
-
             if ($this->getViewParameter('_object')) {
                 $oArticle = $this->getViewParameter('_object');
             } else {

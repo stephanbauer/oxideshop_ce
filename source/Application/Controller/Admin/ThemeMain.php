@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxTheme;
@@ -76,11 +76,7 @@ class ThemeMain extends \oxAdminDetails
         $blThemeSet = isset($this->getConfig()->sTheme);
         $blCustomThemeSet = isset($this->getConfig()->sCustomTheme);
 
-        if ($blThemeSet || $blCustomThemeSet) {
-            return true;
-        }
-
-        return false;
+        return ($blThemeSet || $blCustomThemeSet);
     }
 
 
@@ -102,7 +98,7 @@ class ThemeMain extends \oxAdminDetails
         try {
             $oTheme->activate();
             $this->resetContentCache();
-        } catch (oxException $oEx) {
+        } catch (\OxidEsales\EshopCommunity\Core\Exception\StandardException $oEx) {
             oxRegistry::get("oxUtilsView")->addErrorToDisplay($oEx);
             $oEx->debugOut();
         }

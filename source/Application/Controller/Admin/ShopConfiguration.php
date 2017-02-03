@@ -20,11 +20,12 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxDb;
 use oxAdminDetails;
+use Exception;
 
 /**
  * Admin shop config manager.
@@ -86,7 +87,6 @@ class ShopConfiguration extends oxAdminDetails
 
                 return "popups/shop_default_category.tpl";
             }
-
         }
 
         $aDbVariables = $this->loadConfVars($soxId, $this->_getModuleForConfigVars());
@@ -210,7 +210,7 @@ class ShopConfiguration extends oxAdminDetails
         $aVarConstraints = array();
         $aGrouping = array();
         $oDb = oxDb::getDb();
-        $rs = $oDb->Execute(
+        $rs = $oDb->select(
             "select cfg.oxvarname,
                     cfg.oxvartype,
                     DECODE( cfg.oxvarvalue, " . $oDb->quote($myConfig->getConfigParam('sConfigKey')) . ") as oxvarvalue,
@@ -224,7 +224,7 @@ class ShopConfiguration extends oxAdminDetails
                 order by disp.oxpos, cfg.oxvarname"
         );
 
-        if ($rs != false && $rs->recordCount() > 0) {
+        if ($rs != false && $rs->count() > 0) {
             while (!$rs->EOF) {
                 list($sName, $sType, $sValue, $sConstraint, $sGrouping) = $rs->fields;
                 $aConfVars[$sType][$sName] = $this->_unserializeConfVar($sType, $sName, $sValue);
@@ -236,7 +236,7 @@ class ShopConfiguration extends oxAdminDetails
                         $aGrouping[$sGrouping][$sName] = $sType;
                     }
                 }
-                $rs->moveNext();
+                $rs->fetchRow();
             }
         }
 
@@ -381,12 +381,7 @@ class ShopConfiguration extends oxAdminDetails
      */
     protected function _arrayToMultiline($aInput)
     {
-        $sVal = '';
-        if (is_array($aInput)) {
-            $sVal = implode("\n", $aInput);
-        }
-
-        return $sVal;
+        return implode("\n", (array) $aInput);
     }
 
     /**
@@ -469,8 +464,8 @@ class ShopConfiguration extends oxAdminDetails
         $sEditId = parent::getEditObjectId();
         if (!$sEditId) {
             return $this->getConfig()->getShopId();
-        } else {
-            return $sEditId;
         }
+
+        return $sEditId;
     }
 }

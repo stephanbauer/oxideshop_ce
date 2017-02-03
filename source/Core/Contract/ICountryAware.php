@@ -20,9 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core\Contract;
-
-use oxCountry;
+namespace OxidEsales\EshopCommunity\Core\Contract;
 
 /**
  * Interface for country getter and setter
@@ -35,7 +33,7 @@ interface ICountryAware
      *
      * @param oxCountry $oCountry
      */
-    public function setCountry(oxCountry $oCountry);
+    public function setCountry(\OxidEsales\EshopCommunity\Application\Model\Country $oCountry);
 
     /**
      * Country getter

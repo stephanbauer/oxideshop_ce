@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core;
+namespace OxidEsales\EshopCommunity\Core;
 
 use oxCurl;
 use oxOnlineServerEmailBuilder;
@@ -45,6 +45,9 @@ abstract class OnlineCaller
 
     /** Amount of seconds for curl execution timeout. */
     const CURL_EXECUTION_TIMEOUT = 5;
+
+    /** Amount of seconds for curl connect timeout. */
+    const CURL_CONNECT_TIMEOUT = 3;
 
     /**
      * @var oxCurl
@@ -82,7 +85,7 @@ abstract class OnlineCaller
      * @param oxOnlineServerEmailBuilder $oEmailBuilder Forms email when OXID servers are unreachable.
      * @param oxSimpleXml                $oSimpleXml    Forms XML from Request for sending to OXID servers.
      */
-    public function __construct(oxCurl $oCurl, oxOnlineServerEmailBuilder $oEmailBuilder, oxSimpleXml $oSimpleXml)
+    public function __construct(\OxidEsales\EshopCommunity\Core\Curl $oCurl, \OxidEsales\EshopCommunity\Core\OnlineServerEmailBuilder $oEmailBuilder, \OxidEsales\EshopCommunity\Core\SimpleXml $oSimpleXml)
     {
         $this->_oCurl = $oCurl;
         $this->_oEmailBuilder = $oEmailBuilder;
@@ -96,7 +99,7 @@ abstract class OnlineCaller
      *
      * @return null|string In XML format.
      */
-    public function call(oxOnlineRequest $oRequest)
+    public function call(\OxidEsales\EshopCommunity\Core\OnlineRequest $oRequest)
     {
         $sOutputXml = null;
         $iFailedCallsCount = oxRegistry::getConfig()->getSystemConfigParameter('iFailedOnlineCallsCount');
@@ -123,14 +126,14 @@ abstract class OnlineCaller
         return $sOutputXml;
     }
 
-    /*
+    /**
      * Depending on the type of exception, first cast the exception and then write it to log.
      *
      * @param Exception $oEx
      */
     protected function _castExceptionAndWriteToLog(Exception $oEx)
     {
-        if(!($oEx instanceof oxException)){
+        if (!($oEx instanceof \OxidEsales\EshopCommunity\Core\Exception\StandardException)) {
             $oOxException = oxNew("oxException");
             $oOxException->setMessage($oEx->getMessage());
             $oOxException->debugOut();
@@ -211,9 +214,8 @@ abstract class OnlineCaller
             oxCurl::EXECUTION_TIMEOUT_OPTION,
             static::CURL_EXECUTION_TIMEOUT
         );
-        $sOutput = $oCurl->execute();
 
-        return $sOutput;
+        return $oCurl->execute();
     }
 
     /**

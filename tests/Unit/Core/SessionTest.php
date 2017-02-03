@@ -215,10 +215,6 @@ class SessionTest extends \OxidTestCase
      */
     protected function tearDown()
     {
-        $oDB = oxDb::getDb();
-        $sDelete = "DROP TABLE IF EXISTS oxsessions";
-        $oDB->Execute($sDelete);
-
         //removing oxUtils module
         oxRemClassModule('testUtils');
         oxRemClassModule('\Unit\Core\UtilsServerHelper');
@@ -310,7 +306,7 @@ class SessionTest extends \OxidTestCase
 
         $oExcp = unserialize(current($aErrors['default']));
         $this->assertNotNull($oExcp);
-        $this->assertTrue($oExcp instanceof oxExceptionToDisplay);
+        $this->assertTrue($oExcp instanceof \OxidEsales\EshopCommunity\Core\Exception\ExceptionToDisplay);
         $this->assertEquals("Different browser (oldone, none), creating new SID...<br>", $oExcp->getOxMessage());
     }
 
@@ -735,33 +731,6 @@ class SessionTest extends \OxidTestCase
     /**
      * oxsession::isSwappedClient() cookie check test is performed
      */
-    function testIsSwappedClientSidCheck()
-    {
-        $oDB = oxDb::getDb();
-        $sInsert = "CREATE TABLE `oxsessions` (
-                `ID` int( 11 ) NOT NULL AUTO_INCREMENT ,
-                `SessionID` varchar( 64 ) default NULL ,
-                `session_data` text,
-                `expiry` int( 11 ) default NULL ,
-                `expireref` varchar( 64 ) default NULL ,
-                PRIMARY KEY ( `ID` ) ,
-                KEY `SessionID` ( `SessionID` ) ,
-                KEY `expiry` ( `expiry` )
-                )";
-        $oDB->Execute($sInsert);
-        $this->assertTrue($this->oSession->UNITcheckSid());
-
-        $sInsert = "INSERT INTO `oxsessions` ( `SessionID` ) VALUES ( 'sessiontest' )";
-        $oDB->Execute($sInsert);
-
-        $oSession = $this->getMock('\Unit\Core\testSession', array('getId'));
-        $oSession->expects($this->any())->method('getId')->will($this->returnValue('sessiontest'));
-        $this->assertFalse($oSession->UNITcheckSid());
-    }
-
-    /**
-     * oxsession::isSwappedClient() cookie check test is performed
-     */
     function testIsSwappedClientCookieCheck()
     {
         $myConfig = $this->getConfig();
@@ -1102,7 +1071,7 @@ class SessionTest extends \OxidTestCase
      */
     function testSidInAdmin()
     {
-        $oSession = $this->getMock('\Unit\Core\testSession', array('_getCookieSid', 'isAdmin', 'getSessionChallengeToken'));
+        $oSession = $this->getMock('\Unit\Core\testSession', array('_getCookieSid', 'isAdmin', 'getSessionChallengeToken', 'getShopUrlId'));
         $oSession->expects($this->any())->method('getSessionChallengeToken')->will($this->returnValue('stok'));
         $oSession->expects($this->any())->method('_getCookieSid')->will($this->returnValue('admin_sid'));
         $oSession->expects($this->any())->method('isAdmin')->will($this->returnValue(true));
@@ -1239,7 +1208,7 @@ class SessionTest extends \OxidTestCase
         $oSession->expects($this->once())->method('_getBasketName')->will($this->returnValue(serialize($oClass)));
 
         $oSessionBasket = $oSession->getBasket();
-        $this->assertTrue($oSessionBasket instanceof oxbasket, "oSessionBasket is instance of oxbasket (found " . get_class($oSessionBasket) . ")");
+        $this->assertTrue($oSessionBasket instanceof \OxidEsales\EshopCommunity\Application\Model\Basket, "oSessionBasket is instance of oxbasket (found " . get_class($oSessionBasket) . ")");
     }
 
     /**
@@ -1252,7 +1221,7 @@ class SessionTest extends \OxidTestCase
         $oSession->expects($this->once())->method('_getBasketName')->will($this->returnValue(serialize($oFakeBasket)));
 
         $oSessionBasket = $oSession->getBasket();
-        $this->assertTrue($oSessionBasket instanceof oxBasket, "oSessionBasket is instance of oxBasket");
+        $this->assertTrue($oSessionBasket instanceof \OxidEsales\EshopCommunity\Application\Model\Basket, "oSessionBasket is instance of oxBasket");
         $this->assertFalse($oSessionBasket instanceof oxBasketHelper, "oSessionBasket is not instance of oxBasketHelper");
     }
 
@@ -1277,14 +1246,6 @@ class SessionTest extends \OxidTestCase
         $oSession = $this->getMock('oxsession', array('_getBasketName'));
         $oSession->expects($this->once())->method('_getBasketName')->will($this->returnValue('xxx'));
         $oSession->delBasket();
-    }
-
-    /**
-     * Test for bug #853
-     */
-    function testDbSessionHandlerExists()
-    {
-        $this->assertTrue(file_exists(_DB_SESSION_HANDLER), _DB_SESSION_HANDLER . " does not exist");
     }
 
     function testGetRequestChallengeToken()
@@ -1547,7 +1508,7 @@ class SessionTest extends \OxidTestCase
 
     public function testGetBasketReservations()
     {
-        $this->assertTrue(oxRegistry::getSession()->getBasketReservations() instanceof oxBasketReservation);
+        $this->assertTrue(oxRegistry::getSession()->getBasketReservations() instanceof \OxidEsales\EshopCommunity\Application\Model\BasketReservation);
         // test cache
         $this->assertSame(oxRegistry::getSession()->getBasketReservations(), oxRegistry::getSession()->getBasketReservations());
     }

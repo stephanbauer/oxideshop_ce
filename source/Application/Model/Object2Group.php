@@ -20,28 +20,21 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Model;
+namespace OxidEsales\EshopCommunity\Application\Model;
 
 use oxField;
-use oxDb;
+use OxidEsales\EshopCommunity\Core\Exception\DatabaseException;
+use OxidEsales\Eshop\Core\Database\Adapter\Doctrine\Database;
 
 /**
  * Manages object (users, discounts, deliveries...) assignment to groups.
  */
 class Object2Group extends \oxBase
 {
-    /**
-     * Load the relation even if from other shop
-     *
-     * @var boolean
-     */
+    /** @var boolean Load the relation even if from other shop */
     protected $_blDisableShopCheck = true;
 
-    /**
-     * Current class name
-     *
-     * @var string
-     */
+    /** @var string Current class name */
     protected $_sClassName = 'oxobject2group';
 
     /**
@@ -55,20 +48,23 @@ class Object2Group extends \oxBase
     }
 
     /**
-     * Extends the default save method.
-     * Saves only if this kind of entry do not exists.
+     * Extends the default save method
+     * to prevent from exception if same relationship already exist.
+     * The table oxobject2group has an UNIQUE index on (OXGROUPSID, OXOBJECTID, OXSHOPID)
+     * which ensures that a relationship would not be duplicated.
+     *
+     * @throws DatabaseException
      *
      * @return bool
      */
     public function save()
     {
-        $oDb = oxDb::getDb();
-        $sQ = "select 1 from oxobject2group where oxgroupsid = " . $oDb->quote($this->oxobject2group__oxgroupsid->value);
-        $sQ .= " and oxobjectid = " . $oDb->quote($this->oxobject2group__oxobjectid->value);
-
-        // does not exist
-        if (!$oDb->getOne($sQ, false, false)) {
+        try {
             return parent::save();
+        } catch (\OxidEsales\EshopCommunity\Core\Exception\DatabaseException $exception) {
+            if ($exception->getCode() !== Database::DUPLICATE_KEY_ERROR_CODE) {
+                throw $exception;
+            }
         }
     }
 }

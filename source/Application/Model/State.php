@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Model;
+namespace OxidEsales\EshopCommunity\Application\Model;
 
 use oxDb;
 
@@ -59,9 +59,8 @@ class State extends \oxI18n
         $oDb = oxDb::getDb();
 
         return $oDb->getOne(
-            "SELECT oxid FROM oxstates WHERE oxisoalpha2 = " . $oDb->quote(
-                $sCode
-            ) . " AND oxcountryid = " . $oDb->quote($sCountryId)
+            "SELECT oxid FROM oxstates WHERE oxisoalpha2 = " . $oDb->quote($sCode) .
+            " AND oxcountryid = " . $oDb->quote($sCountryId)
         );
     }
 

@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller;
+namespace OxidEsales\EshopCommunity\Application\Controller;
 
 use oxList;
 use oxRegistry;
@@ -147,7 +147,6 @@ class WrappingController extends oxUBase
             $oBasket->setCardMessage(oxRegistry::getConfig()->getRequestParameter('giftmessage'));
             $oBasket->setCardId(oxRegistry::getConfig()->getRequestParameter('chosencard'));
             $oBasket->onUpdate();
-
         }
 
         return 'order';

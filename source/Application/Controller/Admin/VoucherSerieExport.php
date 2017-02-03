@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxDb;
@@ -185,7 +185,6 @@ class VoucherSerieExport extends \VoucherSerie_Main
         $iExported = false;
 
         if ($oSerie = $this->_getVoucherSerie()) {
-
             $oDb = oxDb::getDb(oxDB::FETCH_MODE_ASSOC);
 
             $sSelect = "select oxvouchernr from oxvouchers where oxvoucherserieid = " . $oDb->quote($oSerie->getId());
@@ -204,7 +203,7 @@ class VoucherSerieExport extends \VoucherSerie_Main
             while (!$rs->EOF) {
                 $this->write(current($rs->fields));
                 $iExported++;
-                $rs->moveNext();
+                $rs->fetchRow();
             }
         }
 

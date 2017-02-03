@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxDb;
@@ -124,12 +124,10 @@ class ArticleAccessoriesAjax extends \ajaxListComponent
         $aChosenArt = $this->_getActionIds('oxaccessoire2article.oxid');
         // removing all
         if (oxRegistry::getConfig()->getRequestParameter('all')) {
-
             $sQ = $this->_addFilter("delete oxaccessoire2article.* " . $this->_getQuery());
             oxDb::getDb()->Execute($sQ);
-
         } elseif (is_array($aChosenArt)) {
-            $sChosenArticles = implode(", ", oxDb::getInstance()->quoteArray($aChosenArt));
+            $sChosenArticles = implode(", ", oxDb::getDb()->quoteArray($aChosenArt));
             $sQ = "delete from oxaccessoire2article where oxaccessoire2article.oxid in ({$sChosenArticles}) ";
             oxDb::getDb()->Execute($sQ);
         }

@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Component\Widget;
+namespace OxidEsales\EshopCommunity\Application\Component\Widget;
 
 /**
  * Recomendation list.
@@ -53,9 +53,7 @@ class ServiceMenu extends \oxWidget
     public function getCompareItemsCnt()
     {
         $oCompare = oxNew("compare");
-        $iCompItemsCnt = $oCompare->getCompareItemsCnt();
-
-        return $iCompItemsCnt;
+        return $oCompare->getCompareItemsCnt();
     }
 
     /**

@@ -23,7 +23,7 @@ namespace Unit\Application\Model;
 
 use Exception;
 use oxException;
-use OxidEsales\Eshop\Core\ShopIdCalculator;
+use OxidEsales\EshopCommunity\Core\ShopIdCalculator;
 use \oxNewsLetter;
 use \oxEmail;
 use \oxDb;
@@ -263,7 +263,7 @@ class NewsletterTest extends \OxidTestCase
         $oUser->load('oxdefaultadmin');
 
         $oTestNews = $this->getMock('Unit\Application\Model\oxnewsletterForUnit_oxnewsletterTest', array('_assignProducts'));
-        $oTestNews->expects($this->once())->method('_assignProducts')->with($this->isInstanceOf('oxUBase'), $this->equalTo(true));
+        $oTestNews->expects($this->once())->method('_assignProducts')->with($this->isInstanceOf('\OxidEsales\EshopCommunity\Application\Controller\FrontendController'), $this->equalTo(true));
         $oTestNews->load('newstest');
         $oTestNews->setNonPublicVar('_oUser', $oUser);
 
@@ -383,15 +383,14 @@ class NewsletterTest extends \OxidTestCase
         $oTestNews->UNITassignProducts($oView, true);
 
         $oArtList = $oView->getViewDataElement('articlelist');
+        $oSimilarArticlesList = $oView->getViewDataElement('simlist');
 
-        // testing passed data
+        // test the view data
         $this->assertNotNull($oArtList);
         $this->assertEquals(2, $oArtList->count());
 
-        $oArtList = $oView->getViewDataElement('simlist');
-
-        $this->assertNotNull($oArtList);
-        $this->assertEquals(2, $oArtList->count());
+        $this->assertNotNull($oSimilarArticlesList);
+        $this->assertEquals(2, $oSimilarArticlesList->count());
 
         $this->assertNotNull($oView->getViewDataElement('simarticle0'));
         $this->assertNotNull($oView->getViewDataElement('simarticle1'));

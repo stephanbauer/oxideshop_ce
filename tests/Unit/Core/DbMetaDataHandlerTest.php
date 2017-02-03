@@ -76,7 +76,7 @@ class DbMetaDataHandlerTest extends \OxidTestCase
      */
     protected function createTestTableWithoutIndices()
     {
-        $sSql = "CREATE TABLE `testDbMetaDataHandlerWithoutIndices` (`OXID` char(32) NOT NULL) ENGINE = MyISAM";
+        $sSql = "CREATE TABLE `testDbMetaDataHandlerWithoutIndices` (`OXID` char(32) NOT NULL) ENGINE = InnoDB";
 
         oxDb::getDb()->execute($sSql);
     }
@@ -140,7 +140,7 @@ class DbMetaDataHandlerTest extends \OxidTestCase
      */
     public function testGetIndicesWithNotExistingTable()
     {
-        $dbMetaDataHandler = oxNew("OxidEsales\Eshop\Core\DbMetaDataHandler");
+        $dbMetaDataHandler = oxNew("OxidEsales\EshopCommunity\Core\DbMetaDataHandler");
 
         $indices = $dbMetaDataHandler->getIndices('NOT_EXISTING_TABLE_NAME');
 
@@ -154,7 +154,7 @@ class DbMetaDataHandlerTest extends \OxidTestCase
     {
         $this->createTestTableWithoutIndices();
 
-        $dbMetaDataHandler = oxNew("OxidEsales\Eshop\Core\DbMetaDataHandler");
+        $dbMetaDataHandler = oxNew("OxidEsales\EshopCommunity\Core\DbMetaDataHandler");
 
         $indices = $dbMetaDataHandler->getIndices('testDbMetaDataHandlerWithoutIndices');
 
@@ -168,7 +168,7 @@ class DbMetaDataHandlerTest extends \OxidTestCase
     public function testGetIndicesWithTableWithIndices()
     {
         $this->createTestTable();
-        $dbMetaDataHandler = oxNew("OxidEsales\Eshop\Core\DbMetaDataHandler");
+        $dbMetaDataHandler = oxNew("OxidEsales\EshopCommunity\Core\DbMetaDataHandler");
 
         $indices = $dbMetaDataHandler->getIndices('testDbMetaDataHandler');
 
@@ -185,7 +185,7 @@ class DbMetaDataHandlerTest extends \OxidTestCase
      */
     public function testHasIndexWithNotExistingIndex()
     {
-        $dbMetaDataHandler = oxNew("OxidEsales\Eshop\Core\DbMetaDataHandler");
+        $dbMetaDataHandler = oxNew("OxidEsales\EshopCommunity\Core\DbMetaDataHandler");
 
         $this->assertFalse($dbMetaDataHandler->hasIndex('NON_EXISTENT_INDEX_NAME', 'oxarticles'));
     }
@@ -195,7 +195,7 @@ class DbMetaDataHandlerTest extends \OxidTestCase
      */
     public function testHasIndexWithExistingIndex()
     {
-        $dbMetaDataHandler = oxNew("OxidEsales\Eshop\Core\DbMetaDataHandler");
+        $dbMetaDataHandler = oxNew("OxidEsales\EshopCommunity\Core\DbMetaDataHandler");
 
         $this->assertTrue($dbMetaDataHandler->hasIndex('OXID', 'oxarticles'));
     }
@@ -205,7 +205,7 @@ class DbMetaDataHandlerTest extends \OxidTestCase
      */
     public function testGetIndexByNameWithNotExistingTable()
     {
-        $dbMetaDataHandler = oxNew("OxidEsales\Eshop\Core\DbMetaDataHandler");
+        $dbMetaDataHandler = oxNew("OxidEsales\EshopCommunity\Core\DbMetaDataHandler");
 
         $this->assertNull($dbMetaDataHandler->getIndexByName('OXID', 'NOT_EXISTANT_TABLE_NAME'));
     }
@@ -215,7 +215,7 @@ class DbMetaDataHandlerTest extends \OxidTestCase
      */
     public function testGetIndexByNameWithNotExistingName()
     {
-        $dbMetaDataHandler = oxNew("OxidEsales\Eshop\Core\DbMetaDataHandler");
+        $dbMetaDataHandler = oxNew("OxidEsales\EshopCommunity\Core\DbMetaDataHandler");
 
         $this->assertNull($dbMetaDataHandler->getIndexByName('NON_EXISTANT_INDEX_NAME', 'oxarticles'));
     }
@@ -225,7 +225,7 @@ class DbMetaDataHandlerTest extends \OxidTestCase
      */
     public function testGetIndexByNameWithExistingName()
     {
-        $dbMetaDataHandler = oxNew("OxidEsales\Eshop\Core\DbMetaDataHandler");
+        $dbMetaDataHandler = oxNew("OxidEsales\EshopCommunity\Core\DbMetaDataHandler");
 
         $index = $dbMetaDataHandler->getIndexByName('OXID', 'oxarticles');
 
@@ -257,21 +257,7 @@ class DbMetaDataHandlerTest extends \OxidTestCase
      */
     public function testGetCreateTableSetSql()
     {
-        $sTestSql = "CREATE TABLE `oxcountry_set1` (`OXID` char(32)  NOT NULL, PRIMARY KEY (`OXID`)) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Countries list'";
-
-        $oDbMeta = $this->getProxyClass("oxDbMetaDataHandler");
-
-        //comparing in case insensitive form
-        $this->assertEquals($sTestSql, $oDbMeta->UNITgetCreateTableSetSql("oxcountry", 8), '', 0, 10, false, true);
-    }
-
-    /*
-     * Test if returned sql for creating new table set is correct
-     */
-    public function testGetCreateTableSetSqlInIsoMode()
-    {
-        $this->setConfigParam('iUtfMode', 0);
-        $sTestSql = "CREATE TABLE `oxcountry_set1` (`OXID` char(32) COLLATE latin1_general_ci NOT NULL, PRIMARY KEY (`OXID`)) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Countries list'";
+        $sTestSql = "CREATE TABLE `oxcountry_set1` (`OXID` char(32) NOT NULL, PRIMARY KEY (`OXID`)) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Countries list'";
 
         $oDbMeta = $this->getProxyClass("oxDbMetaDataHandler");
 
@@ -284,7 +270,7 @@ class DbMetaDataHandlerTest extends \OxidTestCase
      */
     public function testGetAddFieldSql()
     {
-        $sTestSql = "alter TABLE `oxcountry` ADD `OXTITLE_4` char(128) NOT NULL default ''  AFTER `OXTITLE_3`";
+        $sTestSql = "alter TABLE `oxcountry` ADD `OXTITLE_4` varchar(128) NOT NULL default ''  AFTER `OXTITLE_3`";
 
         $oDbMeta = $this->getProxyClass("oxDbMetaDataHandler");
 
@@ -298,16 +284,18 @@ class DbMetaDataHandlerTest extends \OxidTestCase
     public function testGetAddFieldIndexSql()
     {
         $this->createTestTable();
-        $dbMetaDataHandler = oxNew('OxidEsales\Eshop\Core\DbMetaDataHandler');
+        $dbMetaDataHandler = oxNew('OxidEsales\EshopCommunity\Core\DbMetaDataHandler');
 
         $expectedSqls = [
-            'ALTER TABLE `testDbMetaDataHandler` ADD FULLTEXT KEY  (`OXLONGDESC_4`)',
+            "ALTER TABLE `testDbMetaDataHandler` ADD KEY  (`OXTITLE_4`)",
+            "ALTER TABLE `testDbMetaDataHandler` ADD FULLTEXT KEY  (`OXLONGDESC_4`)",
             "ALTER TABLE `testDbMetaDataHandler` ADD FULLTEXT KEY  (`OXLONGDESC_5`)",
             "ALTER TABLE `testDbMetaDataHandler_set1` ADD FULLTEXT KEY  (`OXLONGDESC_8`)",
             "ALTER TABLE `testDbMetaDataHandler_set2` ADD FULLTEXT KEY  (`OXLONGDESC_20`)"
         ];
 
         $resultSqls = [
+            $dbMetaDataHandler->getAddFieldIndexSql("testDbMetaDataHandler", "OXTITLE", "OXTITLE_4"),
             $dbMetaDataHandler->getAddFieldIndexSql("testDbMetaDataHandler", "OXLONGDESC", "OXLONGDESC_4"),
             $dbMetaDataHandler->getAddFieldIndexSql("testDbMetaDataHandler", "OXLONGDESC", "OXLONGDESC_5"),
             $dbMetaDataHandler->getAddFieldIndexSql("testDbMetaDataHandler", "OXLONGDESC", "OXLONGDESC_8", "testDbMetaDataHandler_set1"),
@@ -392,9 +380,9 @@ class DbMetaDataHandlerTest extends \OxidTestCase
      */
     public function testAddNewMultilangFieldAlterTable()
     {
-        $aTestSql[] = "ALTER TABLE `oxcountry` ADD `OXTITLE_4` char(128) NOT NULL default ''  AFTER `OXTITLE_3`";
-        $aTestSql[] = "ALTER TABLE `oxcountry` ADD `OXSHORTDESC_4` char(128) NOT NULL default ''  AFTER `OXSHORTDESC_3`";
-        $aTestSql[] = "ALTER TABLE `oxcountry` ADD `OXLONGDESC_4` char(255) NOT NULL default ''  AFTER `OXLONGDESC_3`";
+        $aTestSql[] = "ALTER TABLE `oxcountry` ADD `OXTITLE_4` varchar(128) NOT NULL default ''  AFTER `OXTITLE_3`";
+        $aTestSql[] = "ALTER TABLE `oxcountry` ADD `OXSHORTDESC_4` varchar(255) NOT NULL default ''  AFTER `OXSHORTDESC_3`";
+        $aTestSql[] = "ALTER TABLE `oxcountry` ADD `OXLONGDESC_4` varchar(255) NOT NULL default ''  AFTER `OXLONGDESC_3`";
 
         /** @var oxDbMetaDataHandler|PHPUnit_Framework_MockObject_MockObject $oDbMeta */
         $oDbMeta = $this->getMock('oxdbmetadatahandler', array('executeSql'));
@@ -409,10 +397,10 @@ class DbMetaDataHandlerTest extends \OxidTestCase
      */
     public function testAddNewMultilangFieldCreateTable()
     {
-        $aTestSql[] = "CREATE TABLE `oxcountry_set1` (`OXID` char(32)  NOT NULL, PRIMARY KEY (`OXID`)) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='Countries list'";
-        $aTestSql[] = "ALTER TABLE `oxcountry_set1` ADD `OXTITLE_8` char(128) NOT NULL DEFAULT '' ";
-        $aTestSql[] = "ALTER TABLE `oxcountry_set1` ADD `OXSHORTDESC_8` char(128) NOT NULL DEFAULT '' ";
-        $aTestSql[] = "ALTER TABLE `oxcountry_set1` ADD `OXLONGDESC_8` char(255) NOT NULL DEFAULT '' ";
+        $aTestSql[] = "CREATE TABLE `oxcountry_set1` (`OXID` char(32) NOT NULL, PRIMARY KEY (`OXID`)) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='Countries list'";
+        $aTestSql[] = "ALTER TABLE `oxcountry_set1` ADD `OXTITLE_8` varchar(128) NOT NULL DEFAULT '' ";
+        $aTestSql[] = "ALTER TABLE `oxcountry_set1` ADD `OXSHORTDESC_8` varchar(255) NOT NULL DEFAULT '' ";
+        $aTestSql[] = "ALTER TABLE `oxcountry_set1` ADD `OXLONGDESC_8` varchar(255) NOT NULL DEFAULT '' ";
 
         /** @var oxDbMetaDataHandler|PHPUnit_Framework_MockObject_MockObject $oDbMeta */
         $oDbMeta = $this->getMock('oxdbmetadatahandler', array('executeSql', 'getCurrentMaxLangId'));

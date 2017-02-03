@@ -21,7 +21,7 @@
  */
 namespace Unit\Application\Controller;
 
-use \oxcountrylist;
+use OxidEsales\EshopCommunity\Application\Model\CountryList;
 
 use \stdClass;
 use \oxRegistry;
@@ -500,7 +500,7 @@ class ViewConfigTest extends \OxidTestCase
     public function testGetCountryList()
     {
         $oView = oxNew('oxViewConfig');
-        $this->assertTrue($oView->getCountryList() instanceof oxcountrylist);
+        $this->assertTrue($oView->getCountryList() instanceof countrylist);
     }
 
     public function testGetModulePath()
@@ -529,7 +529,7 @@ class ViewConfigTest extends \OxidTestCase
         $config->setConfigParam("sShopDir", $fakeShopDirectory);
 
         $message = "Requested file not found for module test1 (" . $fakeShopDirectory . "modules/test1/out/blocks/non_existing_template.tpl)";
-        $this->setExpectedException('\OxidEsales\Eshop\Core\Exception\FileException', $message);
+        $this->setExpectedException('\OxidEsales\EshopCommunity\Core\Exception\FileException', $message);
 
         /** @var oxViewConfig|PHPUnit_Framework_MockObject_MockObject $viewConfig */
         $viewConfig = $this->getMock('oxViewConfig', array('getConfig'));
@@ -1846,17 +1846,6 @@ class ViewConfigTest extends \OxidTestCase
 
         $this->getConfig()->setConfigParam("blShowBirthdayFields", false);
         $this->assertFalse($oViewConf->showBirthdayFields());
-    }
-
-    /**
-     * oxViewconfig::showFinalStep() test case
-     *
-     * @return null
-     */
-    public function testShowFinalStep()
-    {
-        $oViewConf = oxNew('oxViewConfig');
-        $this->assertTrue($oViewConf->showFinalStep());
     }
 
     /**

@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Model;
+namespace OxidEsales\EshopCommunity\Application\Model;
 
 use oxRegistry;
 use oxArticleInputException;
@@ -253,7 +253,7 @@ class BasketItem extends \oxSuperCfg
     /**
      * Setter for basketItemkey.
      *
-     * @param $itemKey
+     * @param string $itemKey
      */
     public function setBasketItemKey($itemKey)
     {
@@ -373,7 +373,7 @@ class BasketItem extends \oxSuperCfg
         try {
             //validating amount
             $dAmount = oxRegistry::get("oxInputValidator")->validateBasketAmount($dAmount);
-        } catch (oxArticleInputException $oEx) {
+        } catch (\OxidEsales\EshopCommunity\Core\Exception\ArticleInputException $oEx) {
             $oEx->setArticleNr($this->getProductId());
             $oEx->setProductId($this->getProductId());
             // setting additional information for exception and then rethrowing
@@ -403,7 +403,6 @@ class BasketItem extends \oxSuperCfg
                 } else {
                     // limited stock
                     $this->_dAmount = $iOnStock;
-                    $blOverride = true;
                 }
             }
         }
@@ -427,7 +426,7 @@ class BasketItem extends \oxSuperCfg
      * Apply checks for package on amount
      *
      * @param oxArticle $article
-     * @param double $amount
+     * @param double    $amount
      *
      * @return double
      */
@@ -596,7 +595,6 @@ class BasketItem extends \oxSuperCfg
     public function getTitle()
     {
         if ($this->_sTitle === null || $this->getLanguageId() != oxRegistry::getLang()->getBaseLanguage()) {
-
             $oArticle = $this->getArticle();
             $this->_sTitle = $oArticle->oxarticles__oxtitle->value;
 
@@ -1023,9 +1021,9 @@ class BasketItem extends \oxSuperCfg
         if ($iOldLang !== null && $iOldLang != $iLanguageId) {
             try {
                 $this->_setArticle($this->getProductId());
-            } catch (oxNoArticleException $oEx) {
+            } catch (\OxidEsales\EshopCommunity\Core\Exception\NoArticleException $oEx) {
                 oxRegistry::get("oxUtilsView")->addErrorToDisplay($oEx);
-            } catch (oxArticleInputException $oEx) {
+            } catch (\OxidEsales\EshopCommunity\Core\Exception\ArticleInputException $oEx) {
                 oxRegistry::get("oxUtilsView")->addErrorToDisplay($oEx);
             }
         }

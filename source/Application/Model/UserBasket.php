@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Model;
+namespace OxidEsales\EshopCommunity\Application\Model;
 
 use oxRegistry;
 use oxField;
@@ -199,7 +199,6 @@ class UserBasket extends \oxBase
      *
      * @return oxUserBasketItem
      */
-
     protected function _createItem($sProductId, $aSelList = null, $aPersParams = null)
     {
         $oNewItem = oxNew('oxuserbasketitem');
@@ -345,6 +344,7 @@ class UserBasket extends \oxBase
             $oDb = oxDb::getDb();
             $sQ = "delete from oxuserbasketitems where oxbasketid = " . $oDb->quote($sOXID);
             $oDb->execute($sQ);
+            $this->_aBasketItems = null;
         }
 
         return $blDelete;

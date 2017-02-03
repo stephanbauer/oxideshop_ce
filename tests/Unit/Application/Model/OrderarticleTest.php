@@ -21,8 +21,8 @@
  */
 namespace Unit\Application\Model;
 
-use \oxarticle;
-use \oxwrapping;
+use OxidEsales\EshopCommunity\Application\Model\Article;
+use OxidEsales\EshopCommunity\Application\Model\Wrapping;
 
 use \oxField;
 use \oxDb;
@@ -154,15 +154,14 @@ class OrderarticleTest extends \OxidTestCase
         $this->assertTrue($oOrderArticle->isOrderArticle());
     }
 
-
-    public function testGetProductParentId()
+    public function testGetParentId()
     {
         $oOrderArticle = oxNew('oxOrderArticle');
-        $this->assertFalse($oOrderArticle->getProductParentId());
+        $this->assertFalse($oOrderArticle->getParentId());
 
         $oOrderArticle = oxNew('oxOrderArticle');
         $oOrderArticle->oxorderarticles__oxartparentid = new oxField("sParentId");
-        $this->assertEquals("sParentId", $oOrderArticle->getProductParentId());
+        $this->assertEquals("sParentId", $oOrderArticle->getParentId());
     }
 
     public function testGetCategoryIds()
@@ -209,7 +208,7 @@ class OrderarticleTest extends \OxidTestCase
         $oOrderArticle = oxNew('oxOrderArticle');
 
         $oArticle = $oOrderArticle->UNITgetOrderArticle("1126");
-        $this->assertTrue($oArticle instanceof oxarticle);
+        $this->assertTrue($oArticle instanceof article);
         $this->assertTrue($oArticle->getLoadParentData());
     }
 
@@ -551,7 +550,7 @@ class OrderarticleTest extends \OxidTestCase
     public function testUpdateArticleStock()
     {
         $oDB = oxDb::getDB();
-        $oDB->getOne("update oxarticles set oxtimestamp = '2005-03-24 14:33:53' where oxid = '_testArticleId'");
+        $oDB->execute("update oxarticles set oxtimestamp = '2005-03-24 14:33:53' where oxid = '_testArticleId'");
         $this->_oOrderArticle->updateArticleStock(-3, false);
 
         $oArticle = oxNew("oxArticle");
@@ -697,7 +696,7 @@ class OrderarticleTest extends \OxidTestCase
         $this->_oOrderArticle->save();
 
         $sSQL = "select * from oxorderarticles where oxid = '_testOrderArticleId' ";
-        $rs = oxDb::getDb(oxDB::FETCH_MODE_ASSOC)->execute($sSQL);
+        $rs = oxDb::getDb(oxDB::FETCH_MODE_ASSOC)->select($sSQL);
 
         $oOrderArticle = oxNew('oxorderarticle');
         $oOrderArticle->assign($rs->fields); // field names are in upercase
@@ -723,7 +722,7 @@ class OrderarticleTest extends \OxidTestCase
         $this->assertSame(null, $o->getWrapping());
 
         $o->oxorderarticles__oxwrapid = new oxField('a');
-        $this->assertTrue($o->getWrapping() instanceof oxwrapping);
+        $this->assertTrue($o->getWrapping() instanceof wrapping);
     }
 
     /**

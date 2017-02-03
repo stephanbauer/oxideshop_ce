@@ -20,12 +20,11 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Model;
+namespace OxidEsales\EshopCommunity\Application\Model;
 
 use oxDb;
 use oxRegistry;
 use stdClass;
-
 
 /**
  * Attribute list manager.
@@ -55,16 +54,14 @@ class AttributeList extends \oxList
             return;
         }
 
-        foreach ($aIds as $iKey => $sVal) {
-            $aIds[$iKey] = oxDb::getInstance()->escapeString($sVal);
-        }
-
         $sAttrViewName = getViewName('oxattribute');
         $sViewName = getViewName('oxobject2attribute');
 
+        $oxObjectIdsSql = implode(',', oxDb::getDb()->quoteArray($aIds));
+
         $sSelect = "select $sAttrViewName.oxid, $sAttrViewName.oxtitle, {$sViewName}.oxvalue, {$sViewName}.oxobjectid ";
         $sSelect .= "from {$sViewName} left join $sAttrViewName on $sAttrViewName.oxid = {$sViewName}.oxattrid ";
-        $sSelect .= "where {$sViewName}.oxobjectid in ( '" . implode("','", $aIds) . "' ) ";
+        $sSelect .= "where {$sViewName}.oxobjectid in ( " . $oxObjectIdsSql . " ) ";
         $sSelect .= "order by {$sViewName}.oxpos, $sAttrViewName.oxpos";
 
         return $this->_createAttributeListFromSql($sSelect);
@@ -81,7 +78,7 @@ class AttributeList extends \oxList
     {
         $aAttributes = array();
         $rs = oxDb::getDb()->select($sSelect);
-        if ($rs != false && $rs->recordCount() > 0) {
+        if ($rs != false && $rs->count() > 0) {
             while (!$rs->EOF) {
                 if (!isset($aAttributes[$rs->fields[0]])) {
                     $aAttributes[$rs->fields[0]] = new stdClass();
@@ -92,7 +89,7 @@ class AttributeList extends \oxList
                     $aAttributes[$rs->fields[0]]->aProd[$rs->fields[3]] = new stdClass();
                 }
                 $aAttributes[$rs->fields[0]]->aProd[$rs->fields[3]]->value = $rs->fields[2];
-                $rs->moveNext();
+                $rs->fetchRow();
             }
         }
 
@@ -108,7 +105,6 @@ class AttributeList extends \oxList
     public function loadAttributes($sArticleId, $sParentId = null)
     {
         if ($sArticleId) {
-
             $oDb = oxDb::getDb(oxDb::FETCH_MODE_ASSOC);
 
             $sAttrViewName = getViewName('oxattribute');
@@ -128,7 +124,6 @@ class AttributeList extends \oxList
 
             $this->assignArray($aAttributes);
         }
-
     }
 
     /**
@@ -140,7 +135,6 @@ class AttributeList extends \oxList
     public function loadAttributesDisplayableInBasket($sArtId, $sParentId = null)
     {
         if ($sArtId) {
-
             $oDb = oxDb::getDb(oxDb::FETCH_MODE_ASSOC);
 
             $sAttrViewName = getViewName('oxattribute');
@@ -162,7 +156,6 @@ class AttributeList extends \oxList
         }
     }
 
-
     /**
      * get category attributes by category Id
      *
@@ -171,7 +164,6 @@ class AttributeList extends \oxList
      *
      * @return object;
      */
-
     public function getCategoryAttributes($sCategoryId, $iLang)
     {
         $aSessionFilter = oxRegistry::getSession()->getVariable('session_attrfilter');
@@ -202,11 +194,9 @@ class AttributeList extends \oxList
 
             $rs = $oDb->select($sSelect);
 
-            if ($rs != false && $rs->recordCount() > 0) {
+            if ($rs != false && $rs->count() > 0) {
                 while (!$rs->EOF && list($sAttId, $sAttTitle, $sAttValue) = $rs->fields) {
-
                     if (!$this->offsetExists($sAttId)) {
-
                         $oAttribute = oxNew("oxattribute");
                         $oAttribute->setTitle($sAttTitle);
 
@@ -215,13 +205,12 @@ class AttributeList extends \oxList
                         if (isset($aSessionFilter[$sCategoryId][$iLang][$sAttId])) {
                             $oAttribute->setActiveValue($aSessionFilter[$sCategoryId][$iLang][$sAttId]);
                         }
-
                     } else {
                         $oAttribute = $this->offsetGet($sAttId);
                     }
 
                     $oAttribute->addValue($sAttValue);
-                    $rs->moveNext();
+                    $rs->fetchRow();
                 }
             }
         }

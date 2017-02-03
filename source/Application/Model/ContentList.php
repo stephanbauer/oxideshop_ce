@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Model;
+namespace OxidEsales\EshopCommunity\Application\Model;
 
 use oxDb;
 
@@ -191,7 +191,7 @@ class ContentList extends \oxList
         }
 
         if ($iType == self::TYPE_SERVICE_LIST) {
-            $sIdents = implode(", ", oxDb::getInstance()->quoteArray($this->getServiceKeys()));
+            $sIdents = implode(", ", oxDb::getDb()->quoteArray($this->getServiceKeys()));
             $sSQLAdd = " AND OXLOADID IN (" . $sIdents . ")";
             $sSQLType = '';
         }

@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core;
+namespace OxidEsales\EshopCommunity\Core;
 
 use oxOnlineLicenseCheckRequest;
 use oxRegistry;
@@ -60,11 +60,9 @@ class OnlineLicenseCheckCaller extends \oxOnlineCaller
      * @throws oxException
      * @return oxOnlineLicenseCheckResponse
      */
-    public function doRequest(oxOnlineLicenseCheckRequest $oRequest)
+    public function doRequest(\OxidEsales\EshopCommunity\Core\OnlineLicenseCheckRequest $oRequest)
     {
-        $sResponse = $this->call($oRequest);
-
-        return $this->_formResponse($sResponse);
+        return $this->_formResponse($this->call($oRequest));
     }
 
     /**

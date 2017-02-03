@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core\GenericImport\ImportObject;
+namespace OxidEsales\EshopCommunity\Core\GenericImport\ImportObject;
 
 use Exception;
 use oxBase;
@@ -140,7 +140,7 @@ abstract class ImportObject
             $shopObject->init($this->getTableName());
         }
 
-        if ($shopObject instanceof oxI18n) {
+        if ($shopObject instanceof \OxidEsales\EshopCommunity\Core\Model\MultiLanguageModel) {
             $shopObject->setLanguage(0);
             $shopObject->setEnableMultilang(false);
         }
@@ -181,6 +181,7 @@ abstract class ImportObject
     protected function getTableName()
     {
         $shopId = oxRegistry::getConfig()->getShopId();
+
         return getViewName($this->tableName, -1, $shopId);
     }
 
@@ -375,7 +376,7 @@ abstract class ImportObject
         $objectName = $this->getShopObjectName();
         if ($objectName) {
             $shopObject = oxNew($objectName, 'core');
-            if ($shopObject instanceof oxI18n) {
+            if ($shopObject instanceof \OxidEsales\EshopCommunity\Core\Model\MultiLanguageModel) {
                 $shopObject->setLanguage(0);
                 $shopObject->setEnableMultilang(false);
             }

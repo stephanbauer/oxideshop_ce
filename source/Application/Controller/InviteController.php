@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller;
+namespace OxidEsales\EshopCommunity\Application\Controller;
 
 use oxRegistry;
 
@@ -68,7 +68,7 @@ class InviteController extends \oxUBase
 
     /**
      * Recommlist
-     * 
+     *
      * @deprecated since v5.3 (2016-06-17); Listmania will be moved to an own module.
      *
      * @var object
@@ -99,7 +99,7 @@ class InviteController extends \oxUBase
         $oConfig = $this->getConfig();
 
         if (!$oConfig->getConfigParam("blInvitationsEnabled")) {
-            oxRegistry::getUtils()->redirect($oConfig->getShopHomeURL());
+            oxRegistry::getUtils()->redirect($oConfig->getShopHomeUrl());
 
             return;
         }
@@ -120,7 +120,7 @@ class InviteController extends \oxUBase
         $oConfig = $this->getConfig();
 
         if (!$oConfig->getConfigParam("blInvitationsEnabled")) {
-            oxRegistry::getUtils()->redirect($oConfig->getShopHomeURL());
+            oxRegistry::getUtils()->redirect($oConfig->getShopHomeUrl());
         }
 
         $aParams = oxRegistry::getConfig()->getRequestParameter('editval', true);
@@ -168,14 +168,14 @@ class InviteController extends \oxUBase
 
         //validating entered emails
         foreach ($aParams["rec_email"] as $sRecipientEmail) {
-            if (!$oUtils->isValidEmail($sRecipientEmail)) {
+            if (!oxNew('oxMailValidator')->isValidEmail($sRecipientEmail)) {
                 $oUtilsView->addErrorToDisplay('ERROR_MESSAGE_INVITE_INCORRECTEMAILADDRESS');
 
                 return;
             }
         }
 
-        if (!$oUtils->isValidEmail($aParams["send_email"])) {
+        if (!oxNew('oxMailValidator')->isValidEmail($aParams["send_email"])) {
             $oUtilsView->addErrorToDisplay('ERROR_MESSAGE_INVITE_INCORRECTEMAILADDRESS');
 
             return;
@@ -204,12 +204,7 @@ class InviteController extends \oxUBase
      */
     public function getInviteSendStatus()
     {
-        //checking if email was sent
-        if ($this->_iMailStatus == 1) {
-            return true;
-        }
-
-        return false;
+        return ($this->_iMailStatus == 1);
     }
 
     /**

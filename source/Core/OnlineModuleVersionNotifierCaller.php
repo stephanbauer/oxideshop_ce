@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core;
+namespace OxidEsales\EshopCommunity\Core;
 
 use oxOnlineModulesNotifierRequest;
 
@@ -50,7 +50,7 @@ class OnlineModuleVersionNotifierCaller extends \oxOnlineCaller
      *
      * @param oxOnlineModulesNotifierRequest $oRequest Object with request parameters
      */
-    public function doRequest(oxOnlineModulesNotifierRequest $oRequest)
+    public function doRequest(\OxidEsales\EshopCommunity\Core\OnlineModulesNotifierRequest $oRequest)
     {
         $this->call($oRequest);
     }

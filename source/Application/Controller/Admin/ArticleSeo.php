@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxDb;
@@ -96,7 +96,7 @@ class ArticleSeo extends \Object_Seo
     /**
      * Returns active category (manufacturer/vendor) id
      *
-     * @return string
+     * @return false|string
      */
     public function getActCatId()
     {
@@ -107,9 +107,11 @@ class ArticleSeo extends \Object_Seo
             $iStartPos = $oStr->strpos($aData["oxparams"], "#");
             $iEndPos = $oStr->strpos($aData["oxparams"], "#", $iStartPos + 1);
             $iLen = $oStr->strlen($aData["oxparams"]);
+
             $sId = $oStr->substr($aData["oxparams"], $iStartPos + 1, $iEndPos - $iLen);
         } elseif ($aList = $this->getSelectionList()) {
             $oItem = reset($aList[$this->getActCatType()][$this->getActCatLang()]);
+
             $sId = $oItem->getId();
         }
 
@@ -126,7 +128,7 @@ class ArticleSeo extends \Object_Seo
         if ($this->_aSelectionList === null) {
             $this->_aSelectionList = array();
 
-            $oProduct = oxNew('OxidEsales\Eshop\Application\Model\Article');
+            $oProduct = oxNew('OxidEsales\EshopCommunity\Application\Model\Article');
             $oProduct->load($this->getEditObjectId());
 
             if ($oCatList = $this->_getCategoryList($oProduct)) {
@@ -170,8 +172,8 @@ class ArticleSeo extends \Object_Seo
         $sQ = "select oxobject2category.oxcatnid as oxid from {$sView} as oxobject2category " .
               "where oxobject2category.oxobjectid=" . $sQuotesArticleId . " union " . $sSqlForPriceCategories;
 
-        $oRs = $oDb->execute($sQ);
-        if ($oRs != false && $oRs->recordCount() > 0) {
+        $oRs = $oDb->select($sQ);
+        if ($oRs != false && $oRs->count() > 0) {
             while (!$oRs->EOF) {
                 $oCat = oxNew('oxCategory');
                 if ($oCat->loadInLang($iLang, current($oRs->fields))) {
@@ -183,7 +185,7 @@ class ArticleSeo extends \Object_Seo
                     }
                     $aCatList[] = $oCat;
                 }
-                $oRs->moveNext();
+                $oRs->fetchRow();
             }
         }
 
@@ -223,7 +225,6 @@ class ArticleSeo extends \Object_Seo
             }
         }
     }
-
 
     /**
      * Returns active category object, used for seo url getter
@@ -373,9 +374,7 @@ class ArticleSeo extends \Object_Seo
      */
     protected function _getSaveObjectId()
     {
-        $sId = $this->getEditObjectId();
-
-        return $sId;
+        return $this->getEditObjectId();
     }
 
     /**
@@ -396,6 +395,7 @@ class ArticleSeo extends \Object_Seo
                    oxseo.oxobjectid = " . $oDb->quote($sId) . " and
                    oxseo.oxshopid = '{$iShopId}' and oxseo.oxlang = {$iLang} and oxparams = " . $oDb->quote($sParam);
 
-        return (bool) oxDb::getDb()->getOne($sQ, false, false);
+        // We force reading from master to prevent issues with slow replications or open transactions (see ESDEV-3804).
+        return (bool) oxDb::getMaster()->getOne($sQ);
     }
 }

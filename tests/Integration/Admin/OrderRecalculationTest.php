@@ -346,6 +346,8 @@ class OrderRecalculationTest extends \OxidTestCase
     /**
      * Place order and simulate clicking admin->order_main.
      * Test case: vouchers applied. (20% off each) and purchase amount 20% off discount
+     *
+     * @group quarantine
      */
     public function testPlaceOrderWithPercentageVouchersPlusDiscountSaveOrderMainRecalculates()
     {
@@ -476,20 +478,20 @@ class OrderRecalculationTest extends \OxidTestCase
     /**
      * @param oxBasket $basket
      */
-    private function checkContents(oxBasket $basket, $expectedAmount)
+    private function checkContents(\OxidEsales\EshopCommunity\Application\Model\Basket $basket, $expectedAmount)
     {
         $basketArticles = $basket->getBasketArticles();
         $keys = array_keys($basketArticles);
         $this->assertTrue(is_array($basketArticles));
         $this->assertEquals(1, count($basketArticles));
-        $this->assertTrue(is_a($basketArticles[$keys[0]], 'oxArticle'));
+        $this->assertTrue(is_a($basketArticles[$keys[0]], 'OxidEsales\EshopCommunity\Application\Model\Article'));
         $this->assertEquals($this->testArticleId, $basketArticles[$keys[0]]->getId());
 
         $basketContents = $basket->getContents();
         $keys = array_keys($basketContents);
         $this->assertTrue(is_array($basketContents));
         $this->assertEquals(1, count($basketArticles));
-        $this->assertTrue(is_a($basketContents[$keys[0]], 'oxBasketItem'));
+        $this->assertTrue(is_a($basketContents[$keys[0]], 'OxidEsales\EshopCommunity\Application\Model\BasketItem'));
 
         $basketItem = $basketContents[$keys[0]];
         $this->assertEquals($this->testArticleId, $basketItem->getProductId());

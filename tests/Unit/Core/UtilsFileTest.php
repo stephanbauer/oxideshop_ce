@@ -26,65 +26,20 @@ use \Exception;
 use \oxRegistry;
 use \oxTestModules;
 
-//copied the implementation from http://php.net/sys_get_temp_dir
-//in case it is needed more often it should be moved to some generic place
-//T2009-04-16
-if (!function_exists('sys_get_temp_dir')) {
-    function sys_get_temp_dir()
-    {
-        if (!empty($_ENV['TMP'])) {
-            return realpath($_ENV['TMP']);
-        }
-
-        if (!empty($_ENV['TMPDIR'])) {
-            return realpath($_ENV['TMPDIR']);
-        }
-
-        if (!empty($_ENV['TEMP'])) {
-            return realpath($_ENV['TEMP']);
-        }
-
-        $tempfile = tempnam(uniqid(rand(), true), '');
-        if (file_exists($tempfile)) {
-            unlink($tempfile);
-
-            return realpath(dirname($tempfile));
-        }
-    }
-}
-
 class UtilsFileTest extends \OxidTestCase
 {
-
     public function setUp()
     {
         parent::setUp();
         $this->aFiles = $_FILES;
-        $aTmpDirectories[] = sys_get_temp_dir() . DIRECTORY_SEPARATOR . "targetDir";
-        $aTmpDirectories[] = sys_get_temp_dir() . DIRECTORY_SEPARATOR . "sourceDir";
+        $aTmpDirectories[] = $this->getDirectoryPathToCreateFiles() . DIRECTORY_SEPARATOR . "targetDir";
+        $aTmpDirectories[] = $this->getDirectoryPathToCreateFiles() . DIRECTORY_SEPARATOR . "sourceDir";
 
         foreach ($aTmpDirectories as $sDirectory) {
             if (is_dir(realpath($sDirectory))) {
                 oxRegistry::get('oxUtilsFile')->deleteDir($sDirectory);
             }
         }
-    }
-
-    /**
-     * Tear down the fixture.
-     *
-     * @return null
-     */
-    public function tearDown()
-    {
-        oxRegistry::get("oxUtilsFile")->setConfig(null);
-        $_FILES = $this->aFiles;
-        $sDir = $this->getConfig()->getConfigParam('sShopDir') . "/$sOut/1/html/1";
-        if (is_dir(realpath($sDir))) {
-            oxRegistry::get("oxUtilsFile")->deleteDir($sDir);
-        }
-
-        parent::tearDown();
     }
 
     public function testGetUniqueFileName()
@@ -245,7 +200,7 @@ class UtilsFileTest extends \OxidTestCase
 
     public function testCopyDir()
     {
-        $sTempDir = sys_get_temp_dir();
+        $sTempDir = $this->getDirectoryPathToCreateFiles();
         $sTargetDir = $sTempDir . DIRECTORY_SEPARATOR . "targetDir";
         $sSourceDir = $sTempDir . DIRECTORY_SEPARATOR . "sourceDir";
 
@@ -299,7 +254,7 @@ class UtilsFileTest extends \OxidTestCase
     public function testDeleteDir()
     {
         //set-up a directory and a subdirectory
-        $sTempDir = rtrim(sys_get_temp_dir(), '/') . '/';
+        $sTempDir = rtrim($this->getDirectoryPathToCreateFiles(), '/') . '/';
         $sDir = $sTempDir . 'TestDirectory';
         $sSubDir = 'SubTestDirectory';
         $sFileName = 'testFile.txt';
@@ -330,13 +285,13 @@ class UtilsFileTest extends \OxidTestCase
         $aFiles['name'] = 'testfile';
         $aFiles['tmp_name'] = 'testfile';
 
-        $this->setExpectedException('oxException');
+        $this->setExpectedException('OxidEsales\EshopCommunity\Core\Exception\StandardException');
         oxRegistry::get("oxUtilsFile")->handleUploadedFile($aFiles, '/out/media/');
     }
 
     public function testProcessFileEmpty()
     {
-        $this->setExpectedException('oxException', 'EXCEPTION_NOFILE');
+        $this->setExpectedException('OxidEsales\EshopCommunity\Core\Exception\StandardException', 'EXCEPTION_NOFILE');
         oxRegistry::get("oxUtilsFile")->processFile(null, '/out/media/');
     }
 
@@ -346,7 +301,7 @@ class UtilsFileTest extends \OxidTestCase
         $_FILES['fileItem']['name'] = 'testfile_\xc4\xaf\xc5\xa1.jpg';
         $_FILES['fileItem']['tmp_name'] = 'testfile';
 
-        $this->setExpectedException('oxException', 'EXCEPTION_FILENAMEINVALIDCHARS');
+        $this->setExpectedException('OxidEsales\EshopCommunity\Core\Exception\StandardException', 'EXCEPTION_FILENAMEINVALIDCHARS');
         oxRegistry::get("oxUtilsFile")->processFile('fileItem', '/out/media/');
     }
 
@@ -362,7 +317,7 @@ class UtilsFileTest extends \OxidTestCase
         $_FILES['fileItem']['name'] = 'testfile';
         $_FILES['fileItem']['tmp_name'] = 'testfile';
 
-        $this->setExpectedException('oxException');
+        $this->setExpectedException('OxidEsales\EshopCommunity\Core\Exception\StandardException');
         oxRegistry::get("oxUtilsFile")->processFile('fileItem', '/out/media/');
     }
 
@@ -372,7 +327,7 @@ class UtilsFileTest extends \OxidTestCase
         $_FILES['fileItem']['tmp_name'] = 'testfile.jpg';
         $_FILES['fileItem']['error'] = 1;
 
-        $this->setExpectedException('oxException');
+        $this->setExpectedException('OxidEsales\EshopCommunity\Core\Exception\StandardException');
         oxRegistry::get("oxUtilsFile")->processFile('fileItem', '/out/media/');
     }
 
@@ -532,5 +487,18 @@ class UtilsFileTest extends \OxidTestCase
         } else {
             $this->fail("could not delete $sSourceFilePath ");
         }
+    }
+
+    /**
+     * Return path to directory where files could be created.
+     *
+     * @return string
+     */
+    private function getDirectoryPathToCreateFiles()
+    {
+        $vfsStream = $this->getVfsStreamWrapper();
+        $pathToRoot = $vfsStream->createStructure([]);
+
+        return $pathToRoot;
     }
 }

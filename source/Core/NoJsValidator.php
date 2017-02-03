@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core;
+namespace OxidEsales\EshopCommunity\Core;
 
 /**
  * Validates if there are no Javascript.
@@ -36,11 +36,6 @@ class NoJsValidator
      */
     public function isValid($configValue)
     {
-        $isValid = true;
-        if (preg_match('/<script.*>/', $configValue) !== 0) {
-            $isValid = false;
-        }
-
-        return $isValid;
+        return preg_match('/<script.*>/', $configValue) === 0;
     }
 }

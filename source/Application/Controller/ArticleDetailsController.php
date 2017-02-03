@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller;
+namespace OxidEsales\EshopCommunity\Application\Controller;
 
 use oxArticle;
 use oxArticleList;
@@ -471,7 +471,6 @@ class ArticleDetailsController extends \oxUBase
         }
     }
 
-
     /**
      * Returns current product
      *
@@ -493,7 +492,7 @@ class ArticleDetailsController extends \oxUBase
             $this->_oProduct = oxNew('oxArticle');
 
             if (!$this->_oProduct->load($articleId)) {
-                $utils->redirect($config->getShopHomeURL());
+                $utils->redirect($config->getShopHomeUrl());
                 $utils->showMessageAndExit('');
             }
 
@@ -531,7 +530,7 @@ class ArticleDetailsController extends \oxUBase
         }
 
         if (!$shouldContinue) {
-            $utils->redirect($config->getShopHomeURL());
+            $utils->redirect($config->getShopHomeUrl());
             $utils->showMessageAndExit('');
         }
 
@@ -581,44 +580,6 @@ class ArticleDetailsController extends \oxUBase
     }
 
     /**
-     * Template variable getter. Returns parent article name
-     *
-     * @deprecated since v5.1.0 (2013-08-06); not used code anymore
-     *
-     * @return string
-     */
-    public function getParentName()
-    {
-        if ($this->_sParentName === null) {
-            $this->_sParentName = false;
-            if (($parentArticle = $this->_getParentProduct($this->getProduct()->oxarticles__oxparentid->value))) {
-                $this->_sParentName = $parentArticle->oxarticles__oxtitle->value;
-            }
-        }
-
-        return $this->_sParentName;
-    }
-
-    /**
-     * Template variable getter. Returns parent article name
-     *
-     * @deprecated since v5.1.0 (2013-08-06); not used code anymore
-     *
-     * @return string
-     */
-    public function getParentUrl()
-    {
-        if ($this->_sParentUrl === null) {
-            $this->_sParentUrl = false;
-            if (($parentArticle = $this->_getParentProduct($this->getProduct()->oxarticles__oxparentid->value))) {
-                $this->_sParentUrl = $parentArticle->getLink();
-            }
-        }
-
-        return $this->_sParentUrl;
-    }
-
-    /**
      * Template variable getter. Returns picture gallery of current article
      *
      * @return array
@@ -640,9 +601,7 @@ class ArticleDetailsController extends \oxUBase
      */
     public function getActPictureId()
     {
-        $picturesGallery = $this->getPictureGallery();
-
-        return $picturesGallery['ActPicID'];
+        return $this->getPictureGallery()['ActPicID'];
     }
 
     /**
@@ -652,9 +611,7 @@ class ArticleDetailsController extends \oxUBase
      */
     public function getActPicture()
     {
-        $picturesGallery = $this->getPictureGallery();
-
-        return $picturesGallery['ActPic'];
+        return $this->getPictureGallery()['ActPic'];
     }
 
     /**
@@ -664,9 +621,7 @@ class ArticleDetailsController extends \oxUBase
      */
     public function getPictures()
     {
-        $picturesGallery = $this->getPictureGallery();
-
-        return $picturesGallery['Pics'];
+        return $this->getPictureGallery()['Pics'];
     }
 
     /**
@@ -678,9 +633,7 @@ class ArticleDetailsController extends \oxUBase
      */
     public function getArtPic($pictureNumber)
     {
-        $picturesGallery = $this->getPictureGallery();
-
-        return $picturesGallery['Pics'][$pictureNumber];
+        return $this->getPictureGallery()['Pics'][$pictureNumber];
     }
 
     /**
@@ -882,12 +835,12 @@ class ArticleDetailsController extends \oxUBase
     public function getTitle()
     {
         if ($article = $this->getProduct()) {
-
             $articleTitle = $article->oxarticles__oxtitle->value;
             $variantSelectionId = $article->oxarticles__oxvarselect->value;
 
             $variantSelectionValue = $variantSelectionId ? ' ' . $variantSelectionId : '';
-            return $articleTitle . $variantSelectionValue ;
+
+            return $articleTitle . $variantSelectionValue;
         }
     }
 
@@ -950,7 +903,8 @@ class ArticleDetailsController extends \oxUBase
         $utils = oxRegistry::getUtils();
 
         $parameters = $this->getConfig()->getRequestParameter('pa');
-        if (!isset($parameters['email']) || !$utils->isValidEmail($parameters['email'])) {
+
+        if (!isset($parameters['email']) || !oxNew('oxMailValidator')->isValidEmail($parameters['email'])) {
             $this->_iPriceAlarmStatus = 0;
             return;
         }
@@ -1256,9 +1210,7 @@ class ArticleDetailsController extends \oxUBase
      */
     public function showZoomPics()
     {
-        $pictureGallery = $this->getPictureGallery();
-
-        return $pictureGallery['ZoomPic'];
+        return $this->getPictureGallery()['ZoomPic'];
     }
 
     /**
@@ -1281,7 +1233,7 @@ class ArticleDetailsController extends \oxUBase
         $sorting = parent::getDefaultSorting();
         $activeCategory = $this->getActiveCategory();
 
-        if ($this->getListType() != 'search' && $activeCategory && $activeCategory instanceof oxCategory) {
+        if ($this->getListType() != 'search' && $activeCategory && $activeCategory instanceof \OxidEsales\EshopCommunity\Application\Model\Category) {
             if ($categorySorting = $activeCategory->getDefaultSorting()) {
                 $sortingDirection = ($activeCategory->getDefaultSortingMode()) ? "desc" : "asc";
                 $sorting = array('sortby' => $categorySorting, 'sortdir' => $sortingDirection);
@@ -1324,7 +1276,7 @@ class ArticleDetailsController extends \oxUBase
         $paths[] = $vendorPath;
 
         $vendor = $this->getActVendor();
-        if (is_a($vendor, 'oxVendor')) {
+        if ($vendor instanceof \OxidEsales\EshopCommunity\Application\Model\Vendor) {
             $vendorPath['link'] = $vendor->getLink();
             $vendorPath['title'] = $vendor->oxvendor__oxtitle->value;
             $paths[] = $vendorPath;

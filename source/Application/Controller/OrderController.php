@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller;
+namespace OxidEsales\EshopCommunity\Application\Controller;
 
 use oxAddress;
 use oxArticleInputException;
@@ -110,22 +110,6 @@ class OrderController extends \oxUBase
     protected $_blConfirmAGBError = null;
 
     /**
-     * Config option "blConfirmCustInfo". Will be removed later
-     *
-     * @deprecated since v5.1.6 (2014-05-28); Not used anymore
-     * @var bool
-     */
-    protected $_blConfirmCustInfo = null;
-
-    /**
-     * Boolean of option "blConfirmCustInfo" error
-     *
-     * @deprecated since v5.1.6 (2014-05-28); Not used anymore
-     * @var bool
-     */
-    protected $_blConfirmCustInfoError = null;
-
-    /**
      * Current class template name.
      *
      * @var string
@@ -181,16 +165,16 @@ class OrderController extends \oxUBase
             if ($myConfig->getConfigParam('blPsBasketReservationEnabled')) {
                 $this->getSession()->getBasketReservations()->renewExpiration();
                 if (!$oBasket || ($oBasket && !$oBasket->getProductsCount())) {
-                    oxRegistry::getUtils()->redirect($myConfig->getShopHomeURL() . 'cl=basket', true, 302);
+                    oxRegistry::getUtils()->redirect($myConfig->getShopHomeUrl() . 'cl=basket', true, 302);
                 }
             }
 
             // can we proceed with ordering ?
             $oUser = $this->getUser();
             if (!$oUser && ($oBasket && $oBasket->getProductsCount() > 0)) {
-                oxRegistry::getUtils()->redirect($myConfig->getShopHomeURL() . 'cl=basket', false, 302);
+                oxRegistry::getUtils()->redirect($myConfig->getShopHomeUrl() . 'cl=basket', false, 302);
             } elseif (!$oBasket || !$oUser || ($oBasket && !$oBasket->getProductsCount())) {
-                oxRegistry::getUtils()->redirect($myConfig->getShopHomeURL(), false, 302);
+                oxRegistry::getUtils()->redirect($myConfig->getShopHomeUrl(), false, 302);
             }
 
             // payment is set ?
@@ -233,15 +217,6 @@ class OrderController extends \oxUBase
             return;
         }
 
-        /* @deprecated since v5.1.6 (2014-05-28); Not used anymore */
-        $oConfig = $this->getConfig();
-        $sOrderCustomerInfo = $oConfig->getRequestParameter('ord_custinfo');
-        if ($sOrderCustomerInfo !== null && !$sOrderCustomerInfo && $this->isConfirmCustInfoActive()) {
-            $this->_blConfirmCustInfoError = 1;
-
-            return;
-        }
-
         // additional check if we really really have a user now
         $oUser = $this->getUser();
         if (!$oUser) {
@@ -251,7 +226,6 @@ class OrderController extends \oxUBase
         // get basket contents
         $oBasket = $this->getSession()->getBasket();
         if ($oBasket->getProductsCount()) {
-
             try {
                 $oOrder = oxNew('oxorder');
 
@@ -263,12 +237,12 @@ class OrderController extends \oxUBase
 
                 // proceeding to next view
                 return $this->_getNextStep($iSuccess);
-            } catch (oxOutOfStockException $oEx) {
+            } catch (\OxidEsales\EshopCommunity\Core\Exception\OutOfStockException $oEx) {
                 $oEx->setDestination('basket');
                 oxRegistry::get("oxUtilsView")->addErrorToDisplay($oEx, false, true, 'basket');
-            } catch (oxNoArticleException $oEx) {
+            } catch (\OxidEsales\EshopCommunity\Core\Exception\NoArticleException $oEx) {
                 oxRegistry::get("oxUtilsView")->addErrorToDisplay($oEx);
-            } catch (oxArticleInputException $oEx) {
+            } catch (\OxidEsales\EshopCommunity\Core\Exception\ArticleInputException $oEx) {
                 oxRegistry::get("oxUtilsView")->addErrorToDisplay($oEx);
             }
         }
@@ -420,26 +394,6 @@ class OrderController extends \oxUBase
     }
 
     /**
-     * Template variable getter. Returns if option "blConfirmCustInfo" is on.
-     *
-     * @deprecated since v5.1.6 (2014-05-28); Not used anymore
-     *
-     * @return bool
-     */
-    public function isConfirmCustInfoActive()
-    {
-        if ($this->_blConfirmCustInfo === null) {
-            $this->_blConfirmCustInfo = false;
-            $sConf = $this->getConfig()->getConfigParam('blConfirmCustInfo');
-            if ($sConf != null) {
-                $this->_blConfirmCustInfo = $this->getConfig()->getConfigParam('blConfirmCustInfo');
-            }
-        }
-
-        return $this->_blConfirmCustInfo;
-    }
-
-    /**
      * Template variable getter. Returns if option "blConfirmAGB" was not set
      *
      * @return bool
@@ -447,18 +401,6 @@ class OrderController extends \oxUBase
     public function isConfirmAGBError()
     {
         return $this->_blConfirmAGBError;
-    }
-
-    /**
-     * Template variable getter. Returns if option "blConfirmCustInfo" was not set.
-     *
-     * @deprecated since v5.1.6 (2014-05-28); Not used anymore
-     *
-     * @return bool
-     */
-    public function isConfirmCustInfoError()
-    {
-        return $this->_blConfirmCustInfoError;
     }
 
     /**
@@ -556,10 +498,7 @@ class OrderController extends \oxUBase
      */
     public function getBasketContentMarkGenerator()
     {
-        /** @var oxBasketContentMarkGenerator $oBasketContentMarkGenerator */
-        $oBasketContentMarkGenerator = oxNew('oxBasketContentMarkGenerator', $this->getBasket());
-
-        return $oBasketContentMarkGenerator;
+        return oxNew('oxBasketContentMarkGenerator', $this->getBasket());
     }
 
     /**

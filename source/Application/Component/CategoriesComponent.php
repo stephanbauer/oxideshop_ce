@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @link          http://www.oxid-esales.com
+ * @link      http://www.oxid-esales.com
  * @copyright (C) OXID eSales AG 2003-2016
- * @version       OXID eShop CE
+ * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Component;
+namespace OxidEsales\EshopCommunity\Application\Component;
 
 use oxRegistry;
 
@@ -124,9 +124,7 @@ class CategoriesComponent extends \oxView
     protected function _getActCat()
     {
         $sActManufacturer = oxRegistry::getConfig()->getRequestParameter('mnid');
-        // @deprecated v5.3 (2016-05-04); Tags will be moved to own module.
-        $sActTag = oxRegistry::getConfig()->getRequestParameter('searchtag');
-        // END deprecated
+
         $sActCat = $sActManufacturer ? null : oxRegistry::getConfig()->getRequestParameter('cnid');
 
         // loaded article - then checking additional parameters
@@ -138,12 +136,11 @@ class CategoriesComponent extends \oxView
 
             $sActVendor = (getStr()->preg_match('/^v_.?/i', $sActCat)) ? $sActCat : null;
 
-            $sActCat = $this->_addAdditionalParams($oProduct, $sActCat, $sActManufacturer, $sActTag, $sActVendor);
+            $sActCat = $this->_addAdditionalParams($oProduct, $sActCat, $sActManufacturer, $sActVendor);
         }
 
-        // @deprecated v5.3 (2016-05-04); Tags will be moved to own module.
         // Checking for the default category
-        if ($sActCat === null && !$oProduct && !$sActManufacturer && !$sActTag) {
+        if ($sActCat === null && !$oProduct && !$sActManufacturer) {
             // set remote cat
             $sActCat = $this->getConfig()->getActiveShop()->oxshops__oxdefcat->value;
             if ($sActCat == 'oxrootid') {
@@ -151,8 +148,7 @@ class CategoriesComponent extends \oxView
                 $sActCat = null;
             }
         }
-        // END deprecated
-        
+
         return $sActCat;
     }
 
@@ -187,7 +183,7 @@ class CategoriesComponent extends \oxView
         $myConfig = $this->getConfig();
         if ($myConfig->getConfigParam('bl_perfLoadManufacturerTree')) {
             $oManufacturerTree = oxNew('oxmanufacturerlist');
-            $shopHomeURL = $myConfig->getShopHomeURL();
+            $shopHomeURL = $myConfig->getShopHomeUrl();
             $oManufacturerTree->buildManufacturerTree('manufacturerlist', $sActManufacturer, $shopHomeURL);
 
             $oParentView = $this->getParent();
@@ -233,14 +229,11 @@ class CategoriesComponent extends \oxView
      * @param oxArticle $oProduct         loaded product
      * @param string    $sActCat          active category id
      * @param string    $sActManufacturer active manufacturer id
-     * @param string    $sActTag          active tag
      * @param string    $sActVendor       active vendor
      *
-     * @deprecated v5.3 (2016-05-04); Tags will be moved to own module. So the parameter sActTag will be removed.
-     *             
      * @return string $sActCat
      */
-    protected function _addAdditionalParams($oProduct, $sActCat, $sActManufacturer, $sActTag, $sActVendor)
+    protected function _addAdditionalParams($oProduct, $sActCat, $sActManufacturer, $sActVendor)
     {
         $sSearchPar = oxRegistry::getConfig()->getRequestParameter('searchparam');
         $sSearchCat = oxRegistry::getConfig()->getRequestParameter('searchcnid');
@@ -253,7 +246,6 @@ class CategoriesComponent extends \oxView
             // setting list type directly
             $sListType = 'search';
         } else {
-
             // such Manufacturer is available ?
             if ($sActManufacturer && ($sActManufacturer == $oProduct->getManufacturerId())) {
                 // setting list type directly
@@ -263,11 +255,6 @@ class CategoriesComponent extends \oxView
                 // such vendor is available ?
                 $sListType = 'vendor';
                 $sActCat = $sActVendor;
-                // @deprecated v5.3 (2016-05-04); Tags will be moved to own module.
-            } elseif ($sActTag) {
-                // tag ?
-                $sListType = 'tag';
-                // END deprecated
             } elseif ($sActCat && $oProduct->isAssignedToCategory($sActCat)) {
                 // category ?
             } else {

@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxSysRequirements;
 
@@ -85,9 +85,8 @@ class SystemRequirementsMain extends \oxAdminDetails
     public function getReqInfoUrl($sIdent)
     {
         $oSysReq = new oxSysRequirements();
-        $sUrl = $oSysReq->getReqInfoUrl($sIdent);
 
-        return $sUrl;
+        return $oSysReq->getReqInfoUrl($sIdent);
     }
 
     /**

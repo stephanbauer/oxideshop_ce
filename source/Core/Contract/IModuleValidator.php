@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core\Contract;
+namespace OxidEsales\EshopCommunity\Core\Contract;
 
 use oxModule;
 
@@ -37,5 +37,5 @@ interface IModuleValidator
      *
      * @return bool
      */
-    public function validate(oxModule $oModule);
+    public function validate(\OxidEsales\EshopCommunity\Core\Module\Module $oModule);
 }

@@ -48,6 +48,7 @@ use oxUserPayment;
 use oxUtils;
 use oxUtilsString;
 use stdClass;
+use OxidEsales\EshopCommunity\Application\Model\Attribute;
 
 /**
  * Class Unit_utf8Test
@@ -540,7 +541,7 @@ class UtfTest extends \OxidTestCase
         $attributeList = $category->getAttributes();
         /** @var oxAttribute $attribute */
         $attribute = $attributeList->offsetGet('_testAttribute1');
-        $this->assertTrue($attribute instanceof oxAttribute);
+        $this->assertTrue($attribute instanceof Attribute);
         $this->assertEquals('für', $attribute->getTitle());
     }
 
@@ -1000,7 +1001,6 @@ class UtfTest extends \OxidTestCase
     public function testOxOutputProcessWithEuroSign()
     {
         $oOutput = oxNew('oxOutput');
-        $this->getConfig()->setConfigParam('blSkipEuroReplace', false);
         $this->assertEquals('€someting', $oOutput->process('€someting', 'something'));
     }
 
@@ -1417,14 +1417,6 @@ class UtfTest extends \OxidTestCase
         $oUPayment->load('_testUPayment');
 
         $this->assertTrue(strcmp($oUPayment->oxuserpayments__oxvalue->value, $sValue) === 0);
-    }
-
-    public function testOxUtilsIsValidEmail()
-    {
-        $sEmail = 'info@�vyturys.lt';
-
-        $oUtils = new oxUtils();
-        $this->assertFalse($oUtils->isValidEmail($sEmail));
     }
 
     public function testOxUtilsOxFileCache()

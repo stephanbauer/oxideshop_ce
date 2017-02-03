@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core;
+namespace OxidEsales\EshopCommunity\Core;
 
 /**
  * Forms real class name for edition based classes.
@@ -70,11 +70,14 @@ class ClassNameProvider
      */
     public function getClassAliasName($className)
     {
-        if (substr($className, 0, 1) !== '\\') {
-            $className = '\\' . $className;
-        }
-
+        $className = ltrim($className, '\\');
         $classAlias = array_search($className, $this->getExtendedClassMap());
+
+        if (false === $classAlias) {
+            $className = '\\' . $className;
+            $classAlias = array_search($className, $this->getExtendedClassMap());
+        }
+        //still not found?
         if ($classAlias === false) {
             $classAlias = null;
         }

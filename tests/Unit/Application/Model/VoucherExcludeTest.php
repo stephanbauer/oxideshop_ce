@@ -22,7 +22,7 @@
 namespace Unit\Application\Model;
 
 use \oxDb;
-use OxidEsales\Eshop\Core\ShopIdCalculator;
+use OxidEsales\EshopCommunity\Core\ShopIdCalculator;
 use oxVoucherException;
 
 /**
@@ -511,7 +511,7 @@ class VoucherExcludeTest extends \OxidTestCase
         // there are no items in basket matching this discount, expecting exception
         try {
             $oVoucher->getDiscountValue(100);
-        } catch (oxVoucherException $oEx) {
+        } catch (\OxidEsales\EshopCommunity\Core\Exception\VoucherException $oEx) {
             $this->fail('exception thrown');
         }
     }
@@ -531,7 +531,7 @@ class VoucherExcludeTest extends \OxidTestCase
         // there are no items in basket matching this discount, expecting exception
         try {
             $oVoucher->getDiscountValue(100);
-        } catch (oxVoucherException $oEx) {
+        } catch (\OxidEsales\EshopCommunity\Core\Exception\VoucherException $oEx) {
             $this->fail('exception thrown');
         }
     }

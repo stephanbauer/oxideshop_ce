@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Model;
+namespace OxidEsales\EshopCommunity\Application\Model;
 
 use oxDb;
 use oxRegistry;
@@ -241,7 +241,7 @@ class Category extends \oxI18n implements \oxIUrl
      *
      * @param string $sOXID id
      *
-     * @return null
+     * @return bool
      */
     public function load($sOXID)
     {
@@ -370,7 +370,6 @@ class Category extends \oxI18n implements \oxIUrl
         $this->_aSubCats = $aCats;
 
         foreach ($aCats as $oCat) {
-
             // keeping ref. to parent
             $oCat->setParentCategory($this);
 
@@ -453,7 +452,6 @@ class Category extends \oxI18n implements \oxIUrl
                 || $myConfig->getConfigParam('blDontShowEmptyCategories')
             )
         ) {
-
             if ($this->isPriceCategory()) {
                 $this->_iNrOfArticles = oxRegistry::get("oxUtilsCount")->getPriceCatArticleCount($this->getId(), $this->oxcategories__oxpricefrom->value, $this->oxcategories__oxpriceto->value);
             } else {
@@ -482,7 +480,6 @@ class Category extends \oxI18n implements \oxIUrl
     public function getIsVisible()
     {
         if (!isset($this->_blIsVisible)) {
-
             if ($this->getConfig()->getConfigParam('blDontShowEmptyCategories')) {
                 $blEmpty = ($this->getNrOfArticles() < 1) && !$this->getHasVisibleSubCats();
             } else {
@@ -715,7 +712,7 @@ class Category extends \oxI18n implements \oxIUrl
     {
         if ($blHasVisibleSubcats && !$this->_blHasVisibleSubCats) {
             unset($this->_blIsVisible);
-            if ($this->_oParent instanceof oxCategory) {
+            if ($this->_oParent instanceof \OxidEsales\EshopCommunity\Application\Model\Category) {
                 $this->_oParent->setHasVisibleSubCats(true);
             }
         }
@@ -784,7 +781,6 @@ class Category extends \oxI18n implements \oxIUrl
 
         // loading only if parent id is not rootid
         if ($this->oxcategories__oxparentid->value && $this->oxcategories__oxparentid->value != 'oxrootid') {
-
             // checking if object itself has ref to parent
             if ($this->_oParent) {
                 $oCat = $this->_oParent;
@@ -900,8 +896,10 @@ class Category extends \oxI18n implements \oxIUrl
         $this->setUpdateSeo(true);
         $this->_setUpdateSeoOnFieldChange('oxtitle');
 
-        $oDb = oxDb::getDb();
-        $sOldParentID = $oDb->getOne("select oxparentid from oxcategories where oxid = " . $oDb->quote($this->getId()), false, false);
+        // Function is called from inside a transaction in Category::save (see ESDEV-3804 and ESDEV-3822).
+        // No need to explicitly force master here.
+        $database = oxDb::getDb();
+        $sOldParentID = $database->getOne("select oxparentid from oxcategories where oxid = " . $database->quote($this->getId()));
 
         if ($this->_blIsSeoObject && $this->isAdmin()) {
             oxRegistry::get("oxSeoEncoderCategory")->markRelatedAsExpired($this);
@@ -924,15 +922,14 @@ class Category extends \oxI18n implements \oxIUrl
 
             $iTreeSize = $sOldParentRight - $sOldParentLeft + 1;
 
-            $sNewRootID = $oDb->getOne("select oxrootid from oxcategories where oxid = " . $oDb->quote($this->oxcategories__oxparentid->value), false, false);
+            $sNewRootID = $database->getOne("select oxrootid from oxcategories where oxid = " . $database->quote($this->oxcategories__oxparentid->value));
 
             //If empty rootID, we set it to categorys oxid
             if ($sNewRootID == "") {
                 //echo "<br>* ) Creating new root tree ( {$this->_sOXID} )";
                 $sNewRootID = $this->getId();
             }
-
-            $sNewParentLeft = $oDb->getOne("select oxleft from oxcategories where oxid = " . $oDb->quote($this->oxcategories__oxparentid->value), false, false);
+            $sNewParentLeft = $database->getOne("select oxleft from oxcategories where oxid = " . $database->quote($this->oxcategories__oxparentid->value));
 
             //if(!$sNewParentLeft){
             //the current node has become root node, (oxrootid == "oxrootid")
@@ -946,8 +943,8 @@ class Category extends \oxI18n implements \oxIUrl
                 //echo "<br>* ) Can't asign category to it's child";
 
                 //Restoring old parentid, stoping further actions
-                $sRestoreOld = "UPDATE oxcategories SET OXPARENTID = " . $oDb->quote($sOldParentID) . " WHERE oxid = " . $oDb->quote($this->getId());
-                $oDb->execute($sRestoreOld);
+                $sRestoreOld = "UPDATE oxcategories SET OXPARENTID = " . $database->quote($sOldParentID) . " WHERE oxid = " . $database->quote($this->getId());
+                $database->execute($sRestoreOld);
 
                 return false;
             }
@@ -962,27 +959,27 @@ class Category extends \oxI18n implements \oxIUrl
 
             //echo "Size=$iTreeSize, NewStart=$iMoveAfter, delta=$iDelta";
 
-            $sAddOld = " and oxshopid = '" . $this->getShopId() . "' and OXROOTID = " . $oDb->quote($this->oxcategories__oxrootid->value) . ";";
-            $sAddNew = " and oxshopid = '" . $this->getShopId() . "' and OXROOTID = " . $oDb->quote($sNewRootID) . ";";
+            $sAddOld = " and oxshopid = '" . $this->getShopId() . "' and OXROOTID = " . $database->quote($this->oxcategories__oxrootid->value) . ";";
+            $sAddNew = " and oxshopid = '" . $this->getShopId() . "' and OXROOTID = " . $database->quote($sNewRootID) . ";";
 
             //Updating everything after new position
-            $oDb->execute("UPDATE oxcategories SET OXLEFT = (OXLEFT + " . $iTreeSize . ") WHERE OXLEFT >= " . $iMoveAfter . $sAddNew);
-            $oDb->execute("UPDATE oxcategories SET OXRIGHT = (OXRIGHT + " . $iTreeSize . ") WHERE OXRIGHT >= " . $iMoveAfter . $sAddNew);
+            $database->execute("UPDATE oxcategories SET OXLEFT = (OXLEFT + " . $iTreeSize . ") WHERE OXLEFT >= " . $iMoveAfter . $sAddNew);
+            $database->execute("UPDATE oxcategories SET OXRIGHT = (OXRIGHT + " . $iTreeSize . ") WHERE OXRIGHT >= " . $iMoveAfter . $sAddNew);
             //echo "<br>1.) + $iTreeSize, >= $iMoveAfter";
 
             $sChangeRootID = "";
             if ($this->oxcategories__oxrootid->value != $sNewRootID) {
                 //echo "<br>* ) changing root IDs ( {$this->oxcategories__oxrootid->value} -> {$sNewRootID} )";
-                $sChangeRootID = ", OXROOTID=" . $oDb->quote($sNewRootID);
+                $sChangeRootID = ", OXROOTID=" . $database->quote($sNewRootID);
             }
 
             //Updating subtree
-            $oDb->execute("UPDATE oxcategories SET OXLEFT = (OXLEFT + " . $iDelta . "), OXRIGHT = (OXRIGHT + " . $iDelta . ") " . $sChangeRootID . " WHERE OXLEFT >= " . $sOldParentLeft . " AND OXRIGHT <= " . $sOldParentRight . $sAddOld);
+            $database->execute("UPDATE oxcategories SET OXLEFT = (OXLEFT + " . $iDelta . "), OXRIGHT = (OXRIGHT + " . $iDelta . ") " . $sChangeRootID . " WHERE OXLEFT >= " . $sOldParentLeft . " AND OXRIGHT <= " . $sOldParentRight . $sAddOld);
             //echo "<br>2.) + $iDelta, >= $sOldParentLeft and <= $sOldParentRight";
 
             //Updating everything after old position
-            $oDb->execute("UPDATE oxcategories SET OXLEFT = (OXLEFT - " . $iTreeSize . ") WHERE OXLEFT >=   " . ($sOldParentRight + 1) . $sAddOld);
-            $oDb->execute("UPDATE oxcategories SET OXRIGHT = (OXRIGHT - " . $iTreeSize . ") WHERE OXRIGHT >=   " . ($sOldParentRight + 1) . $sAddOld);
+            $database->execute("UPDATE oxcategories SET OXLEFT = (OXLEFT - " . $iTreeSize . ") WHERE OXLEFT >=   " . ($sOldParentRight + 1) . $sAddOld);
+            $database->execute("UPDATE oxcategories SET OXRIGHT = (OXRIGHT - " . $iTreeSize . ") WHERE OXRIGHT >=   " . ($sOldParentRight + 1) . $sAddOld);
             //echo "<br>3.) - $iTreeSize, >= ".($sOldParentRight+1);
         }
 
@@ -1109,7 +1106,7 @@ class Category extends \oxI18n implements \oxIUrl
      */
     public function getLongDesc()
     {
-        if (isset($this->oxcategories__oxlongdesc) && $this->oxcategories__oxlongdesc instanceof oxField) {
+        if (isset($this->oxcategories__oxlongdesc) && $this->oxcategories__oxlongdesc instanceof \OxidEsales\EshopCommunity\Core\Field) {
             /** @var oxUtilsView $oUtilsView */
             $oUtilsView = oxRegistry::get("oxUtilsView");
             return $oUtilsView->parseThroughSmarty($this->oxcategories__oxlongdesc->getRawValue(), $this->getId() . $this->getLanguage(), null, true);

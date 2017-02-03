@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Component;
+namespace OxidEsales\EshopCommunity\Application\Component;
 
 use oxRegistry;
 use stdClass;
@@ -65,9 +65,6 @@ class BasketComponent extends \oxView
                                     'searchcnid', // search category
                                     'searchvendor', // search vendor
                                     'searchmanufacturer', // search manufacturer
-                                    // @deprecated v5.3 (2016-05-04); Tags will be moved to own module.
-                                    'searchtag', // search tag
-                                    // END deprecated
                                     // @deprecated since v5.3 (2016-06-17); Listmania will be moved to an own module.
                                     'searchrecomm', // search recomendation
                                     'recommid' // recomm. list id
@@ -149,7 +146,6 @@ class BasketComponent extends \oxView
 
         // adding articles
         if ($aProducts = $this->_getItems($sProductId, $dAmount, $aSel, $aPersParam, $blOverride)) {
-
             $this->_setLastCallFnc('tobasket');
             $oBasketItem = $this->_addItems($aProducts);
 
@@ -216,7 +212,6 @@ class BasketComponent extends \oxView
 
         // adding articles
         if ($aProducts = $this->_getItems($sProductId, $dAmount, $aSel, $aPersParam, $blOverride)) {
-
             // information that last call was changebasket
             $oBasket = $this->getSession()->getBasket();
             $oBasket->onUpdate();
@@ -224,7 +219,6 @@ class BasketComponent extends \oxView
             $this->_setLastCallFnc('changebasket');
             $oBasketItem = $this->_addItems($aProducts);
         }
-
     }
 
     /**
@@ -258,7 +252,6 @@ class BasketComponent extends \oxView
 
         // reload and backbutton blocker
         if ($this->getConfig()->getConfigParam('iNewBasketItemMessage') == 3) {
-
             // saving return to shop link to session
             oxRegistry::getSession()->setVariable('_backtoshop', $sClass . $sPosition);
 
@@ -310,7 +303,6 @@ class BasketComponent extends \oxView
         // collecting specified item
         $sProductId = $sProductId ? $sProductId : oxRegistry::getConfig()->getRequestParameter('aid');
         if ($sProductId) {
-
             // additionally fetching current product info
             $dAmount = isset($dAmount) ? $dAmount : oxRegistry::getConfig()->getRequestParameter('am');
 
@@ -333,14 +325,13 @@ class BasketComponent extends \oxView
         }
 
         if (is_array($aProducts) && count($aProducts)) {
-
             if (oxRegistry::getConfig()->getRequestParameter('removeBtn') !== null) {
                 //setting amount to 0 if removing article from basket
                 foreach ($aProducts as $sProductId => $aProduct) {
                     if (isset($aProduct['remove']) && $aProduct['remove']) {
                         $aProducts[$sProductId]['am'] = 0;
                     } else {
-                        unset ($aProducts[$sProductId]);
+                        unset($aProducts[$sProductId]);
                     }
                 }
             }
@@ -370,7 +361,6 @@ class BasketComponent extends \oxView
         $basketItemAmounts = array();
 
         foreach ($products as $addProductId => $productInfo) {
-
             $data = $this->prepareProductInformation($addProductId, $productInfo);
             $productAmount = $basketInfo->aArticles[$data['id']];
             $products[$addProductId]['oldam'] = isset($productAmount) ? $productAmount : 0;
@@ -383,7 +373,7 @@ class BasketComponent extends \oxView
 
             $basketItem = $this->addItemToBasket($basket, $data, $errorDestination);
 
-            if (is_a($basketItem, 'oxBasketItem') && $basketItem->getBasketItemKey()) {
+            if (($basketItem instanceof \OxidEsales\EshopCommunity\Application\Model\BasketItem) && $basketItem->getBasketItemKey()) {
                 $basketItemAmounts[$basketItem->getBasketItemKey()] += $data['amount'];
             }
 
@@ -499,7 +489,8 @@ class BasketComponent extends \oxView
     /**
      * Prepare information for adding product to basket.
      *
-     * @param $productInfo
+     * @param string $addProductId
+     * @param array  $productInfo
      *
      * @return array
      */
@@ -522,11 +513,11 @@ class BasketComponent extends \oxView
     /**
      * Add one item to basket. Handle eventual errors.
      *
-     * @param $basket
-     * @param $data
-     * @param $errorDestination
+     * @param oxBasket $basket
+     * @param array    $itemData
+     * @param string   $errorDestination
      *
-     * @return null
+     * @return null|oxBasketItem
      */
     protected function addItemToBasket($basket, $itemData, $errorDestination)
     {
@@ -542,19 +533,18 @@ class BasketComponent extends \oxView
                 $itemData['bundle'],
                 $itemData['oldBasketItemId']
             );
-
-        } catch (oxOutOfStockException $exception) {
+        } catch (\OxidEsales\EshopCommunity\Core\Exception\OutOfStockException $exception) {
             $exception->setDestination($errorDestination);
             // #950 Change error destination to basket popup
             if (!$errorDestination && $this->getConfig()->getConfigParam('iNewBasketItemMessage') == 2) {
                 $errorDestination = 'popup';
             }
             oxRegistry::get("oxUtilsView")->addErrorToDisplay($exception, false, (bool) $errorDestination, $errorDestination);
-        } catch (oxArticleInputException $exception) {
+        } catch (\OxidEsales\EshopCommunity\Core\Exception\ArticleInputException $exception) {
             //add to display at specific position
             $exception->setDestination($errorDestination);
             oxRegistry::get("oxUtilsView")->addErrorToDisplay($exception, false, (bool) $errorDestination, $errorDestination);
-        } catch (oxNoArticleException $exception) {
+        } catch (\OxidEsales\EshopCommunity\Core\Exception\NoArticleException $exception) {
             //ignored, best solution F ?
         }
 

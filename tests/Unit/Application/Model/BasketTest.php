@@ -24,12 +24,13 @@ namespace Unit\Application\Model;
 use oxArticleInputException;
 use oxNoArticleException;
 use oxOutOfStockException;
-use \oxPriceList;
-use \oxWrapping;
+use OxidEsales\EshopCommunity\Core\PriceList;
+use OxidEsales\EshopCommunity\Application\Model\Wrapping;
 use oxArticleHelper;
 use \oxbasket;
 use \oxField;
 use \oxPrice;
+use OxidEsales\EshopCommunity\Core\Price;
 use oxUtilsObject;
 use oxVoucherHelper;
 use \stdClass;
@@ -149,6 +150,7 @@ class BasketTest extends \OxidTestCase
         $this->aDiscounts[0]->oxdiscount__oxitmartid = new oxField('xxx', oxField::T_RAW);
         $this->aDiscounts[0]->oxdiscount__oxitmamount = new oxField(2, oxField::T_RAW);
         $this->aDiscounts[0]->oxdiscount__oxitmmultiple = new oxField(1, oxField::T_RAW);
+        $this->aDiscounts[0]->oxdiscount__oxsort = new oxField(9900, oxField::T_RAW);
         $this->aDiscounts[0]->save();
 
         $this->aDiscounts[1] = oxNew("oxBase");
@@ -166,6 +168,7 @@ class BasketTest extends \OxidTestCase
         $this->aDiscounts[1]->oxdiscount__oxitmartid = new oxField('xxx', oxField::T_RAW);
         $this->aDiscounts[1]->oxdiscount__oxitmamount = new oxField(2, oxField::T_RAW);
         $this->aDiscounts[1]->oxdiscount__oxitmmultiple = new oxField(1, oxField::T_RAW);
+        $this->aDiscounts[1]->oxdiscount__oxsort = new oxField(9910, oxField::T_RAW);
         $this->aDiscounts[1]->save();
 
         $this->aDiscounts[2] = oxNew("oxBase");
@@ -183,6 +186,7 @@ class BasketTest extends \OxidTestCase
         $this->aDiscounts[2]->oxdiscount__oxitmartid = new oxField('yyy', oxField::T_RAW);
         $this->aDiscounts[2]->oxdiscount__oxitmamount = new oxField(2, oxField::T_RAW);
         $this->aDiscounts[2]->oxdiscount__oxitmmultiple = new oxField(1, oxField::T_RAW);
+        $this->aDiscounts[2]->oxdiscount__oxsort = new oxField(9920, oxField::T_RAW);
         $this->aDiscounts[2]->save();
 
         // assigning discounts
@@ -718,18 +722,15 @@ class BasketTest extends \OxidTestCase
         $oBasket->setBasketUser($oUser);
         $oBasket->addToBasket('1126', 2);
         $oBasket->calculateBasket(true);
-
-        $oBasket = oxNew('oxbasket');
-        $oBasket->setBasketUser($oUser);
         $oBasket->addToBasket('1127', 2);
         $oBasket->calculateBasket(true);
 
-        //clean the basket and load again
-        $oBasket->deleteBasket();
+        //create new basket, calling load will restore basket from database
+        $oBasket = oxNew('oxbasket');
+        $oBasket->setBasketUser($oUser);
         $aContents = $oBasket->getContents();
         $this->assertEquals(0, count($aContents));
         $oBasket->load();
-
 
         $aContents = $oBasket->getContents();
         $this->assertEquals(2, count($aContents));
@@ -767,8 +768,6 @@ class BasketTest extends \OxidTestCase
 
         $oBasket = oxNew('oxbasket');
         $oBasket->setBasketUser($oUser);
-        $oBasket->calculateBasket(true);
-
         $oBasket->load();
 
         $aContents = $oBasket->getContents();
@@ -935,7 +934,7 @@ class BasketTest extends \OxidTestCase
         $oBasket = oxNew('oxbasket');
         try {
             $oBasket->addToBasket($this->oArticle->getId(), 'xxx');
-        } catch (oxArticleInputException $oExcp) {
+        } catch (\OxidEsales\EshopCommunity\Core\Exception\ArticleInputException $oExcp) {
             return;
         }
         $this->fail('failed testing addToBasket');
@@ -952,7 +951,7 @@ class BasketTest extends \OxidTestCase
         $oBasket = oxNew('oxbasket');
         try {
             $oBasket->addToBasket($this->oArticle->getId(), 666);
-        } catch (oxOutOfStockException $oExcp) {
+        } catch (\OxidEsales\EshopCommunity\Core\Exception\OutOfStockException $oExcp) {
             return;
         }
         $this->fail('failed testing addToBasket');
@@ -2598,7 +2597,7 @@ class BasketTest extends \OxidTestCase
         $oBasket->calculateBasket();
 
         $oProdPrice = $oBasket->getProductsPrice();
-        $this->assertTrue($oProdPrice instanceof oxpricelist);
+        $this->assertTrue($oProdPrice instanceof pricelist);
 
         $this->assertEquals(20 * 19, $oProdPrice->getBruttoSum(), 'brutto sum');
         $this->assertEquals(20 * 19 / 1.19, $oProdPrice->getNettoSum(), 'netto sum', 0.01);
@@ -2616,7 +2615,7 @@ class BasketTest extends \OxidTestCase
     {
         $oBasket = oxNew('oxbasket');
         $oProdPrice = $oBasket->getProductsPrice();
-        $this->assertTrue($oProdPrice instanceof oxpricelist);
+        $this->assertTrue($oProdPrice instanceof pricelist);
     }
 
     /**
@@ -2637,7 +2636,7 @@ class BasketTest extends \OxidTestCase
         $oBasket->calculateBasket(false);
 
         $oPrice = $oBasket->getPrice();
-        $this->assertTrue($oPrice instanceof oxprice);
+        $this->assertTrue($oPrice instanceof price);
         $this->assertEquals(0, $oPrice->getVat());
         $this->assertEquals(19 * 20, $oPrice->getBruttoPrice());
         $this->assertEquals(19 * 20, $oPrice->getNettoPrice());
@@ -2653,7 +2652,7 @@ class BasketTest extends \OxidTestCase
     {
         $oBasket = oxNew('oxbasket');
         $oPrice = $oBasket->getPrice();
-        $this->assertTrue($oPrice instanceof oxprice);
+        $this->assertTrue($oPrice instanceof price);
     }
 
     /**
@@ -2859,7 +2858,7 @@ class BasketTest extends \OxidTestCase
         // testing card getter
         $oCard = $oBasket->getCard();
         $this->assertEquals($this->oCard->getId(), $oCard->getId());
-        $this->assertTrue($oCard instanceof oxwrapping);
+        $this->assertTrue($oCard instanceof wrapping);
     }
 
     /**
@@ -3253,7 +3252,7 @@ class BasketTest extends \OxidTestCase
         $oBasket->addToBasket($this->oArticle->getId(), 1, null, null, true, false, $this->oArticle->getId());
         try {
             $oBasket->addToBasket('ra', 1, null, null, true, false, $this->oArticle->getId());
-        } catch (oxNoArticleException $e) { //whatever.. we interested only before this func.
+        } catch (\OxidEsales\EshopCommunity\Core\Exception\NoArticleException $e) { //whatever.. we interested only before this func.
         }
     }
 

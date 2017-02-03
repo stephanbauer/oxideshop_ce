@@ -20,9 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Model;
-
-use OxidEsales\Eshop\Application\Model\Basket;
+namespace OxidEsales\EshopCommunity\Application\Model;
 
 /**
  * Class oxBasketContentMarkGenerator which forms explanation marks.
@@ -54,7 +52,7 @@ class BasketContentMarkGenerator
      *
      * @param oxBasket $oBasket
      */
-    public function __construct(Basket $oBasket)
+    public function __construct(\OxidEsales\EshopCommunity\Application\Model\Basket $oBasket)
     {
         $this->_oBasket = $oBasket;
     }

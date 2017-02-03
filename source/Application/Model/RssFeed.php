@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Model;
+namespace OxidEsales\EshopCommunity\Application\Model;
 
 use OxidEsales\Eshop\Core\Edition\EditionSelector;
 use OxidEsales\Eshop\Core\Registry;
@@ -123,7 +123,7 @@ class RssFeed extends \oxSuperCfg
         $this->_aChannel['language'] = $aLangIds[$oLang->getBaseLanguage()];
         $this->_aChannel['copyright'] = $oShop->oxshops__oxname->value;
         $this->_aChannel['selflink'] = '';
-        if (Registry::getUtils()->isValidEmail($oShop->oxshops__oxinfoemail->value)) {
+        if (oxNew('oxMailValidator')->isValidEmail($oShop->oxshops__oxinfoemail->value)) {
             $this->_aChannel['managingEditor'] = $oShop->oxshops__oxinfoemail->value;
             if ($oShop->oxshops__oxfname) {
                 $this->_aChannel['managingEditor'] .= " ({$oShop->oxshops__oxfname} {$oShop->oxshops__oxlname})";
@@ -239,7 +239,7 @@ class RssFeed extends \oxSuperCfg
             $oActCur = $this->getConfig()->getActShopCurrencyObject();
             $sPrice = '';
             if ($oPrice = $oArticle->getPrice()) {
-                $sFrom = ($oArticle->isRangePrice()) ? Registry::getLang()->translateString('PRICE_FROM') : '';
+                $sFrom = ($oArticle->isRangePrice()) ? Registry::getLang()->translateString('PRICE_FROM')." " : '';
                 $sPrice .= ' ' . $sFrom . $oLang->formatCurrency($oPrice->getBruttoPrice(), $oActCur) . " " . $oActCur->sign;
             }
             $oItem->title = strip_tags($oArticle->oxarticles__oxtitle->value . $sPrice);

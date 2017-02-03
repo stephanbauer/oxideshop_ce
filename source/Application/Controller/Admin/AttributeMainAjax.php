@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxDb;
@@ -147,7 +147,7 @@ class AttributeMainAjax extends \ajaxListComponent
             $sQ = parent::_addFilter("delete $sO2AttributeView.* " . $this->_getQuery());
             oxDb::getDb()->Execute($sQ);
         } elseif (is_array($aChosenCat)) {
-            $sChosenCategories = implode(", ", oxDb::getInstance()->quoteArray($aChosenCat));
+            $sChosenCategories = implode(", ", oxDb::getDb()->quoteArray($aChosenCat));
             $sQ = "delete from oxobject2attribute where oxobject2attribute.oxid in (" . $sChosenCategories . ") ";
             oxDb::getDb()->Execute($sQ);
         }

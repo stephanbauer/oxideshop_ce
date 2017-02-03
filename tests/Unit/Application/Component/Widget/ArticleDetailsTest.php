@@ -21,8 +21,8 @@
  */
 namespace Unit\Application\Component\Widget;
 
-use oxArticle;
-use oxArticleList;
+use OxidEsales\EshopCommunity\Application\Model\Article;
+use OxidEsales\EshopCommunity\Application\Model\ArticleList;
 use \stdClass;
 use \oxField;
 use \Exception;
@@ -145,7 +145,7 @@ class ArticleDetailsTest extends \OxidTestCase
         $oDetailsView->expects($this->any())->method('getProduct')->will($this->returnValue($oProduct));
 
         $oProduct = $oDetailsView->UNITgetParentProduct('1126');
-        $this->assertTrue($oProduct instanceof oxArticle);
+        $this->assertTrue($oProduct instanceof Article);
         $this->assertEquals('1126', $oProduct->getId());
     }
 
@@ -283,12 +283,16 @@ class ArticleDetailsTest extends \OxidTestCase
         $this->setConfigParam('blVariantParentBuyable', true);
 
         // Get proxy creates class which is used in mock.
-        $this->getProxyClass('oxarticle');
-        // Get proxy use oxUtilsObject to creates class name so get namespace class.
-        $articleProxyName = 'oxarticleProxy';
+        $edition = 'Community';
         if ($this->getTestConfig()->getShopEdition() == 'EE') {
-            $articleProxyName = '_OxidEsales_EshopEnterprise_Application_Model_ArticleProxy';
+            $edition = 'Enterprise';
         }
+        if ($this->getTestConfig()->getShopEdition() == 'PE') {
+            $edition = 'Professional';
+        }
+
+        $proxy = $this->getProxyClass('\OxidEsales\Eshop' . $edition . '\Application\Model\Article');
+        $articleProxyName = get_class($proxy);
 
         $oProductParent = $this->getMock($articleProxyName, array('getSelectLists', 'getId'));
         $oProductParent->expects($this->once())->method('getSelectLists');
@@ -572,7 +576,7 @@ class ArticleDetailsTest extends \OxidTestCase
         $oArticle->load("1849");
         $oDetails->setNonPublicVar("_oProduct", $oArticle);
         $oList = $oDetails->getCrossSelling();
-        $this->assertTrue($oList instanceof oxArticleList);
+        $this->assertTrue($oList instanceof ArticleList);
 
         $iCount = 2;
         if ($this->getConfig()->getEdition() === 'EE') {

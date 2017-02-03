@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxDb;
 use oxField;
@@ -100,12 +100,10 @@ class DeliveryCategoriesAjax extends \ajaxListComponent
 
         // removing all
         if ($this->getConfig()->getRequestParameter('all')) {
-
             $sQ = $this->_addFilter("delete oxobject2delivery.* " . $this->_getQuery());
             oxDb::getDb()->Execute($sQ);
-
         } elseif (is_array($aChosenCat)) {
-            $sChosenCategoriess = implode(", ", oxDb::getInstance()->quoteArray($aChosenCat));
+            $sChosenCategoriess = implode(", ", oxDb::getDb()->quoteArray($aChosenCat));
             $sQ = "delete from oxobject2delivery where oxobject2delivery.oxid in (" . $sChosenCategoriess . ") ";
             oxDb::getDb()->Execute($sQ);
         }

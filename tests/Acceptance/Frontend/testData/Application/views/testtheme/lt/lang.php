@@ -26,7 +26,7 @@ $iLangNr    = 2;
 // RESOURCE IDENTIFIER = STRING
 // -------------------------------
 $aLang = array(
-'charset'                                         => 'ISO-8859-15',
+'charset'                                         => 'UTF-8',
 'fullDateFormat'                                  => 'Y-m-d H:i:s',
 
 'ACCOUNT_LOGIN_LOGIN'                             => "Login",
@@ -989,7 +989,7 @@ $aLang = array(
 'THANKYOU_LOCATION'                               => "Order completed",
 'THANKYOU_THANKYOU1'                              => "Thank you for your Order",
 'THANKYOU_THANKYOU2'                              => "in",
-'THANKYOU_REGISTEREDYOUORDERNO1'                  => "We registered your order under the number:",
+'THANKYOU_REGISTEREDYOUORDERNO1'                  => "We registered your order with number",
 'THANKYOU_REGISTEREDYOUORDERNO2'                  => "",
 'THANKYOU_YOURECEIVEDORDERCONFIRM'                => "You already received an order confirmation per eMail.",
 'THANKYOU_CONFIRMATIONNOTSUCCEED'                 => "Unfortunately our order eMail confirmation was not sent successfully.",

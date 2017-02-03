@@ -20,10 +20,10 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core\Module;
+namespace OxidEsales\EshopCommunity\Core\Module;
 
 use \oxException;
-use \OxidEsales\Eshop\Core\FileSystem\FileSystem;
+use OxidEsales\Eshop\Core\FileSystem\FileSystem;
 
 /**
  * Forms path to module block template.
@@ -109,8 +109,7 @@ class ModuleTemplateBlockPathFormatter
         $modulePath = $activeModuleInfo[$this->moduleId];
 
         $fileSystem = oxNew(FileSystem::class);
-        $connectedPath = $fileSystem->combinePaths($this->modulesPath, $modulePath, $fileName);
 
-        return $connectedPath;
+        return $fileSystem->combinePaths($this->modulesPath, $modulePath, $fileName);
     }
 }

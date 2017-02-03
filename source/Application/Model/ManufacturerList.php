@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Model;
+namespace OxidEsales\EshopCommunity\Application\Model;
 
 use oxRegistry;
 use oxField;
@@ -36,7 +36,7 @@ class ManufacturerList extends \oxList
     /**
      * Manufacturer root.
      *
-     * @var stdClass
+     * @var \stdClass
      */
     protected $_oRoot = null;
 
@@ -107,7 +107,7 @@ class ManufacturerList extends \oxList
      *
      * @param string $sLinkTarget  Name of class, responsible for category rendering
      * @param string $sActCat      Active category
-     * @param string $sShopHomeUrl base shop url ($myConfig->getShopHomeURL())
+     * @param string $sShopHomeUrl base shop url ($myConfig->getShopHomeUrl())
      */
     public function buildManufacturerTree($sLinkTarget, $sActCat, $sShopHomeUrl)
     {
@@ -124,7 +124,6 @@ class ManufacturerList extends \oxList
         $this->_aPath[] = $this->_oRoot;
 
         foreach ($this as $sVndId => $oManufacturer) {
-
             // storing active manufacturer object
             if ((string)$sVndId === $sActCat) {
                 $this->setClickManufacturer($oManufacturer);
@@ -202,7 +201,6 @@ class ManufacturerList extends \oxList
     {
         // only when SEO id on and in front end
         if (oxRegistry::getUtils()->seoIsActive() && !$this->isAdmin()) {
-
             $oEncoder = oxRegistry::get("oxSeoEncoderManufacturer");
 
             // preparing root manufacturer category

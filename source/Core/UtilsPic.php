@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core;
+namespace OxidEsales\EshopCommunity\Core;
 
 use oxDb;
 use oxRegistry;
@@ -55,19 +55,17 @@ class UtilsPic extends \oxSuperCfg
      */
     public function resizeImage($sSrc, $sTarget, $iDesiredWidth, $iDesiredHeight)
     {
-        $blResize = false;
-
         // use this GD Version
         if (($iUseGDVersion = getGdVersion()) && function_exists('imagecreate') &&
             file_exists($sSrc) && ($aImageInfo = @getimagesize($sSrc))
         ) {
-
             $myConfig = $this->getConfig();
             list($iWidth, $iHeight) = calcImageSize($iDesiredWidth, $iDesiredHeight, $aImageInfo[0], $aImageInfo[1]);
-            $blResize = $this->_resize($aImageInfo, $sSrc, null, $sTarget, $iWidth, $iHeight, $iUseGDVersion, $myConfig->getConfigParam('blDisableTouch'), $myConfig->getConfigParam('sDefaultImageQuality'));
+
+            return $this->_resize($aImageInfo, $sSrc, null, $sTarget, $iWidth, $iHeight, $iUseGDVersion, $myConfig->getConfigParam('blDisableTouch'), $myConfig->getConfigParam('sDefaultImageQuality'));
         }
 
-        return $blResize;
+        return false;
     }
 
 
@@ -107,7 +105,6 @@ class UtilsPic extends \oxSuperCfg
         if (!$myConfig->isDemoShop() && (strpos($sPicName, 'nopic.jpg') === false ||
                                          strpos($sPicName, 'nopic_ico.jpg') === false)
         ) {
-
             $sFile = "$sAbsDynImageDir/$sPicName";
 
             if (file_exists($sFile) && is_file($sFile)) {
@@ -146,10 +143,28 @@ class UtilsPic extends \oxSuperCfg
             return false;
         }
 
-        $oDb = oxDb::getDb();
-        $iCountUsed = $oDb->getOne("select count(*) from $sTable where $sField = " . $oDb->quote($sPicName) . " group by $sField ", false, false);
+        $iCountUsed = $this->fetchIsImageDeletable($sPicName, $sTable, $sField);
 
         return $iCountUsed > 1 ? false : true;
+    }
+
+    /**
+     * Fetch the information, if the given image is deletable from the database.
+     *
+     * @param string $sPicName Name of image file.
+     * @param string $sTable   The table in which we search for the image.
+     * @param string $sField   The value of the table field.
+     *
+     * @return mixed
+     */
+    protected function fetchIsImageDeletable($sPicName, $sTable, $sField)
+    {
+        // We force reading from master to prevent issues with slow replications or open transactions (see ESDEV-3804).
+        $masterDb = oxDb::getMaster();
+
+        $query = "select count(*) from $sTable where $sField = " . $masterDb->quote($sPicName) . " group by $sField ";
+
+        return $masterDb->getOne($query);
     }
 
     /**
@@ -167,17 +182,15 @@ class UtilsPic extends \oxSuperCfg
      */
     public function overwritePic($oObject, $sPicTable, $sPicField, $sPicType, $sPicDir, $aParams, $sAbsDynImageDir)
     {
-        $blDelete = false;
         $sPic = $sPicTable . '__' . $sPicField;
         if (isset($oObject->{$sPic}) &&
             ($_FILES['myfile']['size'][$sPicType . '@' . $sPic] > 0 || $aParams[$sPic] != $oObject->{$sPic}->value)
         ) {
-
             $sImgDir = $sAbsDynImageDir . oxRegistry::get("oxUtilsFile")->getImageDirByType($sPicType);
-            $blDelete = $this->safePictureDelete($oObject->{$sPic}->value, $sImgDir, $sPicTable, $sPicField);
+            return $this->safePictureDelete($oObject->{$sPic}->value, $sImgDir, $sPicTable, $sPicField);
         }
 
-        return $blDelete;
+        return false;
     }
 
     /**

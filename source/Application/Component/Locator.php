@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @link          http://www.oxid-esales.com
+ * @link      http://www.oxid-esales.com
  * @copyright (C) OXID eSales AG 2003-2016
- * @version       OXID eShop CE
+ * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Component;
+namespace OxidEsales\EshopCommunity\Application\Component;
 
 use oxRegistry;
 use oxSeoEncoderRecomm;
@@ -96,7 +96,6 @@ class Locator extends \oxSuperCfg
     {
         // if no active category is loaded - lets check for category passed by post/get
         if (($oCategory = $oLocatorTarget->getActiveCategory())) {
-
             $sOrderBy = null;
             if ($oLocatorTarget->showSorting()) {
                 $sOrderBy = $oLocatorTarget->getSortingSql($oLocatorTarget->getSortIdent());
@@ -245,7 +244,6 @@ class Locator extends \oxSuperCfg
     protected function _setSearchLocatorData($oLocatorTarget, $oCurrArticle)
     {
         if (($oSearchCat = $oLocatorTarget->getActSearch())) {
-
             // #1834/1184M - specialchar search
             $sSearchParam = oxRegistry::getConfig()->getRequestParameter('searchparam', true);
             $sSearchFormParam = oxRegistry::getConfig()->getRequestParameter('searchparam');
@@ -317,7 +315,6 @@ class Locator extends \oxSuperCfg
     protected function _setRecommlistLocatorData($oLocatorTarget, $oCurrArticle)
     {
         if (($oRecommList = $oLocatorTarget->getActiveRecommList())) {
-
             // loading data for article navigation
             $oIdList = oxNew('oxArticleList');
             $oIdList->loadRecommArticleIds($oRecommList->getId(), null);
@@ -473,7 +470,6 @@ class Locator extends \oxSuperCfg
         // variant handling
         $sOxid = $oArticle->oxarticles__oxparentid->value ? $oArticle->oxarticles__oxparentid->value : $oArticle->getId();
         if ($oIdList->count() && isset($oIdList[$sOxid])) {
-
             $aIds = $oIdList->arrayKeys();
             $iPos = oxRegistry::getUtils()->arrayStringSearch($sOxid, $aIds);
 

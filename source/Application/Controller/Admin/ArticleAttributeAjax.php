@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxDb;
@@ -88,9 +88,8 @@ class ArticleAttributeAjax extends \ajaxListComponent
             $sO2AViewName = $this->_getViewName('oxobject2attribute');
             $sQ = $this->_addFilter("delete $sO2AViewName.* " . $this->_getQuery());
             oxDb::getDb()->Execute($sQ);
-
         } elseif (is_array($aChosenArt)) {
-            $sChosenArticles = implode(", ", oxDb::getInstance()->quoteArray($aChosenArt));
+            $sChosenArticles = implode(", ", oxDb::getDb()->quoteArray($aChosenArt));
             $sQ = "delete from oxobject2attribute where oxobject2attribute.oxid in ({$sChosenArticles}) ";
             oxDb::getDb()->Execute($sQ);
         }
@@ -137,13 +136,9 @@ class ArticleAttributeAjax extends \ajaxListComponent
         $articleId = oxRegistry::getConfig()->getRequestParameter("oxid");
         $attributeId = oxRegistry::getConfig()->getRequestParameter("attr_oxid");
         $attributeValue = oxRegistry::getConfig()->getRequestParameter("attr_value");
-        if (!$this->getConfig()->isUtf()) {
-            $attributeValue = iconv('UTF-8', oxRegistry::getLang()->translateString("charset"), $attributeValue);
-        }
 
         $article = oxNew("oxArticle");
         if ($article->load($articleId)) {
-
             if ($article->isDerived()) {
                 return;
             }

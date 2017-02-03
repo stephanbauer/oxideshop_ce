@@ -20,13 +20,13 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller;
+namespace OxidEsales\EshopCommunity\Application\Controller;
 
 use oxField;
 use oxRegistry;
 
 /**
- * Pricealarm window.
+ * PriceAlarm window.
  * Arranges "pricealarm" window, by sending eMail and storing into Database (etc.)
  * submission. Result - "pricealarm.tpl"  template. After user correctly
  * fulfils all required fields all information is sent to shop owner by
@@ -78,7 +78,7 @@ class PriceAlarmController extends \oxUBase
         $myUtils = oxRegistry::getUtils();
 
         $aParams = oxRegistry::getConfig()->getRequestParameter('pa');
-        if (!isset($aParams['email']) || !$myUtils->isValidEmail($aParams['email'])) {
+        if (!isset($aParams['email']) || !oxNew('oxMailValidator')->isValidEmail($aParams['email'])) {
             $this->_iPriceAlarmStatus = 0;
 
             return;

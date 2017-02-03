@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Model;
+namespace OxidEsales\EshopCommunity\Application\Model;
 
 use oxDb;
 
@@ -60,6 +60,5 @@ class OrderArticleList extends \oxList
         $sSelect .= "WHERE oxorder.oxuserid = " . oxDb::getDb()->quote($sOxId);
 
         $this->selectString($sSelect);
-
     }
 }

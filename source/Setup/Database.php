@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Setup;
+namespace OxidEsales\EshopCommunity\Setup;
 
 use Conf;
 use Exception;
@@ -70,6 +70,13 @@ class Database extends Core
     const ERROR_MYSQL_VERSION_DOES_NOT_FIT_REQUIREMENTS = 3;
 
     /**
+     * MySQL version does not fir recommendations
+     *
+     * @var int
+     */
+    const ERROR_MYSQL_VERSION_DOES_NOT_FIT_RECOMMENDATIONS = 4;
+
+    /**
      * Executes sql query. Returns query execution resource object
      *
      * @param string $sQ query to execute
@@ -90,7 +97,6 @@ class Database extends Core
             }
 
             return $oStatement;
-
         } catch (PDOException $e) {
             throw new Exception(
                 $this->getInstance("Language")->getText('ERROR_BAD_SQL') . "( $sQ ): {$e->getMessage()}\n"
@@ -208,7 +214,7 @@ class Database extends Core
         if ($this->_oConn === null) {
             // ok open DB
             try {
-                $dsn = sprintf('mysql:host=%s', $aParams['dbHost']);
+                $dsn = sprintf('mysql:host=%s;port=%s', $aParams['dbHost'], $aParams['dbPort']);
                 $this->_oConn = new PDO(
                     $dsn,
                     $aParams['dbUser'],
@@ -226,13 +232,18 @@ class Database extends Core
 
             // testing version
             $oSysReq = getSystemReqCheck();
-            if (!$oSysReq->checkMysqlVersion($this->getDatabaseVersion())) {
+            if (0 === $oSysReq->checkMysqlVersion($this->getDatabaseVersion())) {
                 throw new Exception($this->getInstance("Language")->getText('ERROR_MYSQL_VERSION_DOES_NOT_FIT_REQUIREMENTS'), Database::ERROR_MYSQL_VERSION_DOES_NOT_FIT_REQUIREMENTS);
             }
+
             try {
                 $this->_oConn->exec("USE `{$aParams['dbName']}`");
             } catch (Exception $e) {
                 throw new Exception($this->getInstance("Language")->getText('ERROR_COULD_NOT_CREATE_DB') . " - " . $e->getMessage(), Database::ERROR_COULD_NOT_CREATE_DB, $e);
+            }
+
+            if (1 === $oSysReq->checkMysqlVersion($this->getDatabaseVersion())) {
+                throw new Exception($this->getInstance("Language")->getText('ERROR_MYSQL_VERSION_DOES_NOT_FIT_RECOMMENDATIONS'), Database::ERROR_MYSQL_VERSION_DOES_NOT_FIT_RECOMMENDATIONS);
             }
         }
 
@@ -293,6 +304,7 @@ class Database extends Core
         $oPdo->exec("delete from oxconfig where oxvarname = 'blLoadDynContents'");
         $oPdo->exec("delete from oxconfig where oxvarname = 'sShopCountry'");
         $oPdo->exec("delete from oxconfig where oxvarname = 'blCheckForUpdates'");
+        $oPdo->exec("delete from oxconfig where oxvarname = 'sDefaultLang'");
         // $this->execSql( "delete from oxconfig where oxvarname = 'aLanguageParams'" );
 
         $oInsert = $oPdo->prepare("insert into oxconfig (oxid, oxshopid, oxvarname, oxvartype, oxvarvalue)
@@ -327,6 +339,16 @@ class Database extends Core
             )
         );
 
+        $oInsert->execute(
+            array(
+                'oxid' => $oUtils->generateUid(),
+                'shopId' => $sBaseShopId,
+                'name' => 'sDefaultLang',
+                'type' => 'str',
+                'value' => $sShopLang
+            )
+        );
+
         $this->addConfigValueIfShopInfoShouldBeSent($oUtils, $sBaseShopId, $aParams, $oConfk, $oSession);
 
         //set only one active language
@@ -343,6 +365,7 @@ class Database extends Core
 
             $sValue = serialize($aLanguageParams);
 
+            $oPdo->exec("delete from oxconfig where oxvarname = 'aLanguageParams'");
             $oInsert->execute(
                 array(
                     'oxid' => $oUtils->generateUid(),
@@ -352,37 +375,6 @@ class Database extends Core
                     'value' => $sValue
                 )
             );
-        }
-    }
-
-    /**
-     * Converts config table values to utf8
-     */
-    public function convertConfigTableToUtf()
-    {
-        $oConfk = new Conf();
-        /** @var Utilities $oUtils */
-        $oUtils = $this->getInstance("Utilities");
-
-        $pdo = $this->getConnection();
-
-        $sSql = "SELECT oxid, oxvarname, oxvartype, DECODE( oxvarvalue, '{$oConfk->sConfigKey}') AS oxvarvalue FROM oxconfig WHERE oxvartype IN ('str', 'arr', 'aarr') ";
-        $oSelect = $pdo->query($sSql);
-        $oUpdate = $pdo->prepare("UPDATE oxconfig SET oxvarvalue = ENCODE( :varValue, '{$oConfk->sConfigKey}') WHERE oxid = :oxid; ");
-
-        while (false !== ($aRow = $oSelect->fetch())) {
-            if ($aRow['oxvartype'] == 'arr' || $aRow['oxvartype'] == 'aarr') {
-                $aRow['oxvarvalue'] = unserialize($aRow['oxvarvalue']);
-            }
-
-            $aRow['oxvarvalue'] = $oUtils->convertToUtf8($aRow['oxvarvalue']);
-
-            $sVarValue = $aRow['oxvarvalue'];
-            if (is_array($aRow['oxvarvalue'])) {
-                $sVarValue = serialize($aRow['oxvarvalue']);
-            }
-
-            $oUpdate->execute(array('varValue' => $sVarValue, 'oxid' => $aRow['oxid']));
         }
     }
 
@@ -441,42 +433,6 @@ class Database extends Core
     }
 
     /**
-     * Sets various connection collation parameters
-     *
-     * @param int $iUtfMode utf8 mode
-     */
-    public function setMySqlCollation($iUtfMode)
-    {
-        $pdo = $this->getConnection();
-        if ($iUtfMode) {
-            $pdo->exec("ALTER SCHEMA CHARACTER SET utf8 COLLATE utf8_general_ci");
-            $pdo->exec("set names 'utf8'");
-            $pdo->exec("set character_set_database=utf8");
-            $pdo->exec("SET CHARACTER SET latin1");
-            $pdo->exec("SET CHARACTER_SET_CONNECTION = utf8");
-            $pdo->exec("SET character_set_results = utf8");
-            $pdo->exec("SET character_set_server = utf8");
-        } else {
-            $pdo->exec("ALTER SCHEMA CHARACTER SET latin1 COLLATE latin1_general_ci");
-            $pdo->exec("SET CHARACTER SET latin1");
-        }
-    }
-
-    /**
-     * Writes utf mode config parameter to db
-     *
-     * @param int $iUtfMode utf mode
-     */
-    public function writeUtfMode($iUtfMode)
-    {
-        $sBaseShopId = $this->getInstance("Setup")->getShopId();
-        $oConfk = new Conf();
-        $sQ = "insert into oxconfig (oxid, oxshopid, oxvarname, oxvartype, oxvarvalue) values('iSetUtfMode', '$sBaseShopId', 'iSetUtfMode', 'str', ENCODE( '{$iUtfMode}', '" . $oConfk->sConfigKey . "') )";
-
-        $this->execSql($sQ);
-    }
-
-    /**
      * Updates default admin user login name and password
      *
      * @param string $sLoginName admin user login name
@@ -509,6 +465,7 @@ class Database extends Core
         $blSendShopDataToOxid = isset($parameters["blSendShopDataToOxid"]) ? $parameters["blSendShopDataToOxid"] : $session->getSessionParam('blSendShopDataToOxid');
 
         $sID = $utilities->generateUid();
+        $this->execSql("delete from oxconfig where oxvarname = 'blSendShopDataToOxid'");
         $this->execSql(
             "insert into oxconfig (oxid, oxshopid, oxvarname, oxvartype, oxvarvalue)
                              values('$sID', '$baseShopId', 'blSendShopDataToOxid', 'bool', ENCODE( '$blSendShopDataToOxid', '" . $configKey->sConfigKey . "'))"

@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxDb;
@@ -253,11 +253,11 @@ class ArticleMain extends \oxAdminDetails
     {
         $oDb = oxDb::getDb();
         $sQ = "select oxcatnid from oxobject2category where oxobjectid = " . $oDb->quote($sArticleId);
-        $oRs = $oDb->execute($sQ);
-        if ($oRs !== false && $oRs->recordCount() > 0) {
+        $oRs = $oDb->select($sQ);
+        if ($oRs !== false && $oRs->count() > 0) {
             while (!$oRs->EOF) {
                 $this->resetCounter("catArticle", $oRs->fields[0]);
-                $oRs->moveNext();
+                $oRs->fetchRow();
             }
         }
     }
@@ -298,7 +298,6 @@ class ArticleMain extends \oxAdminDetails
         $oArticle = oxNew('oxBase');
         $oArticle->init('oxarticles');
         if ($oArticle->load($sOldId)) {
-
             if ($myConfig->getConfigParam('blDisableDublArtOnCopy')) {
                 $oArticle->oxarticles__oxactive->setValue(0);
                 $oArticle->oxarticles__oxactivefrom->setValue(0);
@@ -352,17 +351,16 @@ class ArticleMain extends \oxAdminDetails
 
             //copy variants
             $sQ = "select oxid from oxarticles where oxparentid = " . $oDb->quote($sOldId);
-            $oRs = $oDb->execute($sQ);
-            if ($oRs !== false && $oRs->recordCount() > 0) {
+            $oRs = $oDb->select($sQ);
+            if ($oRs !== false && $oRs->count() > 0) {
                 while (!$oRs->EOF) {
                     $this->copyArticle($oRs->fields[0], $myUtilsObject->generateUid(), $sNewId);
-                    $oRs->moveNext();
+                    $oRs->fetchRow();
                 }
             }
 
             // only for top articles
             if (!$sParentId) {
-
                 $this->setEditObjectId($oArticle->getId());
 
                 //article number handling, warns for artnum duplicates
@@ -386,7 +384,7 @@ class ArticleMain extends \oxAdminDetails
     /**
      * Copying category assignments
      *
-     * @param string $sOldId Id from old article
+     * @param string $sOldId       Id from old article
      * @param string $newArticleId Id from new article
      */
     protected function _copyCategories($sOldId, $newArticleId)
@@ -396,15 +394,15 @@ class ArticleMain extends \oxAdminDetails
 
         $sO2CView = getViewName('oxobject2category');
         $sQ = "select oxcatnid, oxtime from {$sO2CView} where oxobjectid = " . $oDb->quote($sOldId);
-        $oRs = $oDb->execute($sQ);
-        if ($oRs !== false && $oRs->recordCount() > 0) {
+        $oRs = $oDb->select($sQ);
+        if ($oRs !== false && $oRs->count() > 0) {
             while (!$oRs->EOF) {
                 $uniqueId = $myUtilsObject->generateUid();
                 $sCatId = $oRs->fields[0];
                 $sTime = $oRs->fields[1];
                 $sSql = $this->formQueryForCopyingToCategory($newArticleId, $uniqueId, $sCatId, $sTime);
                 $oDb->execute($sSql);
-                $oRs->moveNext();
+                $oRs->fetchRow();
             }
         }
     }
@@ -421,8 +419,8 @@ class ArticleMain extends \oxAdminDetails
         $oDb = oxDb::getDb();
 
         $sQ = "select oxid from oxobject2attribute where oxobjectid = " . $oDb->quote($sOldId);
-        $oRs = $oDb->execute($sQ);
-        if ($oRs !== false && $oRs->recordCount() > 0) {
+        $oRs = $oDb->select($sQ);
+        if ($oRs !== false && $oRs->count() > 0) {
             while (!$oRs->EOF) {
                 // #1055A
                 $oAttr = oxNew("oxBase");
@@ -431,7 +429,7 @@ class ArticleMain extends \oxAdminDetails
                 $oAttr->setId($myUtilsObject->generateUID());
                 $oAttr->oxobject2attribute__oxobjectid->setValue($sNewId);
                 $oAttr->save();
-                $oRs->moveNext();
+                $oRs->fetchRow();
             }
         }
     }
@@ -448,10 +446,9 @@ class ArticleMain extends \oxAdminDetails
         $oDb = oxDb::getDb(oxDB::FETCH_MODE_ASSOC);
 
         $sQ = "SELECT * FROM `oxfiles` WHERE `oxartid` = " . $oDb->quote($sOldId);
-        $oRs = $oDb->execute($sQ);
-        if ($oRs !== false && $oRs->recordCount() > 0) {
+        $oRs = $oDb->select($sQ);
+        if ($oRs !== false && $oRs->count() > 0) {
             while (!$oRs->EOF) {
-
                 $oFile = oxNew("oxfile");
                 $oFile->setId($myUtilsObject->generateUID());
                 $oFile->oxfiles__oxartid = new oxField($sNewId);
@@ -460,7 +457,7 @@ class ArticleMain extends \oxAdminDetails
                 $oFile->oxfiles__oxstorehash = new oxField($oRs->fields['OXSTOREHASH']);
                 $oFile->oxfiles__oxpurchasedonly = new oxField($oRs->fields['OXPURCHASEDONLY']);
                 $oFile->save();
-                $oRs->moveNext();
+                $oRs->fetchRow();
             }
         }
     }
@@ -477,15 +474,15 @@ class ArticleMain extends \oxAdminDetails
         $oDb = oxDb::getDb();
 
         $sQ = "select oxselnid from oxobject2selectlist where oxobjectid = " . $oDb->quote($sOldId);
-        $oRs = $oDb->execute($sQ);
-        if ($oRs !== false && $oRs->recordCount() > 0) {
+        $oRs = $oDb->select($sQ);
+        if ($oRs !== false && $oRs->count() > 0) {
             while (!$oRs->EOF) {
                 $sUid = $myUtilsObject->generateUID();
                 $sId = $oRs->fields[0];
                 $sSql = "insert into oxobject2selectlist (oxid, oxobjectid, oxselnid) " .
                         "VALUES (" . $oDb->quote($sUid) . ", " . $oDb->quote($sNewId) . ", " . $oDb->quote($sId) . ") ";
                 $oDb->execute($sSql);
-                $oRs->moveNext();
+                $oRs->fetchRow();
             }
         }
     }
@@ -502,15 +499,15 @@ class ArticleMain extends \oxAdminDetails
         $oDb = oxDb::getDb();
 
         $sQ = "select oxobjectid from oxobject2article where oxarticlenid = " . $oDb->quote($sOldId);
-        $oRs = $oDb->execute($sQ);
-        if ($oRs !== false && $oRs->recordCount() > 0) {
+        $oRs = $oDb->select($sQ);
+        if ($oRs !== false && $oRs->count() > 0) {
             while (!$oRs->EOF) {
                 $sUid = $myUtilsObject->generateUID();
                 $sId = $oRs->fields[0];
                 $sSql = "insert into oxobject2article (oxid, oxobjectid, oxarticlenid) " .
                        "VALUES (" . $oDb->quote($sUid) . ", " . $oDb->quote($sId) . ", " . $oDb->quote($sNewId) . " ) ";
                 $oDb->execute($sSql);
-                $oRs->moveNext();
+                $oRs->fetchRow();
             }
         }
     }
@@ -527,15 +524,15 @@ class ArticleMain extends \oxAdminDetails
         $oDb = oxDb::getDb();
 
         $sQ = "select oxobjectid from oxaccessoire2article where oxarticlenid= " . $oDb->quote($sOldId);
-        $oRs = $oDb->execute($sQ);
-        if ($oRs !== false && $oRs->recordCount() > 0) {
+        $oRs = $oDb->select($sQ);
+        if ($oRs !== false && $oRs->count() > 0) {
             while (!$oRs->EOF) {
                 $sUId = $myUtilsObject->generateUid();
                 $sId = $oRs->fields[0];
                 $sSql = "insert into oxaccessoire2article (oxid, oxobjectid, oxarticlenid) " .
                         "VALUES (" . $oDb->quote($sUId) . ", " . $oDb->quote($sId) . ", " . $oDb->quote($sNewId) . ") ";
                 $oDb->execute($sSql);
-                $oRs->moveNext();
+                $oRs->fetchRow();
             }
         }
     }
@@ -726,15 +723,15 @@ class ArticleMain extends \oxAdminDetails
     protected function formQueryForCopyingToCategory($newArticleId, $sUid, $sCatId, $sTime)
     {
         $oDb = oxDb::getDb();
-        $sql = "insert into oxobject2category (oxid, oxobjectid, oxcatnid, oxtime) " .
+        return "insert into oxobject2category (oxid, oxobjectid, oxcatnid, oxtime) " .
             "VALUES (" . $oDb->quote($sUid) . ", " . $oDb->quote($newArticleId) . ", " .
             $oDb->quote($sCatId) . ", " . $oDb->quote($sTime) . ") ";
-
-        return $sql;
     }
 
     /**
      * @param oxBase $base
+     *
+     * @return oxBase $base
      */
     protected function updateBase($base)
     {

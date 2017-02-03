@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core;
+namespace OxidEsales\EshopCommunity\Core;
 
 use oxRegistry;
 use oxApplicationServer;
@@ -63,15 +63,9 @@ class ServerChecker
      *
      * @return bool
      */
-    public function check(oxApplicationServer $oServer)
+    public function check(\OxidEsales\EshopCommunity\Core\ApplicationServer $oServer)
     {
-        $blResult = false;
-
-        if ($this->_isValid($oServer) && $this->_isServerTimeValid($oServer->getTimestamp())) {
-            $blResult = true;
-        }
-
-        return $blResult;
+        return $this->_isValid($oServer) && $this->_isServerTimeValid($oServer->getTimestamp());
     }
 
     /**

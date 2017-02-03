@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Model;
+namespace OxidEsales\EshopCommunity\Application\Model;
 
 use oxRegistry;
 use oxDb;
@@ -257,9 +257,9 @@ class Diagnostics
             $sRequest .= ' WHERE oxactive = 1';
         }
 
-        $aRes = $oDb->execute($sRequest)->fields(0);
+         $aRes = $oDb->select($sRequest)->fields[0];
 
-        return $aRes[0];
+        return $aRes;
     }
 
 

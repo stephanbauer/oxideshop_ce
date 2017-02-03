@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxUser;
@@ -90,6 +90,7 @@ class UserList extends \oxAdminList
     {
         if ($this->_allowAdminEdit($this->getEditObjectId())) {
             $this->_oList = null;
+
             return parent::deleteEntry();
         }
     }

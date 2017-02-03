@@ -19,15 +19,17 @@
  * @copyright (C) OXID eSales AG 2003-2016
  * @version   OXID eShop CE
  */
-namespace Integration\Modules;
+namespace OxidEsales\EshopCommunity\Tests\Integration\Modules;
 
 use oxOnlineModulesNotifierRequest;
 use oxOnlineModuleVersionNotifier;
 use oxOnlineModuleVersionNotifierCaller;
 use PHPUnit_Framework_MockObject_MockObject as MockObject;
 
-require_once __DIR__ . '/BaseModuleTestCase.php';
-
+/**
+ * @group module
+ * @package Integration\Modules
+ */
 class OnlineModuleNotifierTest extends BaseModuleTestCase
 {
     /**
@@ -76,6 +78,9 @@ class OnlineModuleNotifierTest extends BaseModuleTestCase
         $aModulesInfo[] = array('id' => 'extending_3_classes', 'version' => '1.0', 'activeInShop' => array());
         $aModulesInfo[] = array('id' => 'extending_3_classes_with_1_extension', 'version' => '1.0', 'activeInShop' => array());
         $aModulesInfo[] = array('id' => 'no_extending', 'version' => '1.0', 'activeInShop' => array());
+        $aModulesInfo[] = array('id' => 'virtualnamespace_module1', 'version' => '1.0.0', 'activeInShop' => array());
+        $aModulesInfo[] = array('id' => 'virtualnamespace_module2', 'version' => '1.0.0', 'activeInShop' => array());
+        $aModulesInfo[] = array('id' => 'virtualnamespace_module3', 'version' => '1.0.0', 'activeInShop' => array());
         $aModulesInfo[] = array('id' => 'with_1_extension', 'version' => '1.0', 'activeInShop' => array());
         $aModulesInfo[] = array('id' => 'with_2_files', 'version' => '1.0', 'activeInShop' => array());
         $aModulesInfo[] = array('id' => 'with_2_settings', 'version' => '1.0', 'activeInShop' => array());

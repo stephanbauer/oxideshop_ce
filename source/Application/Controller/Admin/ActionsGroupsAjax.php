@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxDb;
@@ -93,7 +93,7 @@ class ActionsGroupsAjax extends \ajaxListComponent
             $sQ = $this->_addFilter("delete oxobject2action.* " . $this->_getQuery());
             oxDb::getDb()->Execute($sQ);
         } elseif ($aRemoveGroups && is_array($aRemoveGroups)) {
-            $sRemoveGroups = implode(", ", oxDb::getInstance()->quoteArray($aRemoveGroups));
+            $sRemoveGroups = implode(", ", oxDb::getDb()->quoteArray($aRemoveGroups));
             $sQ = "delete from oxobject2action where oxobject2action.oxid in (" . $sRemoveGroups . ") ";
             oxDb::getDb()->Execute($sQ);
         }
@@ -124,6 +124,7 @@ class ActionsGroupsAjax extends \ajaxListComponent
                 $oObject2Promotion->oxobject2action__oxclass = new oxField("oxgroups");
                 $oObject2Promotion->save();
             }
+
             $promotionAdded = true;
         }
 

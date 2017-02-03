@@ -53,32 +53,20 @@ if ($blAjaxCall) {
     }
 
     if ($sContainer = oxRegistry::getConfig()->getRequestParameter('container')) {
-
         $sContainer = trim(strtolower(basename($sContainer)));
 
         try {
             $oAjaxComponent = oxNew($sContainer . '_ajax');
-        } catch (oxSystemComponentException $oCe) {
-            $sFile = 'inc/' . $sContainer . '.inc.php';
-            if (file_exists($sFile)) {
-                $aColumns = array();
-                include_once $sFile;
-                $oAjaxComponent = new ajaxcomponent($aColumns);
-                $oAjaxComponent->init($aColumns);
-            } else {
-                $oEx = oxNew('oxFileException');
-                $oEx->setMessage('EXCEPTION_FILENOTFOUND');
-                $oEx->setFileName($sFile);
-                $oEx->debugOut();
-                throw $oEx;
-            }
+        } catch (\OxidEsales\EshopCommunity\Core\Exception\SystemComponentException $oCe) {
+            $oEx = oxNew('oxFileException');
+            $oEx->setMessage('EXCEPTION_FILENOTFOUND');
+            $oEx->setFileName($sFile);
+            $oEx->debugOut();
+            throw $oEx;
         }
 
         $oAjaxComponent->setName($sContainer);
         $oAjaxComponent->processRequest(oxRegistry::getConfig()->getRequestParameter('fnc'));
-
-    } else {
-
     }
 
     $myConfig->pageClose();

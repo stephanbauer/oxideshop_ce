@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use stdClass;
@@ -127,7 +127,6 @@ class UserMain extends \oxAdminDetails
         //allow admin information edit only for MALL admins
         $soxId = $this->getEditObjectId();
         if ($this->_allowAdminEdit($soxId)) {
-
             $aParams = oxRegistry::getConfig()->getRequestParameter("editval");
 
             // checkbox handling
@@ -191,6 +190,8 @@ class UserMain extends \oxAdminDetails
      * Additional actions on user creation.
      *
      * @param oxUser $user
+     *
+     * @return oxUser
      */
     protected function onUserCreation($user)
     {

@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Model;
+namespace OxidEsales\EshopCommunity\Application\Model;
 
 /**
  * Address handler
@@ -100,9 +100,7 @@ class Address extends \oxBase
         }
         $sAddress .= "$sStreet $sStreetNr, $sCity";
 
-        $sAddress = trim($sAddress);
-
-        return $sAddress;
+        return trim($sAddress);
     }
 
     /**
@@ -113,18 +111,6 @@ class Address extends \oxBase
     public function getEncodedDeliveryAddress()
     {
         return md5($this->_getMergedAddressFields());
-    }
-
-    /**
-     * Return address state id
-     *
-     * @deprecated since v5.2 (2014-01-10); Naming changed use function getStateId()
-     *
-     * @return string
-     */
-    public function getState()
-    {
-        return $this->getStateId();
     }
 
     /**

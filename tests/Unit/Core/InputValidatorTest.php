@@ -72,7 +72,7 @@ class InputValidatorTest extends \OxidTestCase
             $this->assertEquals($this->_oValidator->validateBasketAmount('1,6'), 2);
             $this->assertEquals($this->_oValidator->validateBasketAmount('1.6'), 2);
             $this->assertEquals($this->_oValidator->validateBasketAmount('1.1'), 1);
-        } catch (oxArticleInputException $e) {
+        } catch (\OxidEsales\EshopCommunity\Core\Exception\ArticleInputException $e) {
             $this->fail('Error while executing test: testValidateBasketAmountnoUneven');
         }
     }
@@ -426,7 +426,7 @@ class InputValidatorTest extends \OxidTestCase
         $oValidator = oxNew("oxinputvalidator");
         $oValidator->checkCountries($oUser, array("oxuser__oxcountryid" => "xxx"), array("oxaddress__oxcountryid" => "yyy"));
 
-        $this->assertTrue($oValidator->getFirstValidationError() instanceof oxUserException, "error in oxinputvalidator::checkCountries()");
+        $this->assertTrue($oValidator->getFirstValidationError() instanceof \OxidEsales\EshopCommunity\Core\Exception\UserException, "error in oxinputvalidator::checkCountries()");
     }
 
     /**
@@ -465,43 +465,6 @@ class InputValidatorTest extends \OxidTestCase
         $oValidator->checkCountries($oUser, array("oxuser__oxcountryid" => "a7c40f631fc920687.20179984"), array("oxaddress__oxcountryid" => "a7c40f6320aeb2ec2.72885259"));
         $this->assertNull($oValidator->getFirstValidationError());
     }
-
-    /**
-     * Test case for oxInputValidator::checkRequiredArrayFields()
-     *
-     * @return null
-     */
-    public function testCheckRequiredArrayFieldsEmptyField()
-    {
-        $oUser = oxNew('oxuser');
-        $oUser->setId("testlalaa_");
-
-        $oValidator = $this->getMock('oxinputvalidator', array('_addValidationError'));
-        $oValidator->expects($this->once())->method('_addValidationError')
-            ->with(
-                $this->equalTo('xxx'),
-                $this->logicalAnd(
-                    $this->isInstanceOf('oxInputException'),
-                    $this->attributeEqualTo('message', oxRegistry::getLang()->translateString('ERROR_MESSAGE_INPUT_NOTALLFIELDS'))
-                )
-            );
-
-        $oValidator->checkRequiredArrayFields($oUser, 'xxx', array('aaa' => ' '));
-    }
-
-    /**
-     * Test case for oxInputValidator::checkRequiredArrayFields()
-     *
-     * @return null
-     */
-    public function testCheckRequiredArrayFieldsFilledField()
-    {
-        $oValidator = $this->getMock('oxinputvalidator', array('_addValidationError'));
-        $oValidator->expects($this->never())->method('_addValidationError');
-
-        $oValidator->checkRequiredArrayFields(new oxuser(), 'xxx', array('aaa' => 'xxx'));
-    }
-
 
     /**
      * Test case for oxInputValidator::checkPassword()
@@ -1261,13 +1224,13 @@ class InputValidatorTest extends \OxidTestCase
 
         $oVatInValidator = $oInputValidator->getCompanyVatInValidator(oxNew('oxCountry'));
 
-        $this->assertTrue($oVatInValidator instanceof oxCompanyVatInValidator);
+        $this->assertTrue($oVatInValidator instanceof \OxidEsales\EshopCommunity\Core\CompanyVatInValidator);
         $aCheckers = $oVatInValidator->getCheckers();
 
         $this->assertSame(2, count($aCheckers));
 
-        $this->assertTrue($aCheckers[0] instanceof oxCompanyVatInCountryChecker);
-        $this->assertTrue($aCheckers[1] instanceof oxOnlineVatIdCheck);
+        $this->assertTrue($aCheckers[0] instanceof \OxidEsales\EshopCommunity\Core\CompanyVatInCountryChecker);
+        $this->assertTrue($aCheckers[1] instanceof \OxidEsales\EshopCommunity\Core\OnlineVatIdCheck);
     }
 
     public function testGetCompanyVatInValidator_DefaultTurnedOffOnline()
@@ -1277,11 +1240,11 @@ class InputValidatorTest extends \OxidTestCase
         $oInputValidator = oxNew('oxInputValidator');
         $oVatInValidator = $oInputValidator->getCompanyVatInValidator(oxNew('oxCountry'));
 
-        $this->assertTrue($oVatInValidator instanceof oxCompanyVatInValidator);
+        $this->assertTrue($oVatInValidator instanceof \OxidEsales\EshopCommunity\Core\CompanyVatInValidator);
 
         $aCheckers = $oVatInValidator->getCheckers();
         $this->assertSame(1, count($aCheckers));
-        $this->assertFalse($aCheckers[0] instanceof oxOnlineVatIdCheck);
+        $this->assertFalse($aCheckers[0] instanceof \OxidEsales\EshopCommunity\Core\OnlineVatIdCheck);
     }
 
 }

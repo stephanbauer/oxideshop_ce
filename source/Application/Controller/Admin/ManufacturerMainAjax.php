@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxDb;
 
@@ -190,11 +190,10 @@ class ManufacturerMainAjax extends \ajaxListComponent
     protected function formArticleToManufacturerAdditionQuery($manufacturerId, $articlesToAdd)
     {
         $database = oxDb::getDb();
-        $query = "
+
+        return "
             UPDATE oxarticles
             SET oxmanufacturerid = " . $database->quote($manufacturerId) . "
             WHERE oxid IN ( " . implode(", ", $database->quoteArray($articlesToAdd)) . " )";
-
-        return $query;
     }
 }

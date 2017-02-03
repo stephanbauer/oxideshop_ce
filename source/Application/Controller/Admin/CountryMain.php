@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use stdClass;
@@ -83,8 +83,6 @@ class CountryMain extends \oxAdminDetails
 
     /**
      * Saves selection list parameters changes.
-     *
-     * @return mixed
      */
     public function save()
     {
@@ -118,8 +116,6 @@ class CountryMain extends \oxAdminDetails
 
     /**
      * Saves selection list parameters changes in different language (eg. english).
-     *
-     * @return null
      */
     public function saveinnlang()
     {

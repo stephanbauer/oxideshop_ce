@@ -21,7 +21,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core;
+namespace OxidEsales\EshopCommunity\Core;
 
 use oxRegistry;
 use oxDb;
@@ -152,18 +152,15 @@ class InputValidator extends \oxSuperCfg
         // check only for users with password during registration
         // if user wants to change user name - we must check if passwords are ok before changing
         if ($oUser->oxuser__oxpassword->value && $sLogin != $oUser->oxuser__oxusername->value) {
-
             // on this case password must be taken directly from request
             $sNewPass = (isset($aInvAddress['oxuser__oxpassword']) && $aInvAddress['oxuser__oxpassword']) ? $aInvAddress['oxuser__oxpassword'] : oxRegistry::getConfig()->getRequestParameter('user_password');
             if (!$sNewPass) {
-
                 // 1. user forgot to enter password
                 $oEx = oxNew('oxInputException');
                 $oEx->setMessage(oxRegistry::getLang()->translateString('ERROR_MESSAGE_INPUT_NOTALLFIELDS'));
 
                 return $this->_addValidationError("oxuser__oxpassword", $oEx);
             } else {
-
                 // 2. entered wrong password
                 if (!$oUser->isSamePassword($sNewPass)) {
                     $oEx = oxNew('oxUserException');
@@ -205,7 +202,7 @@ class InputValidator extends \oxSuperCfg
         }
 
         // invalid email address ?
-        if (!oxRegistry::getUtils()->isValidEmail($sEmail)) {
+        if (!oxNew('oxMailValidator')->isValidEmail($sEmail)) {
             $oEx = oxNew('oxInputException');
             $oEx->setMessage(oxRegistry::getLang()->translateString('ERROR_MESSAGE_INPUT_NOVALIDEMAIL'));
 
@@ -257,15 +254,7 @@ class InputValidator extends \oxSuperCfg
      */
     public function getPasswordLength()
     {
-        $passwordLength = 6;
-
-        $config = $this->getConfig();
-
-        if ($config->getConfigParam("iPasswordLength")) {
-            $passwordLength = $config->getConfigParam("iPasswordLength");
-        }
-
-        return $passwordLength;
+        return $this->getConfig()->getConfigParam("iPasswordLength") ?: 6;
     }
 
     /**
@@ -326,27 +315,6 @@ class InputValidator extends \oxSuperCfg
     }
 
     /**
-     * Checks if all values are filled up
-     *
-     * @param oxUser $oUser        active user
-     * @param string $sFieldName   checking field name
-     * @param array  $aFieldValues field values
-     *
-     * @deprecated since v5.2 (2014-06-19); This logic was moved to oxRequiredFieldValidator and checkRequiredFields() method.
-     */
-    public function checkRequiredArrayFields($oUser, $sFieldName, $aFieldValues)
-    {
-        foreach ($aFieldValues as $sValue) {
-            if (!trim($sValue)) {
-                $oEx = oxNew('oxInputException');
-                $oEx->setMessage(oxRegistry::getLang()->translateString('ERROR_MESSAGE_INPUT_NOTALLFIELDS'));
-
-                $this->_addValidationError($sFieldName, $oEx);
-            }
-        }
-    }
-
-    /**
      * Checks if user defined countries (billing and delivery) are active
      *
      * @param oxUser $oUser       active user
@@ -390,11 +358,9 @@ class InputValidator extends \oxSuperCfg
     public function checkVatId($oUser, $aInvAddress)
     {
         if ($this->_hasRequiredParametersForVatInCheck($aInvAddress)) {
-
             $oCountry = $this->_getCountry($aInvAddress['oxuser__oxcountryid']);
 
             if ($oCountry && $oCountry->isInEU()) {
-
                 $oVatInValidator = $this->getCompanyVatInValidator($oCountry);
 
                 /** @var oxCompanyVatIn $oVatIn */
@@ -450,20 +416,17 @@ class InputValidator extends \oxSuperCfg
      */
     public function getFirstValidationError()
     {
-        $oErr = null;
         $aErr = reset($this->_aInputValidationErrors);
         if (is_array($aErr)) {
-            $oErr = reset($aErr);
+            return reset($aErr);
         }
-
-        return $oErr;
     }
 
     /**
      * Validates payment input data for credit card and debit note
      *
      * @param string $sPaymentId the payment id of current payment
-     * @param array  &$aDynValue values of payment
+     * @param array  $aDynValue  values of payment
      *
      * @return bool
      */
@@ -585,9 +548,9 @@ class InputValidator extends \oxSuperCfg
 
         if ($oStr->strlen($aDebitInfo['lsktonr']) < 10) {
             $sNewNum = str_repeat(
-                           '0',
-                           10 - $oStr->strlen($aDebitInfo['lsktonr'])
-                       ) . $aDebitInfo['lsktonr'];
+                '0',
+                10 - $oStr->strlen($aDebitInfo['lsktonr'])
+            ) . $aDebitInfo['lsktonr'];
             $aDebitInfo['lsktonr'] = $sNewNum;
         }
 
@@ -643,21 +606,6 @@ class InputValidator extends \oxSuperCfg
     }
 
     /**
-     * Gets VAT in validator.
-     *
-     * @return oxOnlineVatIdCheck
-     *
-     * @deprecated since v5.2 (2014-07-28); This logic was moved to oxCompanyVatInValidator
-     *
-     */
-    protected function _getVatIdValidator()
-    {
-        $oVatCheck = oxNew('oxOnlineVatIdCheck');
-
-        return $oVatCheck;
-    }
-
-    /**
      * VAT IN validator setter
      *
      * @param oxCompanyVatInValidator $oCompanyVatInValidator validator
@@ -677,7 +625,6 @@ class InputValidator extends \oxSuperCfg
     public function getCompanyVatInValidator($oCountry)
     {
         if (is_null($this->_oCompanyVatInValidator)) {
-
             /** @var oxCompanyVatInValidator $oVatInValidator */
             $oVatInValidator = oxNew('oxCompanyVatInValidator', $oCountry);
 

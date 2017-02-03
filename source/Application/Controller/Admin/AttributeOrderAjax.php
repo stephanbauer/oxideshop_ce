@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxDb;
@@ -53,10 +53,8 @@ class AttributeOrderAjax extends \ajaxListComponent
         $sSelTable = $this->_getViewName('oxattribute');
         $sArtId = oxRegistry::getConfig()->getRequestParameter('oxid');
 
-        $sQAdd = " from $sSelTable left join oxcategory2attribute on oxcategory2attribute.oxattrid = $sSelTable.oxid " .
+        return " from $sSelTable left join oxcategory2attribute on oxcategory2attribute.oxattrid = $sSelTable.oxid " .
                  "where oxobjectid = " . oxDb::getDb()->quote($sArtId) . " ";
-
-        return $sQAdd;
     }
 
     /**

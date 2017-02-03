@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller;
+namespace OxidEsales\EshopCommunity\Application\Controller;
 
 use oxRegistry;
 
@@ -123,7 +123,6 @@ class AccountNoticeListController extends \Account
     {
         // similar products list
         if ($this->_aSimilarProductList === null && count($this->getNoticeProductList())) {
-
             // just ensuring that next call will skip this check
             $this->_aSimilarProductList = false;
 

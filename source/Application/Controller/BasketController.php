@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller;
+namespace OxidEsales\EshopCommunity\Application\Controller;
 
 use oxArticle;
 use oxRegistry;
@@ -388,9 +388,7 @@ class BasketController extends \oxUBase
     public function getBasketContentMarkGenerator()
     {
         /** @var oxBasketContentMarkGenerator $oBasketContentMarkGenerator */
-        $oBasketContentMarkGenerator = oxNew('oxBasketContentMarkGenerator', $this->getSession()->getBasket());
-
-        return $oBasketContentMarkGenerator;
+        return oxNew('oxBasketContentMarkGenerator', $this->getSession()->getBasket());
     }
 
     /**

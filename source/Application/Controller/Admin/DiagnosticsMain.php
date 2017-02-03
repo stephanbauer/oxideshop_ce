@@ -20,8 +20,9 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
+use oxFileCheckerResult;
 use oxRegistry;
 
 /**
@@ -260,7 +261,6 @@ class DiagnosticsMain extends \oxAdminDetails
          * Modules
          */
         if ($this->getParam('oxdiag_frm_modules')) {
-
             $sModulesDir = $this->getConfig()->getModulesDir();
             $oModuleList = oxNew('oxModuleList');
             $aModules = $oModuleList->getModulesFromDir($sModulesDir);
@@ -273,8 +273,7 @@ class DiagnosticsMain extends \oxAdminDetails
          * Health
          */
         if ($this->getParam('oxdiag_frm_health')) {
-
-            $oSysReq = new oxSysRequirements();
+            $oSysReq = oxNew('oxSysRequirements');
             $aViewData['oxdiag_frm_health'] = true;
             $aViewData['aInfo'] = $oSysReq->getSystemInfo();
             $aViewData['aCollations'] = $oSysReq->checkCollation();

@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use stdClass;
@@ -132,8 +132,6 @@ class ActionsMain extends \oxAdminDetails
 
     /**
      * Saves Promotions
-     *
-     * @return mixed
      */
     public function save()
     {

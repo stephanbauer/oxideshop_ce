@@ -24,7 +24,7 @@ namespace Integration\Checkout;
 use oxBasket;
 use oxDb;
 use oxField;
-use OxidEsales\Eshop\Core\ShopIdCalculator;
+use OxidEsales\EshopCommunity\Core\ShopIdCalculator;
 use oxOrder;
 use oxRegistry;
 use oxUtilsObject;
@@ -245,7 +245,7 @@ class BasketReservationStockUpdateTest extends \OxidTestCase
 
         //some checks on result
         $this->assertEquals(1, count($orderBasketContents));
-        $this->assertTrue(is_a($orderBasketContents[0], 'oxBasketItem'));
+        $this->assertTrue(is_a($orderBasketContents[0], '\OxidEsales\EshopCommunity\Application\Model\BasketItem'));
         $this->assertEquals($this->testArticleId, $orderBasketContents[0]->getProductId());
         $this->assertEquals($buyAmount, $orderBasketContents[0]->getAmount());
 
@@ -342,20 +342,20 @@ class BasketReservationStockUpdateTest extends \OxidTestCase
     /**
      * @param oxBasket $basket
      */
-    private function checkContents(oxBasket $basket, $expectedAmount)
+    private function checkContents(\OxidEsales\EshopCommunity\Application\Model\Basket $basket, $expectedAmount)
     {
         $basketArticles = $basket->getBasketArticles();
         $keys = array_keys($basketArticles);
         $this->assertTrue(is_array($basketArticles));
         $this->assertEquals(1, count($basketArticles));
-        $this->assertTrue(is_a($basketArticles[$keys[0]], 'oxArticle'));
+        $this->assertTrue(is_a($basketArticles[$keys[0]], '\OxidEsales\EshopCommunity\Application\Model\Article'));
         $this->assertEquals($this->testArticleId, $basketArticles[$keys[0]]->getId());
 
         $basketContents = $basket->getContents();
         $keys = array_keys($basketContents);
         $this->assertTrue(is_array($basketContents));
         $this->assertEquals(1, count($basketArticles));
-        $this->assertTrue(is_a($basketContents[$keys[0]], 'oxBasketItem'));
+        $this->assertTrue(is_a($basketContents[$keys[0]], '\OxidEsales\EshopCommunity\Application\Model\BasketItem'));
 
         $basketItem = $basketContents[$keys[0]];
         $this->assertEquals($this->testArticleId, $basketItem->getProductId());

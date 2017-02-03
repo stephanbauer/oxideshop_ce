@@ -20,8 +20,8 @@
  * @version   OXID eShop CE
  */
 
-use OxidEsales\Eshop\Core\ConfigFile;
-use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\EshopCommunity\Core\ConfigFile;
+use OxidEsales\EshopCommunity\Core\Registry;
 
 if (defined('E_DEPRECATED')) {
     //E_DEPRECATED is disabled particularly for PHP 5.3 as some 3rd party modules still uses deprecated functionality
@@ -42,6 +42,10 @@ if (file_exists(OX_BASE_PATH . 'modules/functions.php')) {
 // Generic utility method file including autoloading definition
 require_once OX_BASE_PATH . 'oxfunctions.php';
 
+// Make actions if there are eShop configuration problems
+showErrorIfConfigIsMissing();
+redirectIfShopNotConfigured();
+
 // Composer autoloader.
 registerComposerAutoload();
 
@@ -49,9 +53,10 @@ registerComposerAutoload();
 $oConfigFile = new ConfigFile(OX_BASE_PATH . "config.inc.php");
 Registry::set("oxConfigFile", $oConfigFile);
 
-registerModuleDependenciesAutoload();
+registerVirtualNamespaceAutoLoad();
 registerShopAutoLoad();
 registerModuleAutoload();
+
 
 //sets default PHP ini params
 ini_set('session.name', 'sid');

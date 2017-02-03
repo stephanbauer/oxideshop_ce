@@ -21,8 +21,7 @@
  */
 namespace Unit\Application\Controller\Admin;
 
-use \oxcontent;
-
+use OxidEsales\EshopCommunity\Application\Model\Content;
 use \Exception;
 use \oxTestModules;
 
@@ -46,7 +45,7 @@ class ContentMainTest extends \OxidTestCase
         $this->assertEquals('content_main.tpl', $oView->render());
         $aViewData = $oView->getViewData();
         $this->assertTrue(isset($aViewData['edit']));
-        $this->assertTrue($aViewData['edit'] instanceof oxcontent);
+        $this->assertTrue($aViewData['edit'] instanceof Content);
     }
 
     /**
@@ -154,6 +153,6 @@ class ContentMainTest extends \OxidTestCase
     {
         // testing..
         $oView = oxNew('Content_Main');
-        $this->assertTrue($oView->UNITcheckIdent("oxstartwelcome", ""));
+        $this->assertTrue($oView->UNITcheckIdent("oxstartmetadescription", ""));
     }
 }

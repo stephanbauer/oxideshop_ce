@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core;
+namespace OxidEsales\EshopCommunity\Core;
 
 /**
  * SEPA (Single Euro Payments Area) validation class
@@ -126,59 +126,6 @@ class SepaValidator
         $oIBANValidator->setCodeLengths($this->getIBANCodeLengths());
 
         return $oIBANValidator->isValid($sIBAN);
-    }
-
-    /**
-     * Validation of IBAN registry
-     *
-     * @param array $aIBANRegistry
-     *
-     * @deprecated since v5.1.2 (2013-12-11); Use oxSepaIBANValidator::isCodeLengthsValid().
-     *
-     * @return bool
-     */
-    public function isValidIBANRegistry($aIBANRegistry = null)
-    {
-        $oIBANValidator = oxNew('oxSepaIBANValidator');
-
-        if (is_null($aIBANRegistry)) {
-            $aIBANRegistry = $this->getIBANCodeLengths();
-        }
-
-        return $oIBANValidator->isCodeLengthsValid($aIBANRegistry);
-    }
-
-
-    /**
-     * Set IBAN Registry
-     *
-     * @param array $aIBANRegistry
-     *
-     * @deprecated since v5.1.2 (2013-12-11); Use oxSepaIBANValidator::setCodeLengths().
-     *
-     * @return bool
-     */
-    public function setIBANRegistry($aIBANRegistry)
-    {
-        if ($this->isValidIBANRegistry($aIBANRegistry)) {
-            $this->_aIBANCodeLengths = $aIBANRegistry;
-
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /**
-     * Get IBAN length by country data
-     *
-     * @deprecated since v5.1.2 (2013-12-11); Use oxSepaValidator::getIBANCodeLengths().
-     *
-     * @return array
-     */
-    public function getIBANRegistry()
-    {
-        return $this->_aIBANCodeLengths;
     }
 
     /**

@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxDb;
@@ -235,12 +235,16 @@ class ContentMain extends \oxAdminDetails
      */
     protected function _checkIdent($sIdent, $sOxId)
     {
+        // We force reading from master to prevent issues with slow replications or open transactions (see ESDEV-3804).
+        $masterDb = oxDb::getMaster();
+
         $blAllow = false;
-        $oDb = oxDb::getDb();
+
         // null not allowed
         if (!strlen($sIdent)) {
             $blAllow = true;
-        } elseif ($oDb->getOne("select oxid from oxcontents where oxloadid = " . $oDb->quote($sIdent) . " and oxid != " . $oDb->quote($sOxId) . " and oxshopid = '" . $this->getConfig()->getShopId() . "'", false, false)) {
+        // We force reading from master to prevent issues with slow replications or open transactions (see ESDEV-3804).
+        } elseif ($masterDb->getOne("select oxid from oxcontents where oxloadid = " . $masterDb->quote($sIdent) . " and oxid != " . $masterDb->quote($sOxId) . " and oxshopid = '" . $this->getConfig()->getShopId() . "'")) {
             $blAllow = true;
         }
 

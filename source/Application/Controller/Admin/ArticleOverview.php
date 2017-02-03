@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxDb;
@@ -73,16 +73,16 @@ class ArticleOverview extends \oxAdminDetails
             $sSelect = "select oxartid,sum(oxamount) as cnt from oxorderarticles " .
                        "where oxordershopid = '{$sShopID}' group by oxartid order by cnt desc";
 
-            $rs = $oDB->execute($sSelect);
+            $rs = $oDB->select($sSelect);
             $iTopPos = 0;
             $iPos = 0;
-            if ($rs != false && $rs->recordCount() > 0) {
+            if ($rs != false && $rs->count() > 0) {
                 while (!$rs->EOF) {
                     $iPos++;
                     if ($rs->fields[0] == $soxId) {
                         $iTopPos = $iPos;
                     }
-                    $rs->moveNext();
+                    $rs->fetchRow();
                 }
             }
 
@@ -97,7 +97,7 @@ class ArticleOverview extends \oxAdminDetails
     }
 
     /**
-     * @return oxLegacyDb
+     * @return DatabaseInterface
      */
     protected function getDatabase()
     {
@@ -128,12 +128,10 @@ class ArticleOverview extends \oxAdminDetails
      */
     protected function formSoldOutAmountQuery($oxId)
     {
-        $query = "select sum(oxorderarticles.oxamount) from  oxorderarticles, oxorder " .
+        return "select sum(oxorderarticles.oxamount) from  oxorderarticles, oxorder " .
             "where (oxorder.oxpaid>0 or oxorder.oxsenddate > 0) and oxorderarticles.oxstorno != '1' " .
             "and oxorderarticles.oxartid=" . $this->getDatabase()->quote($oxId) .
             "and oxorder.oxid =oxorderarticles.oxorderid";
-
-        return $query;
     }
 
     /**
@@ -145,10 +143,8 @@ class ArticleOverview extends \oxAdminDetails
      */
     protected function formCanceledAmountQuery($soxId)
     {
-        $query = "select sum(oxamount) from oxorderarticles where oxstorno = '1' " .
+        return "select sum(oxamount) from oxorderarticles where oxstorno = '1' " .
             "and oxartid=" . $this->getDatabase()->quote($soxId);
-
-        return $query;
     }
 
     /**

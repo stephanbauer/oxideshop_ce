@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use stdClass;
@@ -84,8 +84,6 @@ class UserGroupMain extends \oxAdminDetails
 
     /**
      * Saves changed usergroup parameters.
-     *
-     * @return mixed
      */
     public function save()
     {

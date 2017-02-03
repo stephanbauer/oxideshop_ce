@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core\FileSystem;
+namespace OxidEsales\EshopCommunity\Core\FileSystem;
 
 /**
  * Wrapper for actions related to file system.
@@ -55,10 +55,6 @@ class FileSystem
      */
     public function isReadable($filePath)
     {
-        if (is_file($filePath) && is_readable($filePath)) {
-            return true;
-        } else {
-            return false;
-        }
+        return (is_file($filePath) && is_readable($filePath));
     }
 }

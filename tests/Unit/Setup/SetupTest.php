@@ -23,12 +23,12 @@ namespace Unit\Setup;
 
 require_once getShopBasePath() . '/Setup/functions.php';
 
-use OxidEsales\Eshop\Core\Edition\EditionPathProvider;
-use OxidEsales\Eshop\Core\Edition\EditionRootPathProvider;
-use OxidEsales\Eshop\Core\Edition\EditionSelector;
-use OxidEsales\Eshop\Core\ShopIdCalculator;
-use OxidEsales\Eshop\Setup\Core;
-use OxidEsales\Eshop\Setup\Setup;
+use OxidEsales\EshopCommunity\Core\Edition\EditionPathProvider;
+use OxidEsales\EshopCommunity\Core\Edition\EditionRootPathProvider;
+use OxidEsales\EshopCommunity\Core\Edition\EditionSelector;
+use OxidEsales\EshopCommunity\Core\ShopIdCalculator;
+use OxidEsales\EshopCommunity\Setup\Core;
+use OxidEsales\EshopCommunity\Setup\Setup;
 
 /**
  * Setup tests
@@ -174,22 +174,5 @@ class SetupTest extends \OxidTestCase
         $this->assertEquals('pmin', $oSetup->getModuleClass(1));
         $this->assertEquals('null', $oSetup->getModuleClass(-1));
         $this->assertEquals('fail', $oSetup->getModuleClass(0));
-    }
-
-    /**
-     * Test if sql files don't have invalid encoding.
-     */
-    public function testSqlFilesForInvalidEncoding()
-    {
-        $pathProvider = new EditionPathProvider(new EditionRootPathProvider(new EditionSelector()));
-        $filePathPattern = $pathProvider->getSetupDirectory() . '/Sql/*.sql';
-        foreach (glob($filePathPattern) as $sFilePath) {
-            if (is_readable($sFilePath)) {
-                $sFileContent = file_get_contents($sFilePath);
-                foreach (array(0xEF, 0xBB, 0xBF, 0x9C) as $sCharacter) {
-                    $this->assertFalse(strpos($sFileContent, $sCharacter), "Character with invalid encoding found in {$sFilePath} file.");
-                }
-            }
-        }
     }
 }

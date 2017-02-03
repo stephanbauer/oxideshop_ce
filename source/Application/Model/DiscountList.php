@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Model;
+namespace OxidEsales\EshopCommunity\Application\Model;
 
 use oxDb;
 
@@ -139,7 +139,6 @@ class DiscountList extends \oxList
 
         // checking for current session user which gives additional restrictions for user itself, users group and country
         if ($oUser) {
-
             // user ID
             $sUserId = $oUser->getId();
 
@@ -173,6 +172,8 @@ class DiscountList extends \oxList
                         1)
             )";
 
+        $sQ .= " order by $sTable.oxsort ";
+
         return $sQ;
     }
 
@@ -180,7 +181,7 @@ class DiscountList extends \oxList
      * Returns array of discounts that can be globally (transparently) applied
      *
      * @param oxarticle $oArticle article object
-     * @param oxuser $oUser    oxuser object (optional)
+     * @param oxuser    $oUser    oxuser object (optional)
      *
      * @return array
      */

@@ -23,14 +23,16 @@ namespace Unit\Core;
 
 use \oxarticle;
 
-use OxidEsales\Eshop\Core\ShopIdCalculator;
-use OxidEsales\Eshop\Core\UtilsObject;
+use OxidEsales\EshopCommunity\Core\Exception\SystemComponentException;
+use OxidEsales\EshopCommunity\Core\ShopIdCalculator;
+use OxidEsales\EshopCommunity\Core\UtilsObject;
 use \oxNewDummyUserModule_parent;
 use \oxNewDummyUserModule2_parent;
 use \oemodulenameoxorder_parent;
 use \oxAttribute;
 use \oxRegistry;
 use oxUtilsObject;
+use \oxTestModules;
 
 class modOxUtilsObject_oxUtilsObject extends \oxUtilsObject
 {
@@ -100,7 +102,13 @@ class UtilsobjectTest extends \OxidTestCase
         $orderClassName = 'oxorder';
 
         if ($this->getConfig()->getEdition() === 'EE') {
-            $orderClassName = '\OxidEsales\EshopEnterprise\Application\Model\Order';
+            $orderClassName = 'OxidEsales\EshopEnterprise\Application\Model\Order';
+        }
+        if ($this->getConfig()->getEdition() === 'PE') {
+            $orderClassName = 'OxidEsales\EshopProfessional\Application\Model\Order';
+        }
+        if ($this->getConfig()->getEdition() === 'CE') {
+            $orderClassName = 'OxidEsales\EshopCommunity\Application\Model\Order';
         }
 
         return $orderClassName;
@@ -124,7 +132,7 @@ class UtilsobjectTest extends \OxidTestCase
     {
         $oArticle = oxNew('oxarticle', array('aaa' => 'bbb'));
 
-        $this->assertTrue($oArticle instanceof oxarticle);
+        $this->assertTrue($oArticle instanceof \OxidEsales\EshopCommunity\Application\Model\Article);
         $this->assertTrue(isset($oArticle->aaa));
         $this->assertEquals('bbb', $oArticle->aaa);
     }
@@ -200,6 +208,8 @@ class UtilsobjectTest extends \OxidTestCase
 
     public function testOxNewCreationOfNonExistingClass()
     {
+        $this->stubExceptionToNotWriteToLog(SystemComponentException::class,  SystemComponentException::class);
+
         $this->setExpectedException('oxSystemComponentException', 'EXCEPTION_SYSTEMCOMPONENT_CLASSNOTFOUND');
 
         oxNew("non_existing_class");
@@ -226,7 +236,7 @@ class UtilsobjectTest extends \OxidTestCase
         $aGotInstanceCache = $oTestInstance->getClassNameCache();
 
         $this->assertEquals(1, count($aGotInstanceCache));
-        $this->assertTrue($aGotInstanceCache["oxattribute"] instanceof oxAttribute);
+        $this->assertTrue($aGotInstanceCache["oxattribute"] instanceof \OxidEsales\EshopCommunity\Application\Model\Attribute);
     }
 
     public function testResetInstanceCacheAll()
@@ -253,11 +263,8 @@ class UtilsobjectTest extends \OxidTestCase
 
     public function testGetClassName_classNotExist_originalClassReturn()
     {
-        $sClassName = $sClassNameExpect = 'oxorder';
-
-        if ($this->getConfig()->getEdition() === 'EE') {
-            $sClassNameExpect = '\OxidEsales\EshopEnterprise\Application\Model\Order';
-        }
+        $sClassName = 'oxorder';
+        $sClassNameExpect = 'oxorder';
 
         $sClassNameWhichExtends = 'oemodulenameoxorder_different2';
         $oUtilsObject = $this->_prepareFakeModule($sClassName, $sClassNameWhichExtends);
@@ -268,7 +275,7 @@ class UtilsobjectTest extends \OxidTestCase
     public function testGetClassName_classNotExistDoDisableModuleOnError_originalClassReturn()
     {
         $sClassName = 'oxorder';
-        $sClassNameExpect = $this->getOrderClassName();
+        $sClassNameExpect = 'oxorder';
 
         oxRegistry::get("oxConfigFile")->setVar('blDoNotDisableModuleOnError', false);
 

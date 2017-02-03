@@ -21,15 +21,16 @@
  */
 namespace Unit\Core;
 
+use Exception;
 use modDB;
-use \oxUtils;
-use \oxSystemComponentException;
-use \Exception;
-use \stdClass;
-use \oxField;
-use \oxDb;
-use \oxRegistry;
-use \oxTestModules;
+use oxField;
+use OxidEsales\EshopCommunity\Core\DatabaseProvider;
+use OxidEsales\EshopCommunity\Core\Registry;
+use oxRegistry;
+use oxSystemComponentException;
+use oxTestModules;
+use oxUtils;
+use stdClass;
 
 class testOxUtils extends oxUtils
 {
@@ -545,17 +546,6 @@ class UtilsTest extends \OxidTestCase
         $this->assertFalse($oUtils->isSearchEngine('xxx'));
     }
 
-    public function testIsValidEmail()
-    {
-        $this->assertTrue(oxRegistry::getUtils()->isValidEmail('mathias.krieck@oxid-esales.com'));
-        $this->assertTrue(oxRegistry::getUtils()->isValidEmail('mytest@com.org'));
-        $this->assertFalse(oxRegistry::getUtils()->isValidEmail('�mathias.krieck@oxid-esales.com'));
-        $this->assertFalse(oxRegistry::getUtils()->isValidEmail('my/test@com.org'));
-        $this->assertFalse(oxRegistry::getUtils()->isValidEmail('@com.org'));
-        $this->assertFalse(oxRegistry::getUtils()->isValidEmail('mytestcom.org'));
-        $this->assertFalse(oxRegistry::getUtils()->isValidEmail('mytest@com'));
-    }
-
     public function testLoadAdminProfile()
     {
         $aProfiles = oxRegistry::getUtils()->loadAdminProfile(array('640x480', '14'));
@@ -889,50 +879,52 @@ class UtilsTest extends \OxidTestCase
     public function testCheckAccessRightsChecksSubshopAdminShop()
     {
 
-        $mySession = oxRegistry::getSession();
-        $backUpAuth = $mySession->getVariable("auth");
+        $session = Registry::getSession();
+        $backUpAuth = $session->getVariable("auth");
 
-        $dbMock = $this->getDbObjectMock();
-        $dbMock->expects($this->any())->method('getOne')->will($this->returnValue(1));
-        oxDb::setDbObject($dbMock);
+        $exception = null;
 
-        $e = null;
         try {
-            $mySession->setVariable("auth", "blafooUser");
-            $this->assertEquals(true, oxRegistry::getUtils()->checkAccessRights());
+            $utils = $this->getMock('OxidEsales\EshopCommunity\Core\Utils', array('fetchRightsForUser', 'fetchShopAdminById'));
+            $utils->expects($this->any())->method('fetchRightsForUser')->will($this->returnValue(1));
+            $utils->expects($this->any())->method('fetchShopAdminById')->will($this->returnValue(1));
+
+
+            $session->setVariable("auth", "blafooUser");
+            $this->assertEquals(true, $utils->checkAccessRights());
             $this->setRequestParameter('fnc', 'chshp');
-            $this->assertEquals(false, oxRegistry::getUtils()->checkAccessRights());
+            $this->assertEquals(false, $utils->checkAccessRights());
             $this->setRequestParameter('fnc', null);
-            $this->assertEquals(true, oxRegistry::getUtils()->checkAccessRights());
+            $this->assertEquals(true, $utils->checkAccessRights());
 
             $this->setRequestParameter('actshop', 1);
-            $this->assertEquals(true, oxRegistry::getUtils()->checkAccessRights());
+            $this->assertEquals(true, $utils->checkAccessRights());
             $this->setRequestParameter('actshop', 2);
-            $this->assertEquals(false, oxRegistry::getUtils()->checkAccessRights());
+            $this->assertEquals(false, $utils->checkAccessRights());
             $this->setRequestParameter('actshop', null);
-            $this->assertEquals(true, oxRegistry::getUtils()->checkAccessRights());
+            $this->assertEquals(true, $utils->checkAccessRights());
 
             $this->setRequestParameter('shp', 1);
-            $this->assertEquals(true, oxRegistry::getUtils()->checkAccessRights());
+            $this->assertEquals(true, $utils->checkAccessRights());
             $this->setRequestParameter('shp', 2);
-            $this->assertEquals(false, oxRegistry::getUtils()->checkAccessRights());
+            $this->assertEquals(false, $utils->checkAccessRights());
             $this->setRequestParameter('shp', null);
-            $this->assertEquals(true, oxRegistry::getUtils()->checkAccessRights());
+            $this->assertEquals(true, $utils->checkAccessRights());
 
             $this->setRequestParameter('currentadminshop', 1);
-            $this->assertEquals(true, oxRegistry::getUtils()->checkAccessRights());
+            $this->assertEquals(true, $utils->checkAccessRights());
             $this->setRequestParameter('currentadminshop', 2);
-            $this->assertEquals(false, oxRegistry::getUtils()->checkAccessRights());
+            $this->assertEquals(false, $utils->checkAccessRights());
             $this->setRequestParameter('currentadminshop', null);
-            $this->assertEquals(true, oxRegistry::getUtils()->checkAccessRights());
-        } catch (Exception  $e) {
+            $this->assertEquals(true, $utils->checkAccessRights());
+        } catch (Exception  $exception) {
 
         }
 
-        $mySession->setVariable("auth", $backUpAuth);
+        $session->setVariable("auth", $backUpAuth);
 
-        if ($e) {
-            throw $e;
+        if ($exception) {
+            throw $exception;
         }
     }
 
@@ -983,25 +975,6 @@ class UtilsTest extends \OxidTestCase
         $this->assertEquals(false, $oUtils->oxMimeContentType(''));
     }
 
-    public function testStrManStrRem()
-    {
-        $sTests = "myblaaFooString!";
-        $sKey = "oxid987654321";
-        $oUtils = oxNew('oxUtils');
-
-        $sCode = $oUtils->strMan($sTests, $sKey);
-        $this->assertNotEquals($sTests, $sCode);
-
-        $sCode = $oUtils->strRem($sCode, $sKey);
-        $this->assertEquals($sCode, $sTests);
-
-        $sCode = $oUtils->strMan($sTests);
-        $this->assertNotEquals($sTests, $sCode);
-
-        $sCode = $oUtils->strRem($sCode);
-        $this->assertEquals($sTests, $sCode);
-    }
-
     public function testStrRot13()
     {
         $sTests = "myblaaFooString!";
@@ -1009,28 +982,13 @@ class UtilsTest extends \OxidTestCase
         $this->assertEquals($sCode, "zloynnSbbFgevat!");
     }
 
-    public function testRedirectOffline_WithDefaultHeader()
+    public function testShowOfflinePage()
     {
-        $oConfig = $this->getMock('oxConfig', array('getShopUrl'));
-        $oConfig->expects($this->once())->method('getShopUrl')->will($this->returnValue('http://shopUrl/'));
+        $utils = $this->getMock('oxutils', array('setHeader','showMessageAndExit'));
+        $utils->expects($this->once())->method('setHeader')->with($this->stringContains('HTTP/1.1 5'));
+        $utils->expects($this->once())->method('showMessageAndExit')->with($this->stringContains('<meta name="robots" content="noindex, nofollow">'));
 
-        $oUtils = $this->getMock('oxutils', array('redirect'));
-        $oUtils->expects($this->once())->method('redirect')->with($this->equalTo('http://shopUrl/offline.html'), $this->equalTo(false), $this->equalTo(302));
-        $oUtils->setConfig($oConfig);
-
-        $oUtils->redirectOffline();
-    }
-
-    public function testRedirectOffline_WithDifferentHeader()
-    {
-        $oConfig = $this->getMock('oxConfig', array('getShopUrl'));
-        $oConfig->expects($this->once())->method('getShopUrl')->will($this->returnValue('http://shopUrl/'));
-
-        $oUtils = $this->getMock('oxutils', array('redirect'));
-        $oUtils->expects($this->once())->method('redirect')->with($this->equalTo('http://shopUrl/offline.html'), $this->equalTo(false), $this->equalTo(500));
-        $oUtils->setConfig($oConfig);
-
-        $oUtils->redirectOffline(500);
+        $utils->showOfflinePage();
     }
 
     public function testRedirect()
@@ -1203,8 +1161,6 @@ class UtilsTest extends \OxidTestCase
 
     /**
      * oxUtils::getPreviewId() test case
-     *
-     * @return null
      */
     public function testGetPreviewId()
     {
@@ -1223,34 +1179,66 @@ class UtilsTest extends \OxidTestCase
         $this->assertEquals($sCompare, $oUtils->getPreviewId());
     }
 
-    public function testHandlePageNotFoundError()
+    /**
+     * @group quarantine
+     */
+    public function testHandlePageNotFoundErrorWithoutUrl()
     {
-        $this->markTestIncomplete("Incorrect test for page not found headers. Normal headers mixed up with page not found");
         oxTestModules::addFunction('oxutils', 'showMessageAndExit', '{$this->showMessageAndExitCall[] = $aA; }');
         oxTestModules::addFunction('oxutils', 'setHeader', '{$this->setHeaderCall[] = $aA;}');
         oxTestModules::addFunction('oxUtilsView', 'getTemplateOutput', '{$this->getTemplateOutputCall[] = $aA; return "msg_".count($this->getTemplateOutputCall);}');
 
         oxRegistry::getUtils()->handlePageNotFoundError();
-        $this->assertGreaterThanOrEqual(1, count(oxRegistry::getUtils()->setHeaderCall));
         $this->assertEquals(1, count(oxRegistry::get("oxUtilsView")->getTemplateOutputCall));
         $this->assertEquals(1, count(oxRegistry::getUtils()->showMessageAndExitCall));
-        $this->assertEquals("msg_1", oxRegistry::getUtils()->showMessageAndExitCall[0][0]);
-        $this->assertEquals("HTTP/1.0 404 Not Found", oxRegistry::getUtils()->setHeaderCall[0][0]);
+        $this->assertEquals('msg_1', oxRegistry::getUtils()->showMessageAndExitCall[0][0]);
+        $expectedHeaders = array(
+            array('HTTP/1.0 404 Not Found'),
+            array('Content-Type: text/html; charset=UTF-8')
+        );
+        $this->assertEquals($expectedHeaders, oxRegistry::getUtils()->setHeaderCall);
+    }
 
-        oxRegistry::getUtils()->handlePageNotFoundError("url aa");
-        $this->assertGreaterThanOrEqual(2, count(oxRegistry::getUtils()->setHeaderCall));
-        $this->assertEquals(2, count(oxRegistry::get("oxUtilsView")->getTemplateOutputCall));
-        $this->assertEquals(2, count(oxRegistry::getUtils()->showMessageAndExitCall));
-        $this->assertEquals("msg_2", oxRegistry::getUtils()->showMessageAndExitCall[1][0]);
-        $this->assertEquals("HTTP/1.0 404 Not Found", oxRegistry::getUtils()->setHeaderCall[1][0]);
+    /**
+     * @group quarantine
+     */
+    public function testHandlePageNotFoundErrorWithUrl()
+    {
+        oxTestModules::addFunction('oxutils', 'showMessageAndExit', '{$this->showMessageAndExitCall[] = $aA; }');
+        oxTestModules::addFunction('oxutils', 'setHeader', '{$this->setHeaderCall[] = $aA;}');
+        oxTestModules::addFunction('oxUtilsView', 'getTemplateOutput', '{$this->getTemplateOutputCall[] = $aA; return "msg_".count($this->getTemplateOutputCall);}');
+
+        oxRegistry::getUtils()->handlePageNotFoundError('url aa');
+        $this->assertEquals(1, count(oxRegistry::get('oxUtilsView')->getTemplateOutputCall));
+        $this->assertEquals(1, count(oxRegistry::getUtils()->showMessageAndExitCall));
+        $this->assertEquals('msg_1', oxRegistry::getUtils()->showMessageAndExitCall[0][0]);
+        $expectedHeaders = array(
+            array('HTTP/1.0 404 Not Found'),
+            array('Content-Type: text/html; charset=UTF-8')
+        );
+        $this->assertEquals($expectedHeaders, oxRegistry::getUtils()->setHeaderCall);
+    }
+
+    /**
+     * @group quarantine
+     */
+    public function testHandlePageNotFoundErrorWithUrlAndRenderException()
+    {
+        oxTestModules::addFunction('oxutils', 'showMessageAndExit', '{$this->showMessageAndExitCall[] = $aA; }');
+        oxTestModules::addFunction('oxutils', 'setHeader', '{$this->setHeaderCall[] = $aA;}');
+        oxTestModules::addFunction('oxUtilsView', 'getTemplateOutput', '{$this->getTemplateOutputCall[] = $aA; return "msg_".count($this->getTemplateOutputCall);}');
 
         oxTestModules::addFunction('oxUBase', 'render', '{throw new Exception();}');
 
-        oxRegistry::getUtils()->handlePageNotFoundError("url aa");
-        $this->assertEquals(3, count(oxRegistry::getUtils()->setHeaderCall));
-        $this->assertEquals(2, count(oxRegistry::get("oxUtilsView")->getTemplateOutputCall));
-        $this->assertEquals(3, count(oxRegistry::getUtils()->showMessageAndExitCall));
-        $this->assertEquals("Page not found.", oxRegistry::getUtils()->showMessageAndExitCall[2][0]);
+        oxRegistry::getUtils()->handlePageNotFoundError('url aa');
+        $this->assertEquals(0, count(oxRegistry::get('oxUtilsView')->getTemplateOutputCall));
+        $this->assertEquals(1, count(oxRegistry::getUtils()->showMessageAndExitCall));
+        $this->assertEquals('Page not found.', oxRegistry::getUtils()->showMessageAndExitCall[0][0]);
+        $expectedHeaders = array(
+            array('HTTP/1.0 404 Not Found'),
+            array('Content-Type: text/html; charset=UTF-8')
+        );
+        $this->assertEquals($expectedHeaders, oxRegistry::getUtils()->setHeaderCall);
     }
 
     public function testToPhpFileCache()

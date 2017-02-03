@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core;
+namespace OxidEsales\EshopCommunity\Core;
 
 use oxRegistry;
 use oxDb;
@@ -161,7 +161,6 @@ class Language extends \oxSuperCfg
     public function getBaseLanguage()
     {
         if ($this->_iBaseLanguageId === null) {
-
             $myConfig = $this->getConfig();
             $blAdmin = $this->isAdmin();
 
@@ -196,7 +195,6 @@ class Language extends \oxSuperCfg
             // if language still not set and not search engine browsing,
             // getting language from browser
             if (is_null($this->_iBaseLanguageId) && !$blAdmin && !oxRegistry::getUtils()->isSearchEngine()) {
-
                 // getting from cookie
                 $this->_iBaseLanguageId = oxRegistry::get("oxUtilsServer")->getOxCookie('language');
 
@@ -266,11 +264,9 @@ class Language extends \oxSuperCfg
     public function getEditLanguage()
     {
         if ($this->_iEditLanguageId === null) {
-
             if (!$this->isAdmin()) {
                 $this->_iEditLanguageId = $this->getBaseLanguage();
             } else {
-
                 $iLang = null;
                 // choosing language ident
                 // check if we really need to set the new language
@@ -317,7 +313,6 @@ class Language extends \oxSuperCfg
             $i = 0;
             reset($aConfLanguages);
             while (list($key, $val) = each($aConfLanguages)) {
-
                 if ($blOnlyActive && is_array($aLangParams)) {
                     //skipping non active languages
                     if (!$aLangParams[$key]['active']) {
@@ -571,7 +566,7 @@ class Language extends \oxSuperCfg
 
         $iLanguage = (int) $iLanguage;
 
-        return (($iLanguage) ? "_$iLanguage" : "");
+        return ($iLanguage) ? "_$iLanguage" : "";
     }
 
     /**
@@ -583,8 +578,6 @@ class Language extends \oxSuperCfg
      */
     public function validateLanguage($iLang = null)
     {
-        $iLang = (int) $iLang;
-
         // checking if this language is valid
         $aLanguages = $this->getLanguageArray(null, !$this->isAdmin());
         if (!isset($aLanguages[$iLang]) && is_array($aLanguages)) {
@@ -594,7 +587,7 @@ class Language extends \oxSuperCfg
             }
         }
 
-        return $iLang;
+        return (int) $iLang;
     }
 
     /**
@@ -642,6 +635,8 @@ class Language extends \oxSuperCfg
      * @param string $sCharset     charset which was used while making file
      * @param bool   $blRecodeKeys leave keys untouched or recode it
      *
+     * @deprecated since 6.0 (2016-12-07) As the shop installation is utf-8, this method will be removed.
+     *
      * @return array
      */
     protected function _recodeLangArray($aLangArray, $sCharset, $blRecodeKeys = false)
@@ -660,13 +655,14 @@ class Language extends \oxSuperCfg
         return $aLangArray;
     }
 
-     /**
+    /**
      * Goes through language array and recodes its values.
-     * 
-     * @param array  $aLangArray   language data
-     * @param string $sCharset     charset which was used while making file
-     * @param string $newEncoding  charset which was used while making file
      *
+     * @param array  $aLangArray  language data
+     * @param string $sCharset    charset which was used while making file
+     * @param string $newEncoding charset which was used while making file
+     *
+     * @deprecated since 6.0 (2016-12-07) As the shop installation is utf-8, this method will be removed.
      */
     protected function _recodeLangArrayValues(&$aLangArray, $sCharset, $newEncoding)
     {
@@ -678,9 +674,11 @@ class Language extends \oxSuperCfg
     /**
      * Goes through language array and recodes its values and keys. Returns recoded data
      *
-     * @param array  $aLangArray   language data
-     * @param string $sCharset     charset which was used while making file
-     * @param string $newEncoding  charset which was used while making file
+     * @param array  $aLangArray  language data
+     * @param string $sCharset    charset which was used while making file
+     * @param string $newEncoding charset which was used while making file
+     *
+     * @deprecated since 6.0 (2016-12-07) As the shop installation is utf-8, this method will be removed.
      *
      * @return array
      */
@@ -696,7 +694,7 @@ class Language extends \oxSuperCfg
         return $aLangs;
     }
 
-    
+
     /**
      * Returns the encoding all translations will be converted to.
      *
@@ -704,14 +702,7 @@ class Language extends \oxSuperCfg
      */
     protected function getTranslationsExpectedEncoding()
     {
-        $shopConfig = $this->getConfig();
-
-        $newEncoding = 'ISO-8859-15';
-        if ($shopConfig->isUtf()) {
-            $newEncoding = 'UTF-8';
-        }
-
-        return $newEncoding;
+        return 'UTF-8';
     }
 
     /**
@@ -952,27 +943,18 @@ class Language extends \oxSuperCfg
             $aLang = array();
             $aLangSeoReplaceChars = array();
             foreach ($aLangFiles as $sLangFile) {
-
                 if (file_exists($sLangFile) && is_readable($sLangFile)) {
                     //$aSeoReplaceChars null indicates that there is no setting made
                     $aSeoReplaceChars = null;
                     include $sLangFile;
 
-                    // including only (!) those, which has charset defined
-                    if (isset($aLang['charset'])) {
-                        if ($aLang['charset'] != $sBaseCharset) {
-                            $aLang = $this->_recodeLangArray($aLang, $aLang['charset']);
+                    $aLang = array_merge(['charset' => 'UTF-8'], $aLang);
 
-                            if (isset($aSeoReplaceChars) && is_array($aSeoReplaceChars)) {
-                                $aSeoReplaceChars = $this->_recodeLangArray($aSeoReplaceChars, $aLang['charset'], true);
-                            }
-                        }
-                        if (isset($aSeoReplaceChars) && is_array($aSeoReplaceChars)) {
-                            $aLangSeoReplaceChars = array_merge($aLangSeoReplaceChars, $aSeoReplaceChars);
-                        }
-
-                        $aLangCache = array_merge($aLangCache, $aLang);
+                    if (isset($aSeoReplaceChars) && is_array($aSeoReplaceChars)) {
+                        $aLangSeoReplaceChars = array_merge($aLangSeoReplaceChars, $aSeoReplaceChars);
                     }
+
+                    $aLangCache = array_merge($aLangCache, $aLang);
                 }
             }
 
@@ -1018,7 +1000,6 @@ class Language extends \oxSuperCfg
                 include $sMapFile;
                 $this->_aLangMap[$sKey] = $aMap;
             }
-
         }
 
         return $this->_aLangMap[$sKey];
@@ -1106,12 +1087,9 @@ class Language extends \oxSuperCfg
      */
     public function getFormLang()
     {
-        $sLang = null;
         if (!$this->isAdmin()) {
-            $sLang = "<input type=\"hidden\" name=\"" . $this->getName() . "\" value=\"" . $this->getBaseLanguage() . "\" />";
+            return "<input type=\"hidden\" name=\"" . $this->getName() . "\" value=\"" . $this->getBaseLanguage() . "\" />";
         }
-
-        return $sLang;
     }
 
     /**
@@ -1123,13 +1101,10 @@ class Language extends \oxSuperCfg
      */
     public function getUrlLang($iLang = null)
     {
-        $sLang = null;
         if (!$this->isAdmin()) {
             $iLang = isset($iLang) ? $iLang : $this->getBaseLanguage();
-            $sLang = $this->getName() . "=" . $iLang;
+            return $this->getName() . "=" . $iLang;
         }
-
-        return $sLang;
     }
 
     /**
@@ -1184,7 +1159,6 @@ class Language extends \oxSuperCfg
         $sBrowserLanguage = $this->_getBrowserLanguage();
 
         if (!is_null($sBrowserLanguage)) {
-
             $aLanguages = $this->getLanguageArray(null, true);
             foreach ($aLanguages as $oLang) {
                 if ($oLang->abbr == $sBrowserLanguage) {
@@ -1207,7 +1181,7 @@ class Language extends \oxSuperCfg
                          "oxlinks",
                          // @deprecated since v.5.3.0 (2016-06-17); The Admin Menu: Customer Info -> News feature will be moved to a module in v6.0.0
                          "oxnews",
-                         // END deprecated 
+                         // END deprecated
                          "oxobject2attribute",
                          "oxpayments", "oxselectlist", "oxshops",
                          "oxactions", "oxwrapping", "oxdeliveryset",
@@ -1278,12 +1252,9 @@ class Language extends \oxSuperCfg
      */
     protected function _getBrowserLanguage()
     {
-        $sBrowserLang = null;
         if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) && $_SERVER['HTTP_ACCEPT_LANGUAGE']) {
-            $sBrowserLang = strtolower(substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2));
+            return strtolower(substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 2));
         }
-
-        return $sBrowserLang;
     }
 
     /**
@@ -1293,9 +1264,7 @@ class Language extends \oxSuperCfg
      */
     public function getAllShopLanguageIds()
     {
-        $aLanguages = $this->_getLanguageIdsFromDatabase();
-
-        return $aLanguages;
+        return $this->_getLanguageIdsFromDatabase();
     }
 
     /**

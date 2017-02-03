@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxDb;
@@ -68,20 +68,6 @@ class ListComponentAjax extends \oxSuperCfg
      * @var bool
      */
     protected $_blAllowExtColumns = false;
-
-    /**
-     * Initializes AJAX columns.
-     *
-     * @param array $aColumns Array of DB table columns which are loaded from DB.
-     *
-     * @deprecated since v5.1.1 (2013.10.24); must be replaced with setColumns if needed
-     */
-    public function init($aColumns = null)
-    {
-        if (!is_null($aColumns)) {
-            $this->setColumns($aColumns);
-        }
-    }
 
     /**
      * Gets columns array.
@@ -328,13 +314,9 @@ class ListComponentAjax extends \oxSuperCfg
      */
     protected function _isExtendedColumn($sColumn)
     {
-        $blBuild = false;
         $blVariantsSelectionParameter = oxRegistry::getConfig()->getConfigParam('blVariantsSelection');
-        if ($this->_blAllowExtColumns && $blVariantsSelectionParameter && $sColumn == 'oxtitle') {
-            $blBuild = true;
-        }
 
-        return $blBuild;
+        return $this->_blAllowExtColumns && $blVariantsSelectionParameter && $sColumn == 'oxtitle';
     }
 
     /**
@@ -352,11 +334,9 @@ class ListComponentAjax extends \oxSuperCfg
         // multilanguage
         $sVarSelect = "$sViewTable.oxvarselect";
 
-        $sSql = " IF( {$sViewTable}.{$sColumn} != '', {$sViewTable}.{$sColumn}, CONCAT((select oxart.{$sColumn} " .
+        return " IF( {$sViewTable}.{$sColumn} != '', {$sViewTable}.{$sColumn}, CONCAT((select oxart.{$sColumn} " .
                 "from {$sViewTable} as oxart " .
                 "where oxart.oxid = {$sViewTable}.oxparentid),', ',{$sVarSelect})) as _{$iCnt}";
-
-        return $sSql;
     }
 
     /**
@@ -397,14 +377,9 @@ class ListComponentAjax extends \oxSuperCfg
         if (is_array($aFilter) && count($aFilter)) {
             $aCols = $this->_getVisibleColNames();
             $oDb = oxDb::getDb();
-            $oLang = oxRegistry::getLang();
             $oStr = getStr();
 
-            $blIsUtf = $oConfig->isUtf();
-            $sCharset = $oLang->translateString("charset");
-
             foreach ($aFilter as $sCol => $sValue) {
-
                 // skipping empty filters
                 if ($sValue === '') {
                     continue;
@@ -416,10 +391,6 @@ class ListComponentAjax extends \oxSuperCfg
                         $sQ .= ' and ';
                     }
 
-                    if (!$blIsUtf) {
-                        $sValue = iconv('UTF-8', $sCharset, $sValue);
-                    }
-
                     // escaping special characters
                     $sValue = str_replace(array('%', '_'), array('\%', '\_'), $sValue);
 
@@ -427,9 +398,8 @@ class ListComponentAjax extends \oxSuperCfg
                     $sValue = $oStr->preg_replace('/^\*/', '%', $sValue);
 
                     $sQ .= $this->_getViewName($aCols[$iCol][1]) . '.' . $aCols[$iCol][0];
-                    $sQ .= ' like ' . $oDb->Quote($sValue . '%') . ' ';
+                    $sQ .= ' like ' . $oDb->Quote('%' . $sValue . '%') . ' ';
                 }
-
             }
         }
 
@@ -462,11 +432,11 @@ class ListComponentAjax extends \oxSuperCfg
     protected function _getAll($sQ)
     {
         $aReturn = array();
-        $rs = oxDb::getDb()->execute($sQ);
-        if ($rs != false && $rs->recordCount() > 0) {
+        $rs = oxDb::getDb()->select($sQ);
+        if ($rs != false && $rs->count() > 0) {
             while (!$rs->EOF) {
                 $aReturn[] = $rs->fields[0];
-                $rs->moveNext();
+                $rs->fetchRow();
             }
         }
 
@@ -513,7 +483,8 @@ class ListComponentAjax extends \oxSuperCfg
 
         // $sCountCacheKey = md5( $sQ );
 
-        return (int) oxDb::getDb()->getOne($sQ, false, false);
+        // We force reading from master to prevent issues with slow replications or open transactions (see ESDEV-3804).
+        return (int) oxDb::getMaster()->getOne($sQ);
     }
 
     /**
@@ -525,7 +496,8 @@ class ListComponentAjax extends \oxSuperCfg
      */
     protected function _getDataFields($sQ)
     {
-        return oxDb::getDb(oxDB::FETCH_MODE_ASSOC)->getAll($sQ, false, false);
+        // We force reading from master to prevent issues with slow replications or open transactions (see ESDEV-3804).
+        return oxDb::getMaster(oxDB::FETCH_MODE_ASSOC)->getAll($sQ, false);
     }
 
     /**
@@ -535,21 +507,6 @@ class ListComponentAjax extends \oxSuperCfg
      */
     protected function _outputResponse($aData)
     {
-        if (!$this->getConfig()->isUtf()) {
-            // TODO: improve this
-            if (is_array($aData['records']) && ($iRecSize = count($aData['records']))) {
-                $aKeys = array_keys(current($aData['records']));
-                $iKeySize = count($aKeys);
-                $sCharset = oxRegistry::getLang()->translateString("charset");
-                for ($i = 0; $i < $iRecSize; $i++) {
-                    for ($c = 0; $c < $iKeySize; $c++) {
-                        $aData['records'][$i][$aKeys[$c]] =
-                                                        iconv($sCharset, "UTF-8", $aData['records'][$i][$aKeys[$c]]);
-                    }
-                }
-            }
-        }
-
         $this->_output(json_encode($aData));
     }
 

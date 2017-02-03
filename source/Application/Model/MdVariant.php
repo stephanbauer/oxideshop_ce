@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Model;
+namespace OxidEsales\EshopCommunity\Application\Model;
 
 use oxRegistry;
 
@@ -252,7 +252,6 @@ class MdVariant extends \oxSuperCfg
         }
 
         return $dMinPrice;
-
     }
 
     /**

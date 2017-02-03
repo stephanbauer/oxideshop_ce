@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core;
+namespace OxidEsales\EshopCommunity\Core;
 
 use oxOnlineLicenseCheckCaller;
 use oxUserCounter;
@@ -214,7 +214,7 @@ class OnlineLicenseCheck
             if ($blResult) {
                 $this->_logSuccess();
             }
-        } catch (oxException $oEx) {
+        } catch (\OxidEsales\EshopCommunity\Core\Exception\StandardException $oEx) {
             $this->_setErrorMessage($oEx->getMessage());
             $this->_setIsException(true);
         }

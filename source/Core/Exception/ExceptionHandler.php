@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core\Exception;
+namespace OxidEsales\EshopCommunity\Core\Exception;
 
 use oxRegistry;
 use Exception;
@@ -102,7 +102,7 @@ class ExceptionHandler
     public function handleUncaughtException($oEx)
     {
         // split between php or shop exception
-        if (!($oEx instanceof \OxidEsales\Eshop\Core\Exception\StandardException)) {
+        if (!($oEx instanceof \OxidEsales\EshopCommunity\Core\Exception\StandardException)) {
             $this->_dealWithNoOxException($oEx);
 
             return; // Return straight away ! (in case of unit testing)
@@ -130,7 +130,12 @@ class ExceptionHandler
         if (defined('OXID_PHP_UNIT')) {
             return $oEx->getString();
         } elseif (0 != $this->_iDebug) {
-            oxRegistry::getUtils()->showMessageAndExit($oEx->getString());
+            /** Added try catch block as showMessageAndExit may throw and exception, if there is a database connection problem */
+            try {
+                oxRegistry::getUtils()->showMessageAndExit($oEx->getString());
+            } catch (Exception $oException) {
+                oxRegistry::getUtils()->redirectOffline(500);
+            }
         }
 
         try {

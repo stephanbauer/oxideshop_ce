@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller;
+namespace OxidEsales\EshopCommunity\Application\Controller;
 
 use oxException;
 use oxExceptionToDisplay;
@@ -65,7 +65,7 @@ class DownloadController extends \oxUBase
                         $sError = "ERROR_MESSAGE_FILE_DOESNOT_EXIST";
                     }
                 }
-            } catch (oxException $oEx) {
+            } catch (\OxidEsales\EshopCommunity\Core\Exception\StandardException $oEx) {
                 $sError = "ERROR_MESSAGE_FILE_DOWNLOAD_FAILED";
             }
         } else {

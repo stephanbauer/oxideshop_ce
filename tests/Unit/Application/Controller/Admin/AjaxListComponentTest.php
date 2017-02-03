@@ -30,19 +30,6 @@ use \oxTestModules;
  */
 class AjaxListComponentTest extends \OxidTestCase
 {
-
-    /**
-     * ajaxListComponent::init() test case
-     *
-     * @return null
-     */
-    public function testInit()
-    {
-        $oComponent = oxNew('ajaxListComponent');
-        $oComponent->init("aColNames");
-        $this->assertEquals("aColNames", $oComponent->UNITgetColNames());
-    }
-
     /**
      * ajaxListComponent::_getActionIds() test case
      *
@@ -174,7 +161,7 @@ class AjaxListComponentTest extends \OxidTestCase
         $this->setRequestParameter('cmpid', null);
 
         $oComponent = oxNew('ajaxListComponent');
-        $oComponent->init("testNames");
+        $oComponent->setColumns("testNames");
         $this->assertEquals("testNames", $oComponent->UNITgetColNames());
     }
 
@@ -188,7 +175,7 @@ class AjaxListComponentTest extends \OxidTestCase
         $this->setRequestParameter('cmpid', "testCmpId");
 
         $oComponent = oxNew('ajaxListComponent');
-        $oComponent->init(array("testCmpId" => "testNames"));
+        $oComponent->setColumns(array("testCmpId" => "testNames"));
         $this->assertEquals("testNames", $oComponent->UNITgetColNames());
     }
 
@@ -341,14 +328,10 @@ class AjaxListComponentTest extends \OxidTestCase
             array('oxid', 'oxarticles', 0, 0, 1)
         );
         $sTableName = getViewName("oxarticles");
-        $sQ = "$sTableName.oxartnum like 'a%'  and $sTableName.oxtitle like 'b%'  and $sTableName.oxmpn like '0%' ";
+        $sQ = "$sTableName.oxartnum like '%a%'  and $sTableName.oxtitle like '%b%'  and $sTableName.oxmpn like '%0%' ";
 
-        $oConfig = $this->getMock("oxConfig", array("isUtf"));
-        $oConfig->expects($this->any())->method('isUtf')->will($this->returnValue(false));
-
-        $oComponent = $this->getMock("ajaxListComponent", array("_getColNames", "getConfig"));
+        $oComponent = $this->getMock("ajaxListComponent", array("_getColNames"));
         $oComponent->expects($this->any())->method('_getColNames')->will($this->returnValue($aColNames));
-        $oComponent->expects($this->any())->method('getConfig')->will($this->returnValue($oConfig));
         $this->assertEquals($sQ, $oComponent->UNITgetFilter());
     }
 
@@ -373,11 +356,11 @@ class AjaxListComponentTest extends \OxidTestCase
     {
         $sQ = "select oxid from oxcategories";
         $aReturn = array();
-        $rs = oxDb::getDb()->execute($sQ);
-        if ($rs != false && $rs->recordCount() > 0) {
+        $rs = oxDb::getDb()->select($sQ);
+        if ($rs != false && $rs->count() > 0) {
             while (!$rs->EOF) {
                 $aReturn[] = $rs->fields[0];
-                $rs->moveNext();
+                $rs->fetchRow();
             }
         }
 
@@ -446,11 +429,7 @@ class AjaxListComponentTest extends \OxidTestCase
         $aData['records'][0] = array(0 => "a", 1 => "b");
         $aData['records'][1] = array(0 => "c", 1 => "d");
 
-        $oConfig = $this->getMock("oxConfig", array("isUtf"));
-        $oConfig->expects($this->any())->method('isUtf')->will($this->returnValue(false));
-
         $oComponent = $this->getMock("ajaxListComponent", array("getConfig", "_output"));
-        $oComponent->expects($this->any())->method('getConfig')->will($this->returnValue($oConfig));
         $oComponent->expects($this->any())->method('_output')->with($this->equalTo(json_encode($aData)));
         $oComponent->UNIToutputResponse($aData);
     }

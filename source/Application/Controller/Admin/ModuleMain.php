@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxException;
@@ -77,6 +77,12 @@ class ModuleMain extends \oxAdminDetails
      */
     public function activateModule()
     {
+        if ($this->getConfig()->isDemoShop()) {
+            oxRegistry::get("oxUtilsView")->addErrorToDisplay('MODULE_ACTIVATION_NOT_POSSIBLE_IN_DEMOMODE');
+
+            return;
+        }
+
         $sModule = $this->getEditObjectId();
         /** @var oxModule $oModule */
         $oModule = oxNew('oxModule');
@@ -94,7 +100,7 @@ class ModuleMain extends \oxAdminDetails
             if ($oModuleInstaller->activate($oModule)) {
                 $this->_aViewData["updatenav"] = "1";
             }
-        } catch (oxException $oEx) {
+        } catch (\OxidEsales\EshopCommunity\Core\Exception\StandardException $oEx) {
             oxRegistry::get("oxUtilsView")->addErrorToDisplay($oEx);
             $oEx->debugOut();
         }
@@ -107,6 +113,12 @@ class ModuleMain extends \oxAdminDetails
      */
     public function deactivateModule()
     {
+        if ($this->getConfig()->isDemoShop()) {
+            oxRegistry::get("oxUtilsView")->addErrorToDisplay('MODULE_ACTIVATION_NOT_POSSIBLE_IN_DEMOMODE');
+
+            return;
+        }
+
         $sModule = $this->getEditObjectId();
         /** @var oxModule $oModule */
         $oModule = oxNew('oxModule');
@@ -124,7 +136,7 @@ class ModuleMain extends \oxAdminDetails
             if ($oModuleInstaller->deactivate($oModule)) {
                 $this->_aViewData["updatenav"] = "1";
             }
-        } catch (oxException $oEx) {
+        } catch (\OxidEsales\EshopCommunity\Core\Exception\StandardException $oEx) {
             oxRegistry::get("oxUtilsView")->addErrorToDisplay($oEx);
             $oEx->debugOut();
         }

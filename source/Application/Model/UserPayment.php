@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Model;
+namespace OxidEsales\EshopCommunity\Application\Model;
 
 use oxRegistry;
 use oxDb;
@@ -156,8 +156,10 @@ class UserPayment extends \oxBase
 
         //encode sensitive data
         if ($sValue = $this->oxuserpayments__oxvalue->value) {
-            $oDb = oxDb::getDb();
-            $sEncodedValue = $oDb->getOne("select encode( " . $oDb->quote($sValue) . ", '" . $this->getPaymentKey() . "' )", false, false);
+            // Function is called from inside a transaction in Category::save (see ESDEV-3804 and ESDEV-3822).
+            // No need to explicitly force master here.
+            $database = oxDb::getDb();
+            $sEncodedValue = $database->getOne("select encode( " . $database->quote($sValue) . ", '" . $this->getPaymentKey() . "' )");
             $this->oxuserpayments__oxvalue->setValue($sEncodedValue);
         }
 
@@ -178,11 +180,14 @@ class UserPayment extends \oxBase
      */
     protected function _update()
     {
-        $oDb = oxDb::getDb();
 
         //encode sensitive data
         if ($sValue = $this->oxuserpayments__oxvalue->value) {
-            $sEncodedValue = $oDb->getOne("select encode( " . $oDb->quote($sValue) . ", '" . $this->getPaymentKey() . "' )", false, false);
+            // Function is called from inside a transaction in Category::save (see ESDEV-3804 and ESDEV-3822).
+            // No need to explicitly force master here.
+            $database = oxDb::getDb();
+
+            $sEncodedValue = $database->getOne("select encode( " . $database->quote($sValue) . ", '" . $this->getPaymentKey() . "' )");
             $this->oxuserpayments__oxvalue->setValue($sEncodedValue);
         }
 
@@ -251,7 +256,6 @@ class UserPayment extends \oxBase
         }
 
         if (!$this->_aDynValues) {
-
             $sRawDynValue = null;
             if (is_object($this->oxuserpayments__oxvalue)) {
                 $sRawDynValue = $this->oxuserpayments__oxvalue->getRawValue();

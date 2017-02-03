@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core;
+namespace OxidEsales\EshopCommunity\Core;
 
 use oxOnlineModuleVersionNotifierCaller;
 use oxModuleList;
@@ -56,7 +56,7 @@ class OnlineModuleVersionNotifier
      * @param oxOnlineModuleVersionNotifierCaller $oCaller     Online module version notifier caller object
      * @param oxModuleList                        $oModuleList Module list object
      */
-    public function __construct(oxOnlineModuleVersionNotifierCaller $oCaller, oxModuleList $oModuleList)
+    public function __construct(\OxidEsales\EshopCommunity\Core\OnlineModuleVersionNotifierCaller $oCaller, \OxidEsales\EshopCommunity\Core\Module\ModuleList $oModuleList)
     {
         $this->_oCaller = $oCaller;
         $this->_oModuleList = $oModuleList;
@@ -67,6 +67,10 @@ class OnlineModuleVersionNotifier
      */
     public function versionNotify()
     {
+        if(true === oxRegistry::getConfig()->getConfigParam('preventModuleVersionNotify')){
+            return;
+        }
+
         $oOMNCaller = $this->_getOnlineModuleNotifierCaller();
         $oOMNCaller->doRequest($this->_formRequest());
     }
@@ -109,7 +113,6 @@ class OnlineModuleVersionNotifier
 
         $oRequestParams->modules = new stdClass();
         $oRequestParams->modules->module = $this->_prepareModulesInformation();
-
 
         return $oRequestParams;
     }

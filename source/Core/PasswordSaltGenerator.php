@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core;
+namespace OxidEsales\EshopCommunity\Core;
 
 use oxOpenSSLFunctionalityChecker;
 
@@ -41,7 +41,7 @@ class PasswordSaltGenerator
      *
      * @param oxOpenSSLFunctionalityChecker $openSSLFunctionalityChecker
      */
-    public function __construct(oxOpenSSLFunctionalityChecker $openSSLFunctionalityChecker)
+    public function __construct(\OxidEsales\EshopCommunity\Core\OpenSSLFunctionalityChecker $openSSLFunctionalityChecker)
     {
         $this->_openSSLFunctionalityChecker = $openSSLFunctionalityChecker;
     }

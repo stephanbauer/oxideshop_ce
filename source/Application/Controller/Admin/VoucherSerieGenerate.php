@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxField;
@@ -96,13 +96,12 @@ class VoucherSerieGenerate extends \VoucherSerie_Main
 
         // creating new vouchers
         if ($iCnt < $iAmount && ($oVoucherSerie = $this->_getVoucherSerie())) {
-
             if (!$this->_iGenerated) {
                 $this->_iGenerated = $iCnt;
             }
 
             $blRandomNr = ( bool ) oxRegistry::getSession()->getVariable("randomVoucherNr");
-            $sVoucherNr = $blRandomNr ? oxUtilsObject::getInstance()->generateUID() : oxRegistry::getSession()->getVariable("voucherNr");
+            $sVoucherNr = $blRandomNr ? \OxidEsales\Eshop\Core\UtilsObject::getInstance()->generateUID() : oxRegistry::getSession()->getVariable("voucherNr");
 
             $oNewVoucher = oxNew("oxvoucher");
             $oNewVoucher->oxvouchers__oxvoucherserieid = new oxField($oVoucherSerie->getId());

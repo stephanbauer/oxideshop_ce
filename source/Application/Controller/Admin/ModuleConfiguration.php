@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxConfig;
 use oxRegistry;
@@ -69,7 +69,7 @@ class ModuleConfiguration extends \Shop_Config
                     $this->_aViewData[$sParam] = $aDbVariables['vars'][$sType];
                     $iCount += count($aDbVariables['vars'][$sType]);
                 }
-            } catch (oxException $oEx) {
+            } catch (\OxidEsales\EshopCommunity\Core\Exception\StandardException $oEx) {
                 oxRegistry::get("oxUtilsView")->addErrorToDisplay($oEx);
                 $oEx->debugOut();
             }
@@ -121,7 +121,6 @@ class ModuleConfiguration extends \Shop_Config
         $aDbVariables = $this->loadConfVars($oConfig->getShopId(), $this->_getModuleForConfigVars());
 
         if (is_array($aModuleSettings)) {
-
             foreach ($aModuleSettings as $aValue) {
                 $sName = $aValue["name"];
                 $sType = $aValue["type"];
@@ -215,11 +214,6 @@ class ModuleConfiguration extends \Shop_Config
      */
     private function _getDbConfigTypeName($sType)
     {
-        $sDbType = $sType;
-        if ($sType === 'password') {
-            $sDbType = 'str';
-        }
-
-        return $sDbType;
+        return $sType === 'password' ? 'str' : $sType;
     }
 }

@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core;
+namespace OxidEsales\EshopCommunity\Core;
 
 use oxRegistry;
 
@@ -34,6 +34,9 @@ class Curl
 {
     /** Curl option for setting the timeout of whole execution process. */
     const EXECUTION_TIMEOUT_OPTION = 'CURLOPT_TIMEOUT';
+
+    /** Curl option for setting the timeout for connect. */
+    const CONNECT_TIMEOUT_OPTION = 'CURLOPT_CONNECTTIMEOUT';
 
     /**
      * Curl instance.
@@ -454,10 +457,7 @@ class Curl
      */
     protected function _prepareQueryParameters($params)
     {
-        $params = array_filter($params);
-        $params = array_map(array($this, '_htmlDecode'), $params);
-
-        return $params;
+        return array_map([$this, '_htmlDecode'], array_filter($params));
     }
 
     /**

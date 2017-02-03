@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 
@@ -91,16 +91,13 @@ class SystemInfoController extends \oxAdminView
      */
     protected function isClassVariableVisible($varName)
     {
-        $skipNames = array(
+        return !in_array($varName, [
             'oDB',
             'dbUser',
             'dbPwd',
             'oSerial',
             'aSerials',
             'sSerialNr'
-        );
-        $result = !in_array($varName, $skipNames);
-
-        return $result;
+        ]);
     }
 }

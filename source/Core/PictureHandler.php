@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core;
+namespace OxidEsales\EshopCommunity\Core;
 
 use oxRegistry;
 
@@ -93,7 +93,6 @@ class PictureHandler extends \oxSuperCfg
                 $this->deleteZoomPicture($oObject, $iIndex);
             }
         }
-
     }
 
     /**
@@ -293,7 +292,6 @@ class PictureHandler extends \oxSuperCfg
 
         if ($sAltUrl) {
             if ((is_null($blSSL) && $oConfig->isSsl()) || $blSSL) {
-
                 $sSslAltUrl = $oConfig->getConfigParam('sSSLAltImageUrl');
                 if (!$sSslAltUrl) {
                     $sSslAltUrl = $oConfig->getConfigParam('sSSLAltImageDir');
@@ -328,7 +326,6 @@ class PictureHandler extends \oxSuperCfg
     {
         $sUrl = null;
         if ($sPath && $sFile && ($aSize = $this->getImageSize($sSize, $sIndex))) {
-
             $aPicInfo = $this->_getPictureInfo("master/" . ($sAltPath ? $sAltPath : $sPath), $sFile, $this->isAdmin(), $bSsl);
             if ($aPicInfo['url'] && $aSize[0] && $aSize[1]) {
                 $sDirName = "{$aSize[0]}_{$aSize[1]}_" . $this->getConfig()->getConfigParam('sDefaultImageQuality');

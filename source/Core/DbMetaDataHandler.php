@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core;
+namespace OxidEsales\EshopCommunity\Core;
 
 use oxRegistry;
 use oxDb;
@@ -67,7 +67,7 @@ class DbMetaDataHandler extends oxSuperCfg
     /**
      *  Get table fields
      *
-     * @param string $tableName  table name
+     * @param string $tableName table name
      *
      * @return array
      */
@@ -125,7 +125,7 @@ class DbMetaDataHandler extends oxSuperCfg
     /**
      * Get the indices of a table
      *
-     * @param string $tableName The name of the table for which we want the 
+     * @param string $tableName The name of the table for which we want the
      *
      * @return array The indices of the given table
      */
@@ -142,10 +142,10 @@ class DbMetaDataHandler extends oxSuperCfg
 
     /**
      * Check, if the table has an index with the given name
-     * 
+     *
      * @param string $indexName The name of the index we want to check
      * @param string $tableName The table to check for the index
-     * 
+     *
      * @return bool Has the table the given index?
      */
     public function hasIndex($indexName, $tableName)
@@ -169,7 +169,7 @@ class DbMetaDataHandler extends oxSuperCfg
      *
      * @return null|array The index with the given name
      */
-    public function getIndexByName($indexName, $tableName) 
+    public function getIndexByName($indexName, $tableName)
     {
         $indices = $this->getIndices($tableName);
 
@@ -239,13 +239,11 @@ class DbMetaDataHandler extends oxSuperCfg
         $tableSet = getLangTableName($table, $lang);
 
         $res = oxDb::getDb()->getAll("show create table {$table}");
-        $collation = $this->getConfig()->isUtf() ? '' : 'COLLATE latin1_general_ci';
-        $sql = "CREATE TABLE `{$tableSet}` (" .
-                "`OXID` char(32) $collation NOT NULL, " .
+
+        return "CREATE TABLE `{$tableSet}` (" .
+                "`OXID` char(32) NOT NULL, " .
                 "PRIMARY KEY (`OXID`)" .
                 ") " . strstr($res[0][1], 'ENGINE=');
-
-        return $sql;
     }
 
     /**
@@ -301,7 +299,7 @@ class DbMetaDataHandler extends oxSuperCfg
 
         $tableSql = $res[0][1];
 
-        preg_match_all("/([\w]+\s+)?\bKEY\s+(`[^`]+`)?\s*\([^)]+\)/iU", $tableSql, $match);
+        preg_match_all("/([\w]+\s+)?\bKEY\s+(`[^`]+`)?\s*\([^)]+(\(\d++\))*\)/iU", $tableSql, $match);
         $index = $match[0];
 
         $usingTableSet = $tableSet ? true : false;
@@ -313,19 +311,18 @@ class DbMetaDataHandler extends oxSuperCfg
         $indexQueries = array();
         $sql = array();
         if (count($index)) {
-            foreach ($index as $indexQuery) {
+            foreach ($index as $key => $indexQuery) {
                 if (preg_match("/\([^)]*\b" . $field . "\b[^)]*\)/i", $indexQuery)) {
                     //removing index name - new will be added automaticly
                     $indexQuery = preg_replace("/(.*\bKEY\s+)`[^`]+`/", "$1", $indexQuery);
 
                     if ($usingTableSet) {
                         // replacing multiple fields to one (#3269)
-                        $indexQuery = preg_replace("/\([^\)]+\)/", "(`$newField`)", $indexQuery);
+                        $indexQuery = preg_replace("/\([^\)]+\)+/", "(`$newField`{$match[3][$key]})", $indexQuery);
                     } else {
                         //replacing previous field name with new one
                         $indexQuery = preg_replace("/\b" . $field . "\b/", $newField, $indexQuery);
                     }
-
                     $indexQueries[] = "ADD " . $indexQuery;
                 }
             }
@@ -358,9 +355,7 @@ class DbMetaDataHandler extends oxSuperCfg
             $fieldSet = $field . '_' . $lang;
         }
 
-        $this->_iCurrentMaxLangId = --$lang;
-
-        return $this->_iCurrentMaxLangId;
+        return $this->_iCurrentMaxLangId = --$lang;
     }
 
     /**
@@ -571,6 +566,10 @@ class DbMetaDataHandler extends oxSuperCfg
         $db = oxDb::getDb();
         $config = oxRegistry::getConfig();
 
+        $configFile = oxRegistry::get('oxConfigFile');
+        $originalSkipViewUsageStatus = $configFile->getVar('blSkipViewUsage');
+        $config->setConfigParam('blSkipViewUsage', 1);
+
         $this->safeGuardAdditionalMultiLanguageTables();
 
         $shops = $db->getAll("select * from oxshops");
@@ -592,6 +591,8 @@ class DbMetaDataHandler extends oxSuperCfg
             }
         }
 
+        $config->setConfigParam('blSkipViewUsage', $originalSkipViewUsageStatus);
+
         return $success;
     }
 
@@ -599,7 +600,7 @@ class DbMetaDataHandler extends oxSuperCfg
      * Make sure that e.g. OXID is always used from core table when creating views.
      * Otherwise we might have unwanted side effects from rows with OXIDs null in view tables.
      *
-     * @param $fields Language fields array we need to filter for core fields.
+     * @param array $fields Language fields array we need to filter for core fields.
      *
      * @return array
      */
@@ -643,10 +644,8 @@ class DbMetaDataHandler extends oxSuperCfg
     /**
      * Make sure that all *_set* tables with all required multilanguage fields are created.
      *
-     * @param $table
-     * @param $languagaId
-     *
-     * @return null
+     * @param string $table
+     * @param int    $languageId
      */
     protected function ensureMultiLanguageFields($table, $languageId)
     {

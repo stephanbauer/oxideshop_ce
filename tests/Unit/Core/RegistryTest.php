@@ -22,7 +22,7 @@
 namespace Unit\Core;
 
 use oxConfig;
-use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\EshopCommunity\Core\Registry;
 use oxLang;
 use oxRegistry;
 use oxSession;
@@ -42,7 +42,7 @@ class RegistryTest extends \OxidTestCase
     public function testGet()
     {
         $oStr = Registry::get("oxstr");
-        $this->assertTrue($oStr instanceof OxStr);
+        $this->assertTrue($oStr instanceof \OxidEsales\EshopCommunity\Core\Str);
     }
 
     /**
@@ -80,6 +80,7 @@ class RegistryTest extends \OxidTestCase
         $oTest2 = Registry::get("testCase");
 
         $this->assertEquals("testPublicVal", $oTest2->testPublic);
+        Registry::set("testCase", null);
     }
 
     /**
@@ -88,31 +89,32 @@ class RegistryTest extends \OxidTestCase
     public function testGetConfig()
     {
         $oSubj = $this->getConfig();
-        $this->assertTrue($oSubj instanceof oxConfig);
+        $this->assertTrue($oSubj instanceof \OxidEsales\EshopCommunity\Core\Config);
     }
 
     public function testGetSession()
     {
         $oSubj = Registry::getSession();
-        $this->assertTrue($oSubj instanceof oxSession);
+        $this->assertTrue($oSubj instanceof \OxidEsales\EshopCommunity\Core\Session);
     }
 
     public function testGetLang()
     {
         $oSubj = Registry::getLang();
-        $this->assertTrue($oSubj instanceof oxLang);
+        $this->assertTrue($oSubj instanceof \OxidEsales\EshopCommunity\Core\Language);
     }
 
     public function testGetLUtils()
     {
         $oSubj = Registry::getUtils();
-        $this->assertTrue($oSubj instanceof oxUtils);
+        $this->assertTrue($oSubj instanceof \OxidEsales\EshopCommunity\Core\Utils);
     }
 
     public function testGetKeys()
     {
         Registry::set("testKey", "testVal");
         $this->assertTrue(in_array(strtolower("testKey"), Registry::getKeys()));
+        oxRegistry::set("testKey", null);
     }
 
     public function testUnset()

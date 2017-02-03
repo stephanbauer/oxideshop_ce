@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller;
+namespace OxidEsales\EshopCommunity\Application\Controller;
 
 use oxField;
 use oxObjectException;
@@ -31,7 +31,7 @@ use oxRegistry;
  * When user is logged in in this manager window he can modify his
  * own recommlists status - remove articles from list or store
  * them to shopping basket, view detail information.
- * 
+ *
  * @deprecated since v5.3 (2016-06-17); Listmania will be moved to an own module.
  */
 class AccountRecommlistController extends \Account
@@ -200,7 +200,6 @@ class AccountRecommlistController extends \Account
             if (($oUser = $this->getUser()) &&
                 ($sRecommId = oxRegistry::getConfig()->getRequestParameter('recommid'))
             ) {
-
                 $oRecommList = oxNew('oxrecommlist');
                 $sUserIdField = 'oxrecommlists__oxuserid';
                 if (($oRecommList->load($sRecommId)) && $oUser->getId() === $oRecommList->$sUserIdField->value) {
@@ -258,7 +257,7 @@ class AccountRecommlistController extends \Account
                 // marking entry as saved
                 $this->_blSavedEntry = (bool) $oRecommList->save();
                 $this->setActiveRecommList($this->_blSavedEntry ? $oRecommList : false);
-            } catch (oxObjectException $oEx) {
+            } catch (\OxidEsales\EshopCommunity\Core\Exception\ObjectException $oEx) {
                 //add to display at specific position
                 oxRegistry::get("oxUtilsView")->addErrorToDisplay($oEx, false, true, 'user');
             }

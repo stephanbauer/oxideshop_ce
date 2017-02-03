@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Model;
+namespace OxidEsales\EshopCommunity\Application\Model;
 
 use oxView;
 use oxRegistry;
@@ -89,7 +89,6 @@ class SeoEncoderArticle extends \oxSeoEncoder
         if ($oRecomm = $this->_getRecomm($oArticle, $iLang)) {
             //load details link from DB
             if (!($sSeoUri = $this->_loadFromDb('oxarticle', $oArticle->getId(), $iLang, null, $oRecomm->getId(), true))) {
-
                 $oArticle = $this->_getProductForLang($oArticle, $iLang);
 
                 // create title part for uri
@@ -133,7 +132,7 @@ class SeoEncoderArticle extends \oxSeoEncoder
     {
         $oList = null;
         $oView = $this->getConfig()->getActiveView();
-        if ($oView instanceof oxView) {
+        if ($oView instanceof \OxidEsales\EshopCommunity\Application\Controller\FrontendController) {
             $oList = $oView->getActiveRecommList();
         }
 
@@ -170,7 +169,8 @@ class SeoEncoderArticle extends \oxSeoEncoder
         // writing category path
         $sSeoUri = $this->_processSeoUrl(
             oxRegistry::get("oxSeoEncoderCategory")->getCategoryUri($oCategory, $iLang) . $sTitle,
-            $oArticle->getId(), $iLang
+            $oArticle->getId(),
+            $iLang
         );
         $sCatId = $oCategory->getId();
         $this->_saveToDb(
@@ -209,7 +209,7 @@ class SeoEncoderArticle extends \oxSeoEncoder
 
         $oActCat = $this->_getCategory($oArticle, $iLang);
 
-        if ($oActCat instanceof oxCategory) {
+        if ($oActCat instanceof \OxidEsales\EshopCommunity\Application\Model\Category) {
             $sActCatId = $oActCat->getId();
         } elseif ($oActCat = $this->_getMainCategory($oArticle)) {
             $sActCatId = $oActCat->getId();
@@ -247,9 +247,9 @@ class SeoEncoderArticle extends \oxSeoEncoder
     {
         $oCat = null;
         $oView = $this->getConfig()->getActiveView();
-        if ($oView instanceof oxUBase) {
+        if ($oView instanceof \OxidEsales\EshopCommunity\Application\Controller\FrontendController) {
             $oCat = $oView->getActiveCategory();
-        } elseif ($oView instanceof oxView) {
+        } elseif ($oView instanceof \OxidEsales\EshopCommunity\Application\Controller\FrontendController) {
             $oCat = $oView->getActCategory();
         }
 
@@ -354,7 +354,6 @@ class SeoEncoderArticle extends \oxSeoEncoder
         if (!($sTitle = $oArticle->oxarticles__oxtitle->value)) {
             // taking parent article title
             if (($sParentId = $oArticle->oxarticles__oxparentid->value)) {
-
                 // looking in cache ..
                 if (!isset(self::$_aTitleCache[$sParentId])) {
                     $oDb = oxDb::getDb();
@@ -393,7 +392,6 @@ class SeoEncoderArticle extends \oxSeoEncoder
         if ($oVendor = $this->_getVendor($oArticle, $iLang)) {
             //load details link from DB
             if ($blRegenerate || !($sSeoUri = $this->_loadFromDb('oxarticle', $oArticle->getId(), $iLang, null, $oVendor->getId(), true))) {
-
                 $oArticle = $this->_getProductForLang($oArticle, $iLang);
 
                 // create title part for uri
@@ -439,7 +437,7 @@ class SeoEncoderArticle extends \oxSeoEncoder
 
         $oVendor = null;
         if ($sActVendorId = $oArticle->oxarticles__oxvendorid->value) {
-            if ($oView instanceof oxView && ($oActVendor = $oView->getActVendor())) {
+            if ($oView instanceof \OxidEsales\EshopCommunity\Application\Controller\FrontendController && ($oActVendor = $oView->getActVendor())) {
                 $oVendor = $oActVendor;
             } else {
                 $oVendor = oxNew("oxVendor");
@@ -471,7 +469,6 @@ class SeoEncoderArticle extends \oxSeoEncoder
         if ($oManufacturer = $this->_getManufacturer($oArticle, $iLang)) {
             //load details link from DB
             if ($blRegenerate || !($sSeoUri = $this->_loadFromDb('oxarticle', $oArticle->getId(), $iLang, null, $oManufacturer->getId(), true))) {
-
                 $oArticle = $this->_getProductForLang($oArticle, $iLang);
 
                 // create title part for uri
@@ -517,7 +514,7 @@ class SeoEncoderArticle extends \oxSeoEncoder
         if ($sActManufacturerId = $oArticle->oxarticles__oxmanufacturerid->value) {
             $oView = $this->getConfig()->getActiveView();
 
-            if ($oView instanceof oxView && ($oActManufacturer = $oView->getActManufacturer())) {
+            if ($oView instanceof \OxidEsales\EshopCommunity\Application\Controller\FrontendController && ($oActManufacturer = $oView->getActManufacturer())) {
                 $oManufacturer = $oActManufacturer;
             } else {
                 $oManufacturer = oxNew("oxManufacturer");

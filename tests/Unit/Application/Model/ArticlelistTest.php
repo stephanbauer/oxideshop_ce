@@ -15,20 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @link          http://www.oxid-esales.com
+ * @link      http://www.oxid-esales.com
  * @copyright (C) OXID eSales AG 2003-2016
- * @version       OXID eShop CE
+ * @version   OXID eShop CE
  */
 namespace Unit\Application\Model;
 
-use \oxArticle;
-
+use Exception;
 use modDB;
-use \oxField;
-use \Exception;
-use \oxDb;
-use \oxRegistry;
-use \oxTestModules;
+use OxidEsales\EshopCommunity\Application\Model\Article;
+use oxDb;
+use oxField;
+use OxidEsales\Eshop\CoreCommunity\DatabaseProvider;
+use oxRegistry;
+use oxTestModules;
+
 
 /**
  * Testing oxArticleList class
@@ -289,8 +290,8 @@ class ArticlelistTest extends \OxidTestCase
         $oTest = $this->getProxyClass('oxArticleList');
         $oTest->loadActionArticles('oxstart');
         $this->assertEquals(2, count($oTest));
-        $this->assertTrue($oTest['2077'] instanceof oxArticle);
-        $this->assertTrue($oTest['943ed656e21971fb2f1827facbba9bec'] instanceof oxArticle);
+        $this->assertTrue($oTest['2077'] instanceof Article);
+        $this->assertTrue($oTest['943ed656e21971fb2f1827facbba9bec'] instanceof Article);
         $this->assertEquals(19, $oTest['2077']->getPrice()->getBruttoPrice());
         $this->assertEquals("Kuyichi Jeans Mick", $oTest['943ed656e21971fb2f1827facbba9bec']->oxarticles__oxtitle->value);
     }
@@ -529,46 +530,31 @@ class ArticlelistTest extends \OxidTestCase
      *
      * @return null
      */
-    public function testGetFilterSql()
+    public function testGetFilterIdsSql()
     {
-        $sCatId = $this->getTestConfig()->getShopEdition() == 'EE' ? '30e44ab85808a1f05.26160932' : '8a142c3e60a535f16.78077188';
+        $categoryId = $this->getTestConfig()->getShopEdition() == 'EE' ? '30e44ab85808a1f05.26160932' : '8a142c3e60a535f16.78077188';
 
-        $oTest = $this->getProxyClass('oxArticleList');
-        $sRes = '';
+        $articleList = $this->getProxyClass('oxArticleList');
 
-        $dbMock = $this->getDbObjectMock();
-        $dbMock->expects($this->any())
-            ->method('getAll')
-            ->will(
-                $this->returnCallback(
-                    function ($s) {
-                        throw new Exception($s);
-                    }
-                )
-            );
-        oxDb::setDbObject($dbMock);
+        $objectToCategoryView = getViewName('oxobject2category');
+        $objectToAttributeView = getViewName('oxobject2attribute');
 
-        try {
-            $oTest->UNITgetFilterSql($sCatId, array("8a142c3ee0edb75d4.80743302" => "Zeiger", "8a142c3e9cd961518.80299776" => "originell"));
-        } catch (Exception $e) {
-            $sRes = $e->getMessage();
-        }
+        $result = $articleList->UNITgetFilterIdsSql($categoryId, array("8a142c3ee0edb75d4.80743302" => "Zeiger", "8a142c3e9cd961518.80299776" => "originell"));
+
         $this->setLanguage(0);
         modDB::getInstance()->cleanup();
 
-        $sO2CView = getViewName('oxobject2category');
-        $sO2AView = getViewName('oxobject2attribute');
-        $sExpt = "select oc.oxobjectid as oxobjectid, count(*)as cnt from
-            (SELECT * FROM $sO2CView WHERE $sO2CView.oxcatnid='$sCatId' GROUP BY $sO2CView.oxobjectid, $sO2CView.oxcatnid) as oc
-            INNER JOIN {$sO2AView} as oa ON(oa.oxobjectid=oc.oxobjectid)
+        $expected = "select oc.oxobjectid as oxobjectid, count(*)as cnt from
+            (SELECT * FROM $objectToCategoryView WHERE $objectToCategoryView.oxcatnid='$categoryId' GROUP BY $objectToCategoryView.oxobjectid, $objectToCategoryView.oxcatnid) as oc
+            INNER JOIN {$objectToAttributeView} as oa ON(oa.oxobjectid=oc.oxobjectid)
             WHERE (oa.oxattrid='8a142c3ee0edb75d4.80743302' and oa.oxvalue='Zeiger')
                 or (oa.oxattrid='8a142c3e9cd961518.80299776'andoa.oxvalue='originell')
             GROUPBY oa.oxobjectid
             HAVING cnt=2";
+        $expected = str_replace(array("\n", "\r", " ", "\t"), "", $expected);
+        $result = str_replace(array("\n", "\r", " ", "\t"), "", $result);
 
-        $sExpt = str_replace(array("\n", "\r", " ", "\t"), "", $sExpt);
-        $sRes = str_replace(array("\n", "\r", " ", "\t"), "", $sRes);
-        $this->assertEquals($sExpt, $sRes);
+        $this->assertEquals($expected, $result);
     }
 
     /**
@@ -699,27 +685,27 @@ class ArticlelistTest extends \OxidTestCase
         $articleTable = $this->_getArticleTable();
 
         $expectedSql = <<<EOT
-            AND 
-            ( 
-              ( 
-                $articleTable.oxtitle LIKE '%test%' 
-                OR 
-                $articleTable.oxshortdesc LIKE '%test%' 
-                OR 
-                $articleTable.oxsearchkeys LIKE '%test%' 
-                OR 
-                $articleTable.oxartnum LIKE '%test%' 
-              ) 
-              OR 
-              ( 
-                $articleTable.oxtitle LIKE '%Search%' 
-                OR 
-                $articleTable.oxshortdesc LIKE '%Search%' 
-                OR 
-                $articleTable.oxsearchkeys LIKE '%Search%' 
-                OR 
-                $articleTable.oxartnum LIKE '%Search%' 
-              ) 
+            AND
+            (
+              (
+                $articleTable.oxtitle LIKE '%test%'
+                OR
+                $articleTable.oxshortdesc LIKE '%test%'
+                OR
+                $articleTable.oxsearchkeys LIKE '%test%'
+                OR
+                $articleTable.oxartnum LIKE '%test%'
+              )
+              OR
+              (
+                $articleTable.oxtitle LIKE '%Search%'
+                OR
+                $articleTable.oxshortdesc LIKE '%Search%'
+                OR
+                $articleTable.oxsearchkeys LIKE '%Search%'
+                OR
+                $articleTable.oxartnum LIKE '%Search%'
+              )
             )
 EOT;
         $actualSql = $articleList->UNITgetSearchSelect('test Search');
@@ -759,28 +745,28 @@ EOT;
         $articleTable = $this->_getArticleTable();
 
         $expectedSql = <<<EOT
-            AND 
-            ( 
-              ( 
-                $articleTable.oxtitle LIKE '%test%' 
-                OR 
-                $articleTable.oxshortdesc LIKE '%test%' 
-                OR 
-                $articleTable.oxsearchkeys LIKE '%test%' 
-                OR 
-                $articleTable.oxartnum LIKE '%test%' 
-              ) 
-              AND 
-              ( 
-                $articleTable.oxtitle LIKE '%Search%' 
-                OR 
-                $articleTable.oxshortdesc LIKE '%Search%' 
-                OR 
-                $articleTable.oxsearchkeys LIKE '%Search%' 
-                OR 
-                $articleTable.oxartnum LIKE '%Search%' 
-              ) 
-            ) 
+            AND
+            (
+              (
+                $articleTable.oxtitle LIKE '%test%'
+                OR
+                $articleTable.oxshortdesc LIKE '%test%'
+                OR
+                $articleTable.oxsearchkeys LIKE '%test%'
+                OR
+                $articleTable.oxartnum LIKE '%test%'
+              )
+              AND
+              (
+                $articleTable.oxtitle LIKE '%Search%'
+                OR
+                $articleTable.oxshortdesc LIKE '%Search%'
+                OR
+                $articleTable.oxsearchkeys LIKE '%Search%'
+                OR
+                $articleTable.oxartnum LIKE '%Search%'
+              )
+            )
 EOT;
         $actualSql = $articleList->UNITgetSearchSelect('test Search');
 
@@ -806,25 +792,25 @@ EOT;
         $articleTable = $this->_getArticleTable();
 
         $expectedSql = <<<EOT
-            AND 
-            ( 
-              ( 
-                $articleTable.oxtitle LIKE '%würfel%' 
-                OR 
-                $articleTable.oxtitle LIKE '%w&uuml;rfel%' 
-                OR 
-                $articleTable.oxshortdesc LIKE '%würfel%' 
-                OR 
-                $articleTable.oxshortdesc LIKE '%w&uuml;rfel%' 
-                OR 
-                $articleTable.oxsearchkeys LIKE '%würfel%' 
-                OR 
-                $articleTable.oxsearchkeys LIKE '%w&uuml;rfel%' 
-                OR 
-                $articleTable.oxartnum LIKE '%würfel%' 
-                OR 
-                $articleTable.oxartnum LIKE '%w&uuml;rfel%' 
-              ) 
+            AND
+            (
+              (
+                $articleTable.oxtitle LIKE '%würfel%'
+                OR
+                $articleTable.oxtitle LIKE '%w&uuml;rfel%'
+                OR
+                $articleTable.oxshortdesc LIKE '%würfel%'
+                OR
+                $articleTable.oxshortdesc LIKE '%w&uuml;rfel%'
+                OR
+                $articleTable.oxsearchkeys LIKE '%würfel%'
+                OR
+                $articleTable.oxsearchkeys LIKE '%w&uuml;rfel%'
+                OR
+                $articleTable.oxartnum LIKE '%würfel%'
+                OR
+                $articleTable.oxartnum LIKE '%w&uuml;rfel%'
+              )
             )
 EOT;
         $actualSql = $articleList->UNITgetSearchSelect('würfel');

@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxDb;
 use oxField;
@@ -29,7 +29,7 @@ use oxField;
  * Class manages news user groups rights
  *
  * @deprecated since v.5.3.0 (2016-06-17); The Admin Menu: Customer Info -> News feature will be moved to a module in v6.0.0
- *             
+ *
  */
 class NewsMainAjax extends \ajaxListComponent
 {
@@ -89,12 +89,10 @@ class NewsMainAjax extends \ajaxListComponent
     {
         $aRemoveGroups = $this->_getActionIds('oxobject2group.oxid');
         if ($this->getConfig()->getRequestParameter('all')) {
-
             $sQ = $this->_addFilter("delete oxobject2group.* " . $this->_getQuery());
             oxDb::getDb()->Execute($sQ);
-
         } elseif ($aRemoveGroups && is_array($aRemoveGroups)) {
-            $sQ = "delete from oxobject2group where oxobject2group.oxid in (" . implode(", ", oxDb::getInstance()->quoteArray($aRemoveGroups)) . ") ";
+            $sQ = "delete from oxobject2group where oxobject2group.oxid in (" . implode(", ", oxDb::getDb()->quoteArray($aRemoveGroups)) . ") ";
             oxDb::getDb()->Execute($sQ);
         }
     }

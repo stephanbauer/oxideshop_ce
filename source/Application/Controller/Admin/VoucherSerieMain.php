@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxAdminView;
@@ -165,6 +165,8 @@ class VoucherSerieMain extends \DynExportBase
 
     /**
      * Prepares Export
+     *
+     * @return null
      */
     public function start()
     {

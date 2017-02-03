@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Component\Widget;
+namespace OxidEsales\EshopCommunity\Application\Component\Widget;
 
 /**
  * Recomendation list.
@@ -57,9 +57,8 @@ class Recommendation extends \oxWidget
         $aArticleIds = $this->getViewParameter("aArticleIds");
 
         $oRecommList = oxNew('oxrecommlist');
-        $aRecommList = $oRecommList->getRecommListsByIds($aArticleIds);
 
-        return $aRecommList;
+        return $oRecommList->getRecommListsByIds($aArticleIds);
     }
 
     /**
@@ -69,8 +68,6 @@ class Recommendation extends \oxWidget
      */
     public function getRecommList()
     {
-        $oRecommList = oxNew('recommlist');
-
-        return $oRecommList;
+        return oxNew('recommlist');
     }
 }

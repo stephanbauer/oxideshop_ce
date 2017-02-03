@@ -219,8 +219,6 @@ class SeoEncoderArticleTest extends \OxidTestCase
 
     /**
      * Testing if recomm list is taken from view
-     *
-     * @return
      */
     public function testGetRecomm()
     {
@@ -787,7 +785,7 @@ class SeoEncoderArticleTest extends \OxidTestCase
             $oxtitle = 'Wall-Clock-SPIDER';
         }
 
-        $sSeoUri = 'en/By-Distributor/' . str_replace(array(' ', '.', '+'), '-', $oVendor->oxvendor__oxtitle->value) . '/' . $oxtitle . '-oxid-test-article-var-select.html';
+        $sSeoUri = 'en/By-distributor/' . str_replace(array(' ', '.', '+'), '-', $oVendor->oxvendor__oxtitle->value) . '/' . $oxtitle . '-oxid-test-article-var-select.html';
 
         $oArticle->setId($sArtId);
         $oArticle->oxarticles__oxtitle = new oxField($oxtitle);
@@ -816,7 +814,7 @@ class SeoEncoderArticleTest extends \OxidTestCase
             $oxtitle = 'Wall-Clock-SPIDER';
         }
 
-        $sSeoUri = 'en/By-Manufacturer/' . str_replace(array(' ', '.', '+'), '-', $oManufacturer->oxmanufacturers__oxtitle->value) . '/' . $oxtitle . '-oxid-test-article-var-select.html';
+        $sSeoUri = 'en/By-manufacturer/' . str_replace(array(' ', '.', '+'), '-', $oManufacturer->oxmanufacturers__oxtitle->value) . '/' . $oxtitle . '-oxid-test-article-var-select.html';
 
         $oArticle->setId($sArtId);
         $oArticle->oxarticles__oxtitle = new oxField($oxtitle);

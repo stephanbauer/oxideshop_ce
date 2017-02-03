@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @link          http://www.oxid-esales.com
+ * @link      http://www.oxid-esales.com
  * @copyright (C) OXID eSales AG 2003-2016
- * @version       OXID eShop CE
+ * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Component\Widget;
+namespace OxidEsales\EshopCommunity\Application\Component\Widget;
 
 use oxRegistry;
 use stdClass;
@@ -66,15 +66,6 @@ class ArticleDetails extends \oxWidget
      * @var bool
      */
     protected $_blCanRate = null;
-
-    /**
-     * If tags can be changed
-     *
-     * @deprecated v5.3 (2016-05-04); Tags will be moved to own module.
-     *
-     * @var bool
-     */
-    protected $_blCanEditTags = null;
 
     /**
      * Media files
@@ -300,34 +291,15 @@ class ArticleDetails extends \oxWidget
     public function canRate()
     {
         if ($this->_blCanRate === null) {
-
             $this->_blCanRate = false;
 
             if ($this->ratingIsActive() && $oUser = $this->getUser()) {
-
                 $oRating = oxNew('oxrating');
                 $this->_blCanRate = $oRating->allowRating($oUser->getId(), 'oxarticle', $this->getProduct()->getId());
             }
         }
 
         return $this->_blCanRate;
-    }
-
-    /**
-     * Checks if rating functionality is on and allowed to user
-     *
-     * @deprecated v5.3 (2016-05-04); Tags will be moved to own module.
-     *
-     * @return bool
-     */
-    public function canChangeTags()
-    {
-        if ($oUser = $this->getUser()) {
-
-            return true;
-        }
-
-        return false;
     }
 
     /**
@@ -354,26 +326,6 @@ class ArticleDetails extends \oxWidget
         }
 
         return $this->_aAttributes;
-    }
-
-    /**
-     * Returns if tags can be changed, if user is logged in and
-     * product exists.
-     *
-     * @deprecated v5.3 (2016-05-04); Tags will be moved to own module.
-     *
-     * @return bool
-     */
-    public function isEditableTags()
-    {
-        if ($this->_blCanEditTags === null) {
-            $this->_blCanEditTags = false;
-            if ($this->getProduct() && $this->getUser()) {
-                $this->_blCanEditTags = true;
-            }
-        }
-
-        return $this->_blCanEditTags;
     }
 
     /**
@@ -922,7 +874,6 @@ class ArticleDetails extends \oxWidget
         $myUtils = oxRegistry::getUtils();
 
         if ($this->_oProduct === null) {
-
             if ($this->getViewParameter('_object')) {
                 $this->_oProduct = $this->getViewParameter('_object');
             } else {
@@ -936,7 +887,7 @@ class ArticleDetails extends \oxWidget
                 $this->_oProduct = oxNew('oxArticle');
 
                 if (!$this->_oProduct->load($sOxid)) {
-                    $myUtils->redirect($myConfig->getShopHomeURL());
+                    $myUtils->redirect($myConfig->getShopHomeUrl());
                     $myUtils->showMessageAndExit('');
                 }
 
@@ -1038,7 +989,7 @@ class ArticleDetails extends \oxWidget
         }
 
         if (!$blContinue) {
-            $myUtils->redirect($myConfig->getShopHomeURL());
+            $myUtils->redirect($myConfig->getShopHomeUrl());
             $myUtils->showMessageAndExit('');
         }
 
@@ -1057,7 +1008,7 @@ class ArticleDetails extends \oxWidget
 
         $oCategory = $this->getActiveCategory();
 
-        if ($this->getListType() != 'search' && $oCategory && $oCategory instanceof oxCategory) {
+        if ($this->getListType() != 'search' && $oCategory && $oCategory instanceof \OxidEsales\EshopCommunity\Application\Model\Category) {
             if ($sSortBy = $oCategory->getDefaultSorting()) {
                 $sSortDir = ($oCategory->getDefaultSortingMode()) ? "desc" : "asc";
                 $aSorting = array('sortby' => $sSortBy, 'sortdir' => $sSortDir);

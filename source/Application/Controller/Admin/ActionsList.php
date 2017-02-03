@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 
@@ -85,7 +85,6 @@ class ActionsList extends \oxAdminList
 
         // searching for empty oxfolder fields
         if ($sDisplayType) {
-
             $sNow = date('Y-m-d H:i:s', oxRegistry::get("oxUtilsDate")->getTime());
 
             switch ($sDisplayType) {

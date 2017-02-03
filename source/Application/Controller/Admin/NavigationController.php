@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxDb;
@@ -141,12 +141,6 @@ class NavigationController extends \oxAdminView
         // kill session
         $mySession->destroy();
 
-        // delete also, this is usually not needed but for security reasons we execute still
-        if ($myConfig->getConfigParam('blAdodbSessionHandler')) {
-            $oDb = oxDb::getDb();
-            $oDb->execute("delete from oxsessions where SessionID = " . $oDb->quote($mySession->getId()));
-        }
-
         //resetting content cache if needed
         if ($myConfig->getConfigParam('blClearCacheOnLogout')) {
             $this->resetContentCache(true);
@@ -162,14 +156,11 @@ class NavigationController extends \oxAdminView
     {
         $myUtils = oxRegistry::getUtils();
         if ($sUrl = oxRegistry::getConfig()->getRequestParameter("url")) {
-
             // Limit external url's only allowed host
             $myConfig = $this->getConfig();
             if ($myConfig->getConfigParam('blLoadDynContents') && strpos($sUrl, $this->_sAllowedHost) === 0) {
-
                 $sPath = $myConfig->getConfigParam('sCompileDir') . "/" . md5($sUrl) . '.html';
                 if ($myUtils->getRemoteCachePath($sUrl, $sPath)) {
-
                     $oStr = getStr();
                     $sVersion = $myConfig->getVersion();
                     $sEdition = $myConfig->getFullEdition();

@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core;
+namespace OxidEsales\EshopCommunity\Core;
 
 use oxRegistry;
 
@@ -60,7 +60,7 @@ class WidgetControl extends \oxShopControl
      *
      * @param string $class      Class name
      * @param string $function   Function name
-     * @param array  $parameters     Parameters array
+     * @param array  $parameters Parameters array
      * @param array  $viewsChain Array of views names that should be initialized also
      */
     public function start($class = null, $function = null, $parameters = null, $viewsChain = null)

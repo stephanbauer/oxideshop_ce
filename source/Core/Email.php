@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core;
+namespace OxidEsales\EshopCommunity\Core;
 
 use oxSystemComponentException;
 use oxField;
@@ -573,9 +573,7 @@ class Email extends \PHPMailer
         $this->setRecipient($user->oxuser__oxusername->value, $fullName);
         $this->setReplyTo($shop->oxshops__oxorderemail->value, $shop->oxshops__oxname->getRawValue());
 
-        $success = $this->send();
-
-        return $success;
+        return $this->send();
     }
 
     /**
@@ -884,7 +882,7 @@ class Email extends \PHPMailer
         $myConfig = $this->getConfig();
         $actShopLang = $myConfig->getActiveShop()->getLanguage();
 
-        $url = $myConfig->getShopHomeURL() . 'cl=newsletter&amp;fnc=addme&amp;uid=' . $id;
+        $url = $myConfig->getShopHomeUrl() . 'cl=newsletter&amp;fnc=addme&amp;uid=' . $id;
         $url .= '&amp;lang=' . $actShopLang;
         $url .= ($confirmCode) ? '&amp;confirm=' . $confirmCode : "";
 
@@ -1543,7 +1541,7 @@ class Email extends \PHPMailer
      * Set mail body. If second parameter (default value is true) is set to true,
      * performs search for "sid", removes it and adds shop id to string.
      *
-     * @param string $body      mail body
+     * @param string $body     mail body
      * @param bool   $clearSid clear sid in mail body
      */
     public function setBody($body = null, $clearSid = true)
@@ -1569,7 +1567,7 @@ class Email extends \PHPMailer
      * Sets text-only body of the message. If second parameter is set to true,
      * performs search for "sid", removes it and adds shop id to string.
      *
-     * @param string $altBody   mail subject
+     * @param string $altBody  mail subject
      * @param bool   $clearSid clear sid in mail body (default value is true)
      */
     public function setAltBody($altBody = null, $clearSid = true)
@@ -1603,7 +1601,7 @@ class Email extends \PHPMailer
     public function setRecipient($address = null, $name = null)
     {
         try {
-            if ($this->getConfig()->isUtf() && function_exists('idn_to_ascii')) {
+            if (function_exists('idn_to_ascii')) {
                 $address = idn_to_ascii($address);
             }
 
@@ -1647,7 +1645,7 @@ class Email extends \PHPMailer
      */
     public function setReplyTo($email = null, $name = null)
     {
-        if (!oxRegistry::getUtils()->isValidEmail($email)) {
+        if (!oxNew('oxMailValidator')->isValidEmail($email)) {
             $email = $this->_getShop()->oxshops__oxorderemail->value;
         }
 
@@ -1909,9 +1907,7 @@ class Email extends \PHPMailer
         // shop info
         $shop = $this->_getShop();
 
-        $ret = @mail($shop->oxshops__oxorderemail->value, "eMail problem in shop!", $ownerMessage);
-
-        return $ret;
+        return @mail($shop->oxshops__oxorderemail->value, "eMail problem in shop!", $ownerMessage);
     }
 
     /**

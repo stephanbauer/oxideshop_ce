@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller;
+namespace OxidEsales\EshopCommunity\Application\Controller;
 
 use oxField;
 use oxRegistry;
@@ -29,7 +29,7 @@ use oxRegistry;
  * User registration window.
  * Collects and arranges user object data (information, like shipping address, etc.).
  */
-class RegisterController extends \User
+class RegisterController extends \OxidEsales\EshopCommunity\Application\Controller\UserController
 {
 
     /**
@@ -118,13 +118,7 @@ class RegisterController extends \User
      */
     public function isFieldRequired($sField)
     {
-        if ($aMustFillFields = $this->getMustFillFields()) {
-            if (isset($aMustFillFields[$sField])) {
-                return true;
-            }
-        }
-
-        return false;
+        return isset($this->getMustFillFields()[$sField]);
     }
 
     /**
@@ -138,7 +132,6 @@ class RegisterController extends \User
     {
         $oUser = oxNew('oxuser');
         if ($oUser->loadUserByUpdateId($this->getUpdateId())) {
-
             // resetting update key parameter
             $oUser->setUpdateKey(true);
 

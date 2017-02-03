@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxField;
@@ -246,7 +246,7 @@ class CategoryMain extends \oxAdminDetails
      *
      * @return null
      */
-    protected function _deleteCatPicture(oxCategory $item, $field)
+    protected function _deleteCatPicture($item, $field)
     {
         if ($item->isDerived()) {
             return;
@@ -368,8 +368,7 @@ class CategoryMain extends \oxAdminDetails
         $category->setLanguage($this->_iEditLang);
 
         $utilsFile = oxRegistry::get("oxUtilsFile");
-        $category = $utilsFile->processFiles($category);
 
-        return $category;
+        return $utilsFile->processFiles($category);
     }
 }

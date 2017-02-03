@@ -21,7 +21,10 @@
  */
 namespace Unit\Setup;
 
-use OxidEsales\Eshop\Setup\Utilities;
+use OxidEsales\EshopCommunity\Setup\Utilities;
+use \Exception;
+
+require_once getShopBasePath() . '/Setup/functions.php';
 
 /**
  * Utilities tests
@@ -33,6 +36,11 @@ class UtilitiesTest extends \OxidTestCase
     protected $_sHttpReferer = null;
     protected $_sHttpHost = null;
     protected $_sScriptName = null;
+
+    /**
+     * @var path to test config directory
+     */
+    protected $configTestPath = null;
 
     /**
      * Test setup
@@ -47,6 +55,9 @@ class UtilitiesTest extends \OxidTestCase
         $this->_sScriptName = isset($_SERVER['SCRIPT_NAME']) ? $_SERVER['SCRIPT_NAME'] : null;
 
         parent::setUp();
+
+        $this->configTestPath = __DIR__ .'/../testData/Setup';
+        $this->removeTestFile();
     }
 
     /**
@@ -70,6 +81,9 @@ class UtilitiesTest extends \OxidTestCase
         $_SERVER['HTTP_REFERER'] = $this->_sHttpReferer;
         $_SERVER['HTTP_HOST'] = $this->_sHttpHost;
         $_SERVER['SCRIPT_NAME'] = $this->_sScriptName;
+
+        //clean up
+        $this->removeTestFile();
 
         parent::tearDown();
     }
@@ -207,5 +221,114 @@ class UtilitiesTest extends \OxidTestCase
         $oUtils = new Utilities();
         $this->assertFalse($oUtils->isValidEmail("admin"));
         $this->assertTrue($oUtils->isValidEmail("shop@admin.com"));
+    }
+
+    /**
+     * Verify that Utilities::updateConfigFile stores the given variables correctly.
+     *
+     * @throws \Exception
+     */
+    public function testUpdateConfigFileForPassword()
+    {
+        //preparation
+        $this->assertTrue(function_exists('getDefaultFileMode'), 'missing function getDefaultFileMode');
+        $this->assertTrue(function_exists('getDefaultConfigFileMode'), 'missing function getDefaultConfigFileMode');
+
+        $utilities = new Utilities();
+        $password = 'l3$z4f#buzhdcv5745XC$lic';
+        $url = 'http://test.myoxidshop.com';
+
+        $originalFile = $this->configTestPath . '/config.inc.php.dist';
+        $destination = $this->configTestPath . '/config.inc.php';
+
+        file_put_contents($destination, file_get_contents($originalFile));
+        $this->assertNotContains($password, $destination);
+
+        $parameters = ['sShopDir' => $this->configTestPath,
+                       'testPassword' => $password,
+                       'testUrl' => $url];
+
+        //check
+        try {
+            $utilities->updateConfigFile($parameters);
+        } catch (Exception $exception) {
+            $this->fail($exception->getMessage());
+        }
+
+        $content = file_get_contents($this->configTestPath . '/config.inc.php');
+        $this->assertContains($url, $content);
+        $this->assertContains($password, $content);
+    }
+
+    /**
+     * @param string $testInput
+     * @param string $expectedValue
+     * @param string $explanationOnWhatIsChecked
+     *
+     * @dataProvider stripAnsiControlCodesDataProvider
+     */
+    public function testStripAnsiControlCodes($testInput, $expectedValue, $explanationOnWhatIsChecked)
+    {
+        $actualValue = Utilities::stripAnsiControlCodes($testInput);
+
+        $this->assertSame($expectedValue, $actualValue, "Test case which failed: $explanationOnWhatIsChecked");
+    }
+
+    public function stripAnsiControlCodesDataProvider()
+    {
+        return [
+            [
+                "Regular text with no ANSI controls",
+                "Regular text with no ANSI controls",
+                "No ANSI codes used",
+            ],
+            [
+                "Test of \e[1;31mcolored\e[0m text",
+                "Test of colored text",
+                "Red foreground color",
+            ],
+            [
+                "Test of \e[44mbackground\e[0m text",
+                "Test of background text",
+                "Blue background color",
+            ],
+            [
+                "Test of \e[1;31m\e[44mcolored background\e[0m text",
+                "Test of colored background text",
+                "Red foreground with blue background color",
+            ],
+            [
+                "\e[0m\e[0m\e[0m\e[0m",
+                "",
+                "ANSI control codes only, empty text",
+            ],
+            [
+                "\e[0ma\e[0m\n\e[0mb\e[0m",
+                "a\nb",
+                "ANSI control codes combined with new lines and simple text",
+            ],
+            [
+                "",
+                "",
+                "Empty string",
+            ],
+            [
+                null,
+                "",
+                "Null converted to empty string",
+            ]
+        ];
+    }
+
+    /**
+     * Test helper for cleaning up files.
+     */
+    private function removeTestFile()
+    {
+        $file = $this->configTestPath . '/config.inc.php';
+        if (file_exists($file)) {
+            chmod($file, 0777);
+            unlink($file);
+        }
     }
 }

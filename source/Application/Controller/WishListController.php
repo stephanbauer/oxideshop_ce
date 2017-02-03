@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller;
+namespace OxidEsales\EshopCommunity\Application\Controller;
 
 use oxRegistry;
 use oxUBase;
@@ -90,7 +90,6 @@ class WishListController extends oxUBase
             if ($sUserId) {
                 $oUser = oxNew('oxuser');
                 if ($oUser->load($sUserId)) {
-
                     // passing wishlist information
                     $this->_oWishUser = $oUser;
 
@@ -115,15 +114,12 @@ class WishListController extends oxUBase
 
             // passing wishlist information
             if ($oUser = $this->getWishUser()) {
-
                 $oWishlistBasket = $oUser->getBasket('wishlist');
                 $this->_oWishList = $oWishlistBasket->getArticles();
 
                 if (!$oWishlistBasket->isVisible()) {
                     $this->_oWishList = false;
                 }
-
-
             }
         }
 
@@ -141,7 +137,6 @@ class WishListController extends oxUBase
     public function searchForWishList()
     {
         if ($sSearch = oxRegistry::getConfig()->getRequestParameter('search')) {
-
             // search for baskets
             $oUserList = oxNew('oxuserlist');
             $oUserList->loadWishlistUsers($sSearch);
@@ -204,11 +199,9 @@ class WishListController extends oxUBase
             $sFirstnameField = 'oxuser__oxfname';
             $sLastnameField = 'oxuser__oxlname';
 
-            $sTitle = $sTranslatedString . ' ' . $oUser->$sFirstnameField->value . ' ' . $oUser->$sLastnameField->value;
-        } else {
-            $sTitle = $oLang->translateString('PUBLIC_GIFT_REGISTRIES', $oLang->getBaseLanguage(), false);
+            return $sTranslatedString . ' ' . $oUser->$sFirstnameField->value . ' ' . $oUser->$sLastnameField->value;
         }
 
-        return $sTitle;
+        return $oLang->translateString('PUBLIC_GIFT_REGISTRIES', $oLang->getBaseLanguage(), false);
     }
 }

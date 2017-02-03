@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core\GenericImport\ImportObject;
+namespace OxidEsales\EshopCommunity\Core\GenericImport\ImportObject;
 
 use oxArticle;
 use oxBase;
@@ -71,9 +71,7 @@ class Article extends ImportObject
             }
         }
 
-        $data = parent::preAssignObject($shopObject, $data, $allowCustomShopId);
-
-        return $data;
+        return parent::preAssignObject($shopObject, $data, $allowCustomShopId);
     }
 
     /**

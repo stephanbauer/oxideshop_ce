@@ -19,7 +19,7 @@
  * @copyright (C) OXID eSales AG 2003-2016
  * @version   OXID eShop CE
  */
-namespace OxidEsales\Eshop\Core;
+namespace OxidEsales\EshopCommunity\Core;
 
 /**
  * Wraps and provides getters for configuration constants stored in configuration file (usually config.inc.php).
@@ -45,11 +45,7 @@ class ConfigFile
      */
     public function getVar($varName)
     {
-        if (isset($this->$varName)) {
-            return $this->$varName;
-        }
-
-        return null;
+        return isset($this->$varName) ? $this->$varName : null;
     }
 
     /**
@@ -82,9 +78,7 @@ class ConfigFile
      */
     public function getVars()
     {
-        $allVars = get_object_vars($this);
-
-        return $allVars;
+        return get_object_vars($this);
     }
 
     /**

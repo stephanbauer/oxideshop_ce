@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 /**
  * Admin discount list manager.
@@ -57,5 +57,5 @@ class DiscountList extends \oxAdminList
      *
      * @var string
      */
-    protected $_sDefSortField = 'oxtitle';
+    protected $_sDefSortField = 'oxsort';
 }

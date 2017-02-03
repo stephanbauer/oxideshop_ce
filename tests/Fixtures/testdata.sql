@@ -1,5 +1,7 @@
-# Uncomment this line if you execute SQL manually for MySQL 5
-# SET @@session.sql_mode = '';
+SET @@session.sql_mode = '';
+
+# Activate Azure theme
+UPDATE `oxconfig` SET `OXVARVALUE` = 0x4db70f6d1a WHERE `OXVARNAME` = 'sTheme';
 
 # Activate en and de languages
 UPDATE `oxconfig` SET `OXVARVALUE` = 0x4dba832f744c5786a371d9df33778f9525f408b6efbc82de7c3c5ae3396caa6f8afb6864afa833b43597cad1fb8f9b8970c8e9098d10aae1be4637faa40a012a04e45a8a1cdd1b2ac3da558638600e58acf70fe8c192b668995bb533dac95be7af7d343b3a9c9b8daeaf4d637f065895346773476d667de331fe40d18765d4b98faf7375e1090587d8dd4bf98ad5005eb30666410920 WHERE `OXVARNAME` = 'aLanguageParams';
@@ -27,8 +29,8 @@ INSERT INTO `oxactions2article` (`OXID`, `OXSHOPID`, `OXACTIONID`, `OXARTID`, `O
 ('95842e9fdd03b5296.91384984', 1, 'oxnewest', 'd8842e3cb356356f4.93820547', 0),
 ('95842e9fdd770ecf8.14629724', 1, 'oxnewest', '2024', 1),
 ('f9c42d50260a26ab8.33082575', 1, 'oxbargain', '1771', 0),
-('4e542e4eac67e94c4.95022875', 1, 'oxcatoffer', '1126', 0),
-('f9c42d5052de14851.06748579', 1, 'oxcatoffer', 'be642cad637adf214.28850610', 0),
+('4e542e4eac67e94c4.95022875', 1, 'oxcatoffer', '1126', 10),
+('f9c42d5052de14851.06748579', 1, 'oxcatoffer', 'be642cad637adf214.28850610', 20),
 ('4e542e4e733c1e9c5.78538319', 1, 'oxtopstart', '1849', 0),
 ('d8842e3ca1c35e146.46568431', 1, 'oxtop5', '1351', 0),
 ('d8842e3ca27489886.81526507', 1, 'oxtop5', '2000', 2),
@@ -3254,10 +3256,10 @@ INSERT INTO `oxdelivery` (`OXID`, `OXSHOPID`, `OXACTIVE`, `OXACTIVEFROM`, `OXACT
 #
 # Data for table `oxdiscount`
 #
-INSERT INTO `oxdiscount` (`OXID`, `OXSHOPID`, `OXACTIVE`, `OXACTIVEFROM`, `OXACTIVETO`, `OXTITLE`, `OXTITLE_1`, `OXTITLE_2`, `OXTITLE_3`, `OXAMOUNT`, `OXAMOUNTTO`, `OXPRICETO`, `OXPRICE`, `OXADDSUMTYPE`, `OXADDSUM`, `OXITMARTID`, `OXITMAMOUNT`, `OXITMMULTIPLE`) VALUES
-('9fc3e801d40332ae4.08296552', 1, 0, '2003-03-29 00:00:00', '2003-03-30 00:00:00', '15% auf den gesamten Shop an einem Tag', '15% on everything for one day', '', '', 0, 999999, 999999, 0, '%', 15, '', 0, 0),
-('9fc3e801da9cdd0b2.74513077', 1, 0, '0000-00-00 00:00:00', '0000-00-00 00:00:00', '10% ab 200 Euro Einkaufswert', '10% on orders over $200', '', '', 0, 999999, 999999, 200, '%', 10, '', 0, 0),
-('4e542e4e8dd127836.00288451', 1, 1, '0000-00-00 00:00:00', '0000-00-00 00:00:00', 'Aktion Schnäppchen', 'Current Bargain', '', '', 1, 99999, 0, 0, '%', 10, '', 0, 0);
+INSERT INTO `oxdiscount` (`OXID`, `OXSHOPID`, `OXACTIVE`, `OXACTIVEFROM`, `OXACTIVETO`, `OXTITLE`, `OXTITLE_1`, `OXTITLE_2`, `OXTITLE_3`, `OXAMOUNT`, `OXAMOUNTTO`, `OXPRICETO`, `OXPRICE`, `OXADDSUMTYPE`, `OXADDSUM`, `OXITMARTID`, `OXITMAMOUNT`, `OXITMMULTIPLE`, `OXSORT`) VALUES
+('9fc3e801d40332ae4.08296552', 1, 0, '2003-03-29 00:00:00', '2003-03-30 00:00:00', '15% auf den gesamten Shop an einem Tag', '15% on everything for one day', '', '', 0, 999999, 999999, 0, '%', 15, '', 0, 0, 100),
+('9fc3e801da9cdd0b2.74513077', 1, 0, '0000-00-00 00:00:00', '0000-00-00 00:00:00', '10% ab 200 Euro Einkaufswert', '10% on orders over $200', '', '', 0, 999999, 999999, 200, '%', 10, '', 0, 0, 200),
+('4e542e4e8dd127836.00288451', 1, 1, '0000-00-00 00:00:00', '0000-00-00 00:00:00', 'Aktion Schnäppchen', 'Current Bargain', '', '', 1, 99999, 0, 0, '%', 10, '', 0, 0, 300);
 
 #
 # Data for table `oxobject2discount`

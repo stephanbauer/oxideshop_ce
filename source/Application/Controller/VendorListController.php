@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller;
+namespace OxidEsales\EshopCommunity\Application\Controller;
 
 use oxRegistry;
 use oxUBase;
@@ -460,7 +460,7 @@ class VendorListController extends \AList
             $oVendorTree->buildVendorTree(
                 'vendorlist',
                 $this->getActVendor()->getId(),
-                $this->getConfig()->getShopHomeURL()
+                $this->getConfig()->getShopHomeUrl()
             );
             $this->_oVendorTree = $oVendorTree;
         }

@@ -20,10 +20,10 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Tests\Acceptance\Frontend;
+namespace OxidEsales\EshopCommunity\Tests\Acceptance\Frontend;
 
 use oxDb;
-use OxidEsales\Eshop\Tests\Acceptance\FrontendTestCase;
+use OxidEsales\EshopCommunity\Tests\Acceptance\FrontendTestCase;
 
 /** Selenium tests for new layout. */
 class NavigationFrontendTest extends FrontendTestCase
@@ -339,7 +339,7 @@ class NavigationFrontendTest extends FrontendTestCase
         $oValidator = $this->getObjectValidator();
         $this->assertTrue($oValidator->validate('oxNewsSubscribed', $aSubscribedUserData), $oValidator->getErrorMessage());
     }
-    
+
     /**
      * News small box in main page and news page
      *
@@ -1207,7 +1207,7 @@ class NavigationFrontendTest extends FrontendTestCase
         $this->assertEquals("subject", $this->getValue("c_subject"));
         $this->assertEquals("message text", $this->getValue("c_message"));
         $this->clickAndWait("//button[text()='%SEND%']");
-        $this->assertTextPresent("%THANK_YOU%.");
+        $this->assertTextPresent("%THANK_YOU%");
         $this->assertEquals("%YOU_ARE_HERE%: / %PAGE_TITLE_CONTACT%", $this->getText("breadCrumb"));
     }
 

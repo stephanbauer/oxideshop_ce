@@ -20,12 +20,12 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Tests\Acceptance\International;
+namespace OxidEsales\EshopCommunity\Tests\Acceptance\International;
 
-use OxidEsales\Eshop\Core\Edition\EditionPathProvider;
-use OxidEsales\Eshop\Core\Edition\EditionRootPathProvider;
-use OxidEsales\Eshop\Core\Edition\EditionSelector;
-use OxidEsales\Eshop\Tests\Acceptance\AcceptanceTestCase;
+use OxidEsales\EshopCommunity\Core\Edition\EditionPathProvider;
+use OxidEsales\EshopCommunity\Core\Edition\EditionRootPathProvider;
+use OxidEsales\EshopCommunity\Core\Edition\EditionSelector;
+use OxidEsales\EshopCommunity\Tests\Acceptance\AcceptanceTestCase;
 
 /** Selenium tests for UTF-8 shop version. */
 class InternationalTest extends AcceptanceTestCase
@@ -370,7 +370,7 @@ class InternationalTest extends AcceptanceTestCase
         $this->clickAndWait("//form[@id='orderConfirmAgbTop']//button");
         //testing info in 5th page
         $this->assertEquals("%YOU_ARE_HERE%: / %ORDER_COMPLETED%", $this->getText("breadCrumb"));
-        $this->assertTextPresent("We registered your order under the number: 12");
+        $this->assertTextPresent("We registered your order with number 12");
         $this->assertElementPresent("backToShop");
         $this->assertEquals("%BACK_TO_START_PAGE%", $this->getText("backToShop"));
         $this->clickAndWait("orderHistory");

@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxDb;
@@ -62,7 +62,6 @@ class ToolsList extends \oxAdminList
         $oAuthUser = oxNew('oxuser');
         $oAuthUser->loadAdminUser();
         if ($oAuthUser->oxuser__oxrights->value === "malladmin") {
-
             $sUpdateSQL = oxRegistry::getConfig()->getRequestParameter("updatesql");
             $sUpdateSQLFile = $this->_processFiles();
 
@@ -108,8 +107,7 @@ class ToolsList extends \oxAdminList
                             $aQErrorNumbers [$iQueriesCounter] = null;
 
                             try {
-                                $oDB->execute($sUpdateSQL);
-                                $aQAffectedRows[$iQueriesCounter] = $oDB->affectedRows();
+                                $aQAffectedRows[$iQueriesCounter] = $oDB->execute($sUpdateSQL);
                             } catch (Exception $exception) {
                                 // Report errors
                                 $aQErrorMessages[$iQueriesCounter] = oxStr::getStr()->htmlentities($exception->getMessage());

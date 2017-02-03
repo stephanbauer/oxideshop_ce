@@ -21,7 +21,7 @@
  */
 namespace Unit\Application\Model;
 
-use OxidEsales\Eshop\Core\ShopIdCalculator;
+use OxidEsales\EshopCommunity\Core\ShopIdCalculator;
 use \oxVariantHandler;
 use \stdClass;
 use \oxField;
@@ -119,12 +119,12 @@ class VarianthandlerTest extends \OxidTestCase
 
         $oVariantHandler = oxNew("oxVariantHandler");
         $aVar = $oVariantHandler->UNITassignValues($aValues, oxNew('oxArticleList'), $oArticle, array('en', 'de'));
-        $oRez = $myDB->Execute("select oxvarselect, oxvarselect_1 from oxarticles where oxparentid = '2000'");
+        $oRez = $myDB->select("select oxvarselect, oxvarselect_1 from oxarticles where oxparentid = '2000'");
         while (!$oRez->EOF) {
             $oRez->fields = array_change_key_case($oRez->fields, CASE_LOWER);
             $this->assertEquals('red', $oRez->fields[0]);
             $this->assertEquals('rot', $oRez->fields[1]);
-            $oRez->moveNext();
+            $oRez->fetchRow();
         }
     }
 

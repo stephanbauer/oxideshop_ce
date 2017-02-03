@@ -20,11 +20,10 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core;
+namespace OxidEsales\EshopCommunity\Core;
 
 use Exception;
 use oxRegistry;
-use oxOnlineLicenseCheck;
 use oxCurl;
 use oxOnlineServerEmailBuilder;
 use oxSimpleXml;
@@ -53,7 +52,7 @@ class SystemEventHandler
     private $_oOnlineModuleVersionNotifier = null;
 
     /**
-     * @Var oxOnlineLicenseCheck
+     * @Var OnlineLicenseCheck
      */
     private $_oOnlineLicenseCheck = null;
 
@@ -62,7 +61,7 @@ class SystemEventHandler
      *
      * @param oxOnlineLicenseCheck $oOnlineLicenseCheck
      */
-    public function setOnlineLicenseCheck(oxOnlineLicenseCheck $oOnlineLicenseCheck)
+    public function setOnlineLicenseCheck(OnlineLicenseCheck $oOnlineLicenseCheck)
     {
         $this->_oOnlineLicenseCheck = $oOnlineLicenseCheck;
     }
@@ -109,7 +108,7 @@ class SystemEventHandler
      *
      * @param oxOnlineModuleVersionNotifier $oOnlineModuleVersionNotifier
      */
-    public function setOnlineModuleVersionNotifier(oxOnlineModuleVersionNotifier $oOnlineModuleVersionNotifier)
+    public function setOnlineModuleVersionNotifier(\OxidEsales\EshopCommunity\Core\OnlineModuleVersionNotifier $oOnlineModuleVersionNotifier)
     {
         $this->_oOnlineModuleVersionNotifier = $oOnlineModuleVersionNotifier;
     }
@@ -183,9 +182,7 @@ class SystemEventHandler
      */
     protected function _isSendingShopDataEnabled()
     {
-        $isSendingShopDataEnabled = (bool) $this->_getConfig()->getConfigParam('blLoadDynContents');
-
-        return $isSendingShopDataEnabled;
+        return (bool) $this->_getConfig()->getConfigParam('blLoadDynContents');
     }
 
     /**
@@ -208,13 +205,7 @@ class SystemEventHandler
      */
     private function _needToSendShopInformation()
     {
-        $blNeedToSend = false;
-
-        if ($this->_getNextCheckTime() < $this->_getCurrentTime()) {
-            $blNeedToSend = true;
-        }
-
-        return $blNeedToSend;
+        return $this->_getNextCheckTime() < $this->_getCurrentTime();
     }
 
     /**
@@ -272,9 +263,8 @@ class SystemEventHandler
     {
         /** @var oxUtilsDate $oUtilsDate */
         $oUtilsDate = oxRegistry::get('oxUtilsDate');
-        $iCurrentTime = $oUtilsDate->getTime();
 
-        return $iCurrentTime;
+        return $oUtilsDate->getTime();
     }
 
     /**

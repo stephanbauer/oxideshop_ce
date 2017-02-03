@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Model;
+namespace OxidEsales\EshopCommunity\Application\Model;
 
 use oxField;
 use oxRegistry;
@@ -120,7 +120,6 @@ class File extends \oxBase
         if (!$this->_uploadFile($aFileInfo['tmp_name'], $sUploadTo)) {
             throw new oxException('EXCEPTION_COULDNOTWRITETOFILE');
         }
-
     }
 
     /**
@@ -141,7 +140,6 @@ class File extends \oxBase
         if (isset($aFileInfo['error']) && $aFileInfo['error']) {
             throw new oxException('EXCEPTION_FILEUPLOADERROR_' . ((int) $aFileInfo['error']));
         }
-
     }
 
     /**
@@ -337,7 +335,7 @@ class File extends \oxBase
         $sHash = $this->oxfiles__oxstorehash->value;
         $oDb = oxDb::getDb();
         $iCount = $oDb->getOne(
-            'SELECT COUNT(*) FROM `oxfiles` WHERE `OXSTOREHASH` = ' . $oDb->quote($sHash), false, false
+            'SELECT COUNT(*) FROM `oxfiles` WHERE `OXSTOREHASH` = ' . $oDb->quote($sHash)
         );
         if (!$iCount) {
             $sPath = $this->getStoreLocation();

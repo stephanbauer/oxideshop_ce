@@ -22,6 +22,7 @@
 namespace Unit\Application\Model;
 
 use \oxDb;
+use OxidEsales\EshopCommunity\Core\DatabaseProvider;
 use \oxRegistry;
 use \oxTestModules;
 use \oxActionList;
@@ -237,21 +238,12 @@ class ActionListTest extends \OxidTestCase
      *
      * @dataProvider testAreAnyActivePromotionsDataProvider
      */
-    public function testAreAnyActivePromotions($response, $expected)
+    public function testAreAnyPromotionsActive($response, $expected)
     {
-        $sShopId = $this->getConfig()->getShopId();
-        $sView = getViewName('oxactions');
-        $sSql = "select 1 from $sView where oxtype=2 and oxactive=1 and oxshopid='" . $sShopId . "' limit 1";
+        $actionListMock = $this->getMock('oxActionList', array('fetchExistsActivePromotion'));
+        $actionListMock->expects($this->any())->method('fetchExistsActivePromotion')->willReturn($response);
 
-        $dbMock = $this->getDbObjectMock();
-        $dbMock->expects($this->any())
-            ->method('getOne')
-            ->with($this->equalTo($sSql))
-            ->will($this->returnValue($response));
-        oxDb::setDbObject($dbMock);
-
-        $oAL = oxNew('oxActionList');
-        $this->assertEquals($expected, $oAL->areAnyActivePromotions());
+        $this->assertEquals($expected, $actionListMock->areAnyActivePromotions());
     }
 
     /**

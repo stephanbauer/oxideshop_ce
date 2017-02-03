@@ -21,6 +21,7 @@
  */
 namespace Unit\Application\Model;
 
+use OxidEsales\EshopCommunity\Application\Model\Article;
 use \oxArticle;
 use oxArticleException;
 use \oxField;
@@ -75,12 +76,14 @@ class UserbasketitemTest extends \OxidTestCase
         $oO2Sel->init('oxobject2selectlist');
         $oO2Sel->oxobject2selectlist__oxobjectid = new oxField('xxx', oxField::T_RAW);
         $oO2Sel->oxobject2selectlist__oxselnid = new oxField('xxx', oxField::T_RAW);
+        $oO2Sel->oxobject2selectlist__oxsort = new oxField(20, oxField::T_RAW);
         $oO2Sel->save();
 
         $oO2Sel = oxNew('oxbase');
         $oO2Sel->init('oxobject2selectlist');
         $oO2Sel->oxobject2selectlist__oxobjectid = new oxField('xxx', oxField::T_RAW);
         $oO2Sel->oxobject2selectlist__oxselnid = new oxField('yyy', oxField::T_RAW);
+        $oO2Sel->oxobject2selectlist__oxsort = new oxField(10, oxField::T_RAW);
         $oO2Sel->save();
     }
 
@@ -188,7 +191,7 @@ class UserbasketitemTest extends \OxidTestCase
         $oBasketItem = oxNew('oxuserbasketitem');
         try {
             $oBasketItem->getArticle("");
-        } catch (oxArticleException $oEx) {
+        } catch (\OxidEsales\EshopCommunity\Core\Exception\ArticleException $oEx) {
             $this->assertEquals('EXCEPTION_ARTICLE_NOPRODUCTID', $oEx->getMessage());
 
             return;
@@ -216,7 +219,7 @@ class UserbasketitemTest extends \OxidTestCase
         $oBasketItem->oxuserbasketitems__oxartid = new oxField($sProductId, oxField::T_RAW);
 
         $oArticle = $oBasketItem->getArticle("123");
-        $this->assertTrue($oArticle instanceof oxarticle);
+        $this->assertTrue($oArticle instanceof article);
         $this->assertEquals($oArticle->getItemKey(), "123");
 
         // if thi line one day will faile, probebly becaus these parameters are not public any more :)
@@ -249,8 +252,6 @@ class UserbasketitemTest extends \OxidTestCase
     {
         $this->getConfig()->setConfigParam('bl_perfLoadSelectLists', true);
 
-        $aTest = array(0, 1);
-
         $oBasketItem = oxNew('oxuserbasketitem');
         $oBasketItem->oxuserbasketitems__oxartid = new oxField("xxx", oxField::T_RAW);
         $oBasketItem->oxuserbasketitems__oxsellist = new oxField(serialize(array(0, 1)), oxField::T_RAW);
@@ -259,32 +260,32 @@ class UserbasketitemTest extends \OxidTestCase
 
         $oR = new stdclass();
         $oR->name = 'R, 10';
-        $oR->value = null;
+        $oR->value = '';
         $oR->selected = 1;
 
         $oG = new stdclass();
         $oG->name = 'G, 20';
-        $oG->value = null;
+        $oG->value = '';
 
         $oB = new stdclass();
         $oB->name = 'B, 30';
-        $oB->value = null;
+        $oB->value = '';
 
         $oS = new stdclass();
         $oS->name = 'S, 10';
-        $oS->value = null;
+        $oS->value = '';
 
         $oM = new stdclass();
         $oM->name = 'M, 20';
-        $oM->value = null;
+        $oM->value = '';
         $oM->selected = 1;
 
         $oL = new stdclass();
         $oL->name = 'L, 30';
-        $oL->value = null;
+        $oL->value = '';
 
-        $aSel[] = array($oR, $oG, $oB, 'name' => null);
-        $aSel[] = array($oS, $oM, $oL, 'name' => null);
+        $aSel[] = array($oR, $oG, $oB, 'name' => '');
+        $aSel[] = array($oS, $oM, $oL, 'name' => '');
 
         // if this assertion will fail, probably due to protected variable
         $this->assertEquals($aSel, $oArticle->getDispSelList());

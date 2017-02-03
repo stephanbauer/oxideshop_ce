@@ -20,10 +20,12 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core;
+namespace OxidEsales\EshopCommunity\Core;
 
 use oxBase;
 use OxidEsales\Eshop\Core\Edition\EditionSelector;
+use OxidEsales\EshopCommunity\Core\Module\ModuleChainsGenerator;
+use OxidEsales\EshopCommunity\Core\Module\ModuleVariablesLocator;
 use oxSystemComponentException;
 use oxUtilsObject;
 use ReflectionClass;
@@ -82,9 +84,9 @@ class UtilsObject
     private $shopIdCalculator;
 
     /**
-     * @param ClassNameProvider       $classNameProvider
+     * @param ClassNameProvider     $classNameProvider
      * @param ModuleChainsGenerator $moduleChainsGenerator
-     * @param ShopIdCalculator        $shopIdCalculator
+     * @param ShopIdCalculator      $shopIdCalculator
      */
     public function __construct($classNameProvider = null, $moduleChainsGenerator = null, $shopIdCalculator = null)
     {
@@ -128,11 +130,11 @@ class UtilsObject
         }
 
         if (!self::$_instance instanceof UtilsObject) {
-            // allow modules
             $oUtilsObject = new UtilsObject();
-
-            $classMapProvider = new ClassMapProvider(new EditionSelector());
-            $classNameProvider = new ClassNameProvider($classMapProvider->getOverridableClassMap());
+            // set the not overloaded(by modules) version early so oxnew can be used internally
+            self::$_instance = $oUtilsObject;
+            // null for classNameProvider because it is generated in the constructor
+            $classNameProvider = null;
 
             $moduleVariablesCache = $oUtilsObject->oxNew('oxFileCache');
             $shopIdCalculator = $oUtilsObject->oxNew('oxShopIdCalculator', $moduleVariablesCache);
@@ -141,6 +143,7 @@ class UtilsObject
             $moduleVariablesLocator = $oUtilsObject->oxNew('oxModuleVariablesLocator', $subShopSpecific, $shopIdCalculator);
             $moduleChainsGenerator = $oUtilsObject->oxNew('oxModuleChainsGenerator', $moduleVariablesLocator);
 
+            //generate UtilsObject again by oxnew to allow overloading by modules
             self::$_instance = $oUtilsObject->oxNew('oxUtilsObject', $classNameProvider, $moduleChainsGenerator, $shopIdCalculator);
         }
 
@@ -270,7 +273,7 @@ class UtilsObject
         }
 
         $object = $this->_getObject($realClassName, $argumentsCount, $arguments);
-        if ($shouldUseCache && $object instanceof oxBase) {
+        if ($shouldUseCache && $object instanceof \OxidEsales\EshopCommunity\Core\Model\BaseModel) {
             self::$_aInstanceCache[$cacheKey] = clone $object;
         }
 
@@ -331,7 +334,7 @@ class UtilsObject
      */
     public function generateUId()
     {
-        return substr(md5(uniqid('', true) . '|' . microtime()), 0, 32);
+        return md5(uniqid('', true) . '|' . microtime());
     }
 
     /**
@@ -346,10 +349,15 @@ class UtilsObject
         $classNameProvider = $this->getClassNameProvider();
 
         $class = $classNameProvider->getClassName($classAlias);
+        /**
+         * Backwards compatibility for ox... classes,
+         * when a class is instance build upon the virtual namespace
+         */
+        if ($class == $classAlias) {
+            $classAlias = $classNameProvider->getClassAliasName($class);
+        }
 
-        $class = $this->getModuleChainsGenerator()->createClassChain($class, $classAlias);
-
-        return $class;
+        return $this->getModuleChainsGenerator()->createClassChain($class, $classAlias);
     }
 
     /**
@@ -427,7 +435,7 @@ class UtilsObject
      * Cache only when object has none or one scalar argument.
      *
      * @param string $className
-     * @param array $arguments
+     * @param array  $arguments
      *
      * @return bool
      */
@@ -437,7 +445,7 @@ class UtilsObject
     }
 
     /**
-     * @param $className
+     * @param string $className
      *
      * @return bool
      */

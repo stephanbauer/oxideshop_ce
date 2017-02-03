@@ -21,9 +21,15 @@
  */
 namespace Unit\Core\Smarty;
 
+use OxidEsales\EshopCommunity\Core\Exception\SystemComponentException;
 use \testModuleSimilarName_parent;
 use \oxRegistry;
+use \oxTestModules;
 
+/**
+ * @group module
+ * @package Unit\Core\Smarty
+ */
 class ModuleSimilarClassTest extends \OxidTestCase
 {
 
@@ -54,6 +60,8 @@ class ModuleSimilarClassTest extends \OxidTestCase
      */
     public function testModuleSimilarName_ClassNotExist()
     {
+        $this->stubExceptionToNotWriteToLog(SystemComponentException::class, SystemComponentException::class);
+
         $filePath = $this->createFile('testModuleSimilarName.php', '<?php
             class testModuleSimilarName extends testModuleSimilarName_parent {
                 public function sayHi() {

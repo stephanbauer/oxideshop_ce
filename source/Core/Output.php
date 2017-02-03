@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core;
+namespace OxidEsales\EshopCommunity\Core;
 
 use oxRegistry;
 
@@ -93,13 +93,6 @@ class Output extends \oxSuperCfg
      */
     public function process($sValue, $sClassName)
     {
-        $myConfig = $this->getConfig();
-
-        //fix for euro currency problem (it's invisible in some older browsers)
-        if (!$myConfig->getConfigParam('blSkipEuroReplace') && !$myConfig->isUtf()) {
-            $sValue = str_replace('¤', '&euro;', $sValue);
-        }
-
         return $sValue;
     }
 
@@ -153,13 +146,12 @@ class Output extends \oxSuperCfg
     /**
      * This function is called from index.php
      *
-     * @param object &$oEmail email object
+     * @param object $oEmail email object
      */
-    public function processEmail(& $oEmail)
+    public function processEmail(&$oEmail)
     {
         // #669 PHP5 claims that you cant pas full this but should instead pass reference what is anyway a much better idea
         // removed "return" as by reference you dont need any return
-
     }
 
 

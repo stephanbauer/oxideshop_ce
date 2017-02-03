@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Core\Edition;
+namespace OxidEsales\EshopCommunity\Core\Edition;
 
 /**
  * Class responsible for returning class maps.
@@ -29,15 +29,11 @@ abstract class ClassMap
 {
     /**
      * Returns leaf classes class map.
-     *
-     * @return array
      */
     abstract public function getOverridableMap();
 
     /**
      * Returns class map, of classes which can't be extended by modules.
-     *
-     * @return array
      */
     abstract public function getNotOverridableMap();
 }

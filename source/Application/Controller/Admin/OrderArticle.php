@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxDb;
@@ -147,8 +147,8 @@ class OrderArticle extends \oxAdminDetails
             $sTable = getViewName("oxarticles");
             $sQ = "select oxid, oxparentid from $sTable where oxartnum = " . $oDb->quote($sArtNum) . " limit 1";
 
-            $rs = $oDb->execute($sQ);
-            if ($rs != false && $rs->recordCount() > 0) {
+            $rs = $oDb->select($sQ);
+            if ($rs != false && $rs->count() > 0) {
                 $sArtId = $rs->fields['OXPARENTID'] ? $rs->fields['OXPARENTID'] : $rs->fields['OXID'];
 
                 $oProduct = oxNew("oxArticle");
@@ -196,7 +196,6 @@ class OrderArticle extends \oxAdminDetails
         $oProduct = oxNew("oxArticle");
 
         if ($sOxid && $dAmount && $oProduct->load($sOxid)) {
-
             $sOrderId = $this->getEditObjectId();
             $oOrder = oxNew('oxorder');
             if ($sOrderId && $oOrder->load($sOrderId)) {
@@ -264,7 +263,8 @@ class OrderArticle extends \oxAdminDetails
 
         //get article id
         $sQ = "select oxartid from oxorderarticles where oxid = " . $oDb->quote($sOrderArtId);
-        if (($sArtId = oxDb::getDb()->getOne($sQ, false, false))) {
+        // We force reading from master to prevent issues with slow replications or open transactions (see ESDEV-3804).
+        if (($sArtId = oxDb::getMaster()->getOne($sQ))) {
             $oOrder = oxNew('oxorder');
             if ($oOrder->load($this->getEditObjectId())) {
                 $oOrder->recalculateOrder();
@@ -281,7 +281,6 @@ class OrderArticle extends \oxAdminDetails
 
         $oOrder = oxNew('oxorder');
         if (is_array($aOrderArticles) && $oOrder->load($this->getEditObjectId())) {
-
             $myConfig = $this->getConfig();
             $oOrderArticles = $oOrder->getOrderArticles(true);
 
@@ -289,7 +288,6 @@ class OrderArticle extends \oxAdminDetails
             foreach ($oOrderArticles as $oOrderArticle) {
                 $sItemId = $oOrderArticle->getId();
                 if (isset($aOrderArticles[$sItemId])) {
-
                     // update stock
                     if ($blUseStock) {
                         $oOrderArticle->setNewAmount($aOrderArticles[$sItemId]['oxamount']);

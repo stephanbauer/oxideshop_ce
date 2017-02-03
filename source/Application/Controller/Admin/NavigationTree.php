@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use DOMXPath;
@@ -324,8 +324,6 @@ class NavigationTree extends \oxSuperCfg
      * Removes node from tree elements if it is marked as not visible (visible="0")
      *
      * @param DOMDocument $dom document to check group
-     *
-     * @return null
      */
     protected function removeInvisibleMenuNodes($dom)
     {
@@ -439,14 +437,11 @@ class NavigationTree extends \oxSuperCfg
      */
     public function getActiveTab($id, $act)
     {
-        $tab = null;
         $nodeList = $this->getTabs($id, $act, false);
         $act = ($act > $nodeList->length) ? ($nodeList->length - 1) : $act;
         if ($nodeList->length && ($node = $nodeList->item($act))) {
-            $tab = $node->getAttribute('cl');
+            return $node->getAttribute('cl');
         }
-
-        return $tab;
     }
 
     /**
@@ -543,7 +538,8 @@ class NavigationTree extends \oxSuperCfg
 
         // loading dynpages
         if ($dynPath) {
-            $filesToLoad[] = $dynPath;
+            // for not loading/showing the dynpages, we set don't add the dyn path to the files to load:
+            // $filesToLoad[] = $dynPath;
         }
 
         return $filesToLoad;
@@ -718,7 +714,6 @@ class NavigationTree extends \oxSuperCfg
                 $node->parentNode->setAttribute('active', 1);
             }
         }
-
     }
 
     /**
@@ -730,7 +725,6 @@ class NavigationTree extends \oxSuperCfg
      */
     public function getListUrl($id)
     {
-        $url = null;
         $xPath = new DOMXPath($this->getDomXml());
         $nodeList = $xPath->query("//SUBMENU[@cl='{$id}']");
         if ($nodeList->length && ($node = $nodeList->item(0))) {
@@ -740,10 +734,8 @@ class NavigationTree extends \oxSuperCfg
             $params = $node->getAttribute('listparam');
             $params = $params ? "&$params" : '';
 
-            $url = "{$cl}{$params}";
+            return "{$cl}{$params}";
         }
-
-        return $url;
     }
 
     /**
@@ -756,7 +748,6 @@ class NavigationTree extends \oxSuperCfg
      */
     public function getEditUrl($id, $actTab)
     {
-        $url = null;
         $xPath = new DOMXPath($this->getDomXml());
         $nodeList = $xPath->query("//SUBMENU[@cl='{$id}']/TAB");
 
@@ -764,19 +755,16 @@ class NavigationTree extends \oxSuperCfg
         if ($nodeList->length && ($actTab = $nodeList->item($actTab))) {
             // special case for external resources
             if ($actTab->getAttribute('external')) {
-                $url = $actTab->getAttribute('location');
-            } else {
-                $cl = $actTab->getAttribute('cl');
-                $cl = $cl ? "cl={$cl}" : '';
-
-                $params = $actTab->getAttribute('clparam');
-                $params = $params ? "&{$params}" : '';
-
-                $url = "{$cl}{$params}";
+                return $actTab->getAttribute('location');
             }
-        }
+            $cl = $actTab->getAttribute('cl');
+            $cl = $cl ? "cl={$cl}" : '';
 
-        return $url;
+            $params = $actTab->getAttribute('clparam');
+            $params = $params ? "&{$params}" : '';
+
+            return "{$cl}{$params}";
+        }
     }
 
     /**
@@ -830,15 +818,11 @@ class NavigationTree extends \oxSuperCfg
      */
     public function getClassId($className)
     {
-        $classId = null;
-
         $xPath = new DOMXPath($this->_getInitialDom());
         $nodeList = $xPath->query("//*[@cl='{$className}' or @list='{$className}']");
         if ($nodeList->length && ($firstItem = $nodeList->item(0))) {
-            $classId = $firstItem->getAttribute('id');
+            return $firstItem->getAttribute('id');
         }
-
-        return $classId;
     }
 
 
@@ -847,7 +831,7 @@ class NavigationTree extends \oxSuperCfg
      *
      * @deprecated since v5.3 (2016-05-20); Dynpages will be removed.
      *
-     * @param int    $lang             language id
+     * @param int    $lang            language id
      * @param string $loadDynContents get local or remote content path
      *
      * @return string
@@ -857,14 +841,13 @@ class NavigationTree extends \oxSuperCfg
         if (!$loadDynContents) {
             // getting dyn info from oxid server is off, so getting local menu path
             $fullAdminDir = getShopBasePath() . 'Application/views/admin';
-            $url = $fullAdminDir . "/dynscreen_local.xml";
-        } else {
-            $adminView = oxNew('oxadminview');
-            $this->_sDynIncludeUrl = $adminView->getServiceUrl($lang);
-            $url .= $this->_sDynIncludeUrl . "menue/dynscreen.xml";
-        }
 
-        return $url;
+            return $fullAdminDir . "/dynscreen_local.xml";
+        }
+        $adminView = oxNew('oxadminview');
+        $this->_sDynIncludeUrl = $adminView->getServiceUrl($lang);
+
+        return $this->_sDynIncludeUrl . "menue/dynscreen.xml";
     }
 
     /**
@@ -882,10 +865,7 @@ class NavigationTree extends \oxSuperCfg
         $dynLang = $myConfig->getConfigParam('iDynInterfaceLanguage');
         $dynLang = isset($dynLang) ? $dynLang : ($lang->getTplLanguage());
 
-        $languages = $lang->getLanguageArray();
-        $langAbr = $languages[$dynLang]->abbr;
-
-        return $langAbr;
+        return $lang->getLanguageArray()[$dynLang]->abbr;
     }
 
     /**

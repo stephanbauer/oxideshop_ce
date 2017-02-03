@@ -21,8 +21,8 @@
  */
 namespace Unit\Application\Controller\Admin;
 
-use \oxorder;
-use \oxuserpayment;
+use OxidEsales\EshopCommunity\Application\Model\Order;
+use OxidEsales\EshopCommunity\Application\Model\UserPayment;
 
 use \oxField;
 use \Exception;
@@ -61,7 +61,7 @@ class OrderOverviewTest extends \OxidTestCase
         $this->assertEquals('order_overview.tpl', $oView->render());
         $aViewData = $oView->getViewData();
         $this->assertTrue(isset($aViewData['edit']));
-        $this->assertTrue($aViewData['edit'] instanceof oxorder);
+        $this->assertTrue($aViewData['edit'] instanceof order);
     }
 
     /**
@@ -80,7 +80,7 @@ class OrderOverviewTest extends \OxidTestCase
         $oView = oxNew('Order_Overview');
         $oUserPayment = $oView->UNITgetPaymentType($oOrder);
 
-        $this->assertTrue($oUserPayment instanceof oxuserpayment);
+        $this->assertTrue($oUserPayment instanceof userpayment);
         $this->assertEquals("testValue", $oUserPayment->oxpayments__oxdesc->value);
     }
 
@@ -129,33 +129,6 @@ class OrderOverviewTest extends \OxidTestCase
             return;
         }
         $this->fail("Error in Order_Overview::resetorder()");
-    }
-
-    /**
-     * Order_Overview::CanExport() test case
-     *
-     * @return null
-     */
-    public function testCanExport()
-    {
-        oxTestModules::addFunction('oxModule', 'isActive', '{ return true; }');
-
-        $oBase = oxNew('oxbase');
-        $oBase->init("oxorderarticles");
-        $oBase->setId("_testOrderArticleId");
-        $oBase->oxorderarticles__oxorderid = new oxField("testOrderId");
-        $oBase->oxorderarticles__oxamount = new oxField(1);
-        $oBase->oxorderarticles__oxartid = new oxField("1126");
-        $oBase->oxorderarticles__oxordershopid = new oxField($this->getConfig()->getShopId());
-        $oBase->save();
-
-        // testing..
-        $oView = oxNew('Order_Overview');
-
-        $oView = $this->getMock("Order_Overview", array("getEditObjectId"));
-        $oView->expects($this->any())->method('getEditObjectId')->will($this->returnValue('testOrderId'));
-
-        $this->assertTrue($oView->canExport());
     }
 
     /**

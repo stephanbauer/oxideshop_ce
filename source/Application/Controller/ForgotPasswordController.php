@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller;
+namespace OxidEsales\EshopCommunity\Application\Controller;
 
 use oxRegistry;
 
@@ -115,7 +115,6 @@ class ForgotPasswordController extends \oxUBase
 
         // passwords are fine - updating and loggin user in
         if ($oUser->loadUserByUpdateId($this->getUpdateId())) {
-
             // setting new pass ..
             $oUser->setPassword($sNewPass);
 

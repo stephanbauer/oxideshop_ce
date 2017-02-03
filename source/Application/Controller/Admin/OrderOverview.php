@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxField;
@@ -121,35 +121,6 @@ class OrderOverview extends \oxAdminDetails
     }
 
     /**
-     * Performs PDF export to user (outputs file to save).
-     *
-     * @deprecated since v5.2.0 (2014-03-27); Moved to invoicepdf module's InvoicepdfOrder_Overview class
-     */
-    public function createPDF()
-    {
-        $soxId = $this->getEditObjectId();
-        if (isset($soxId) && $soxId != "-1") {
-            $oOrder = oxNew("oxorder");
-            if ($oOrder->load($soxId)) {
-                $oUtils = oxRegistry::getUtils();
-                $sTrimmedBillName = trim($oOrder->oxorder__oxbilllname->getRawValue());
-                $sFilename = $oOrder->oxorder__oxordernr->value . "_" . $sTrimmedBillName . ".pdf";
-                $sFilename = $this->makeValidFileName($sFilename);
-                ob_start();
-                $oOrder->genPDF($sFilename, oxRegistry::getConfig()->getRequestParameter("pdflanguage"));
-                $sPDF = ob_get_contents();
-                ob_end_clean();
-                $oUtils->setHeader("Pragma: public");
-                $oUtils->setHeader("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-                $oUtils->setHeader("Expires: 0");
-                $oUtils->setHeader("Content-type: application/pdf");
-                $oUtils->setHeader("Content-Disposition: attachment; filename=" . $sFilename);
-                oxRegistry::getUtils()->showMessageAndExit($sPDF);
-            }
-        }
-    }
-
-    /**
      * Sends order.
      */
     public function sendorder()
@@ -186,28 +157,6 @@ class OrderOverview extends \oxAdminDetails
             $oOrder->oxorder__oxsenddate = new oxField("0000-00-00 00:00:00");
             $oOrder->save();
         }
-    }
-
-    /**
-     * Returns pdf export state - can export or not
-     *
-     * @return bool
-     */
-    public function canExport()
-    {
-        $blCan = false;
-        //V #529: check if PDF invoice module is active
-        $oModule = oxNew('oxmodule');
-        $oModule->load('invoicepdf');
-        if ($oModule->isActive()) {
-            $oDb = oxDb::getDb();
-            $sOrderId = $this->getEditObjectId();
-            $sTable = getViewName("oxorderarticles");
-            $sQ = "select count(oxid) from {$sTable} where oxorderid = " . $oDb->quote($sOrderId) . " and oxstorno = 0";
-            $blCan = (bool) $oDb->getOne($sQ, false, false);
-        }
-
-        return $blCan;
     }
 
     /**

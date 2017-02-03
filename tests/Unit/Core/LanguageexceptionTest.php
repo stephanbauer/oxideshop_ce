@@ -30,14 +30,12 @@ class LanguageexceptionTest extends \OxidTestCase
 
     /**
      * Initialize the fixture.
-     *
-     * @return null
      */
     protected function setUp()
     {
         parent::setUp();
         $this->_oTestObject = oxNew('oxLanguageException', $this->_sMsg);
-        $this->assertEquals('OxidEsales\Eshop\Core\Exception\LanguageException', get_class($this->_oTestObject));
+        $this->assertEquals('OxidEsales\EshopCommunity\Core\Exception\LanguageException', get_class($this->_oTestObject));
         $this->_oTestObject->setLangConstant($this->_sLanguageConstant);
     }
 

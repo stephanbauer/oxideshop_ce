@@ -1,5 +1,8 @@
 SET @@session.sql_mode = '';
 
+# Activate Azure theme
+UPDATE `oxconfig` SET `OXVARVALUE` = 0x4db70f6d1a WHERE `OXVARNAME` = 'sTheme';
+
 # Activate en and de languages
 UPDATE `oxconfig` SET `OXVARVALUE` = 0x4dba832f744c5786a371d9df33778f956ef30fb1e8bb85d97b3b5de43e6bad688dfc6f63a8af34b33290cdd6fc889c8e77cfee0e8a17ade6b94130fda30d062d03e35d8d1bda1c2dc4dd5281fcb1c9538cf114050a3e7118e16151bfe94f5a0706d2eb3d9ff8b4a24f88963788f5dd1c33c573a1ebe3f5b06c072c6a373aaecb11755d907b50a79bbac613054871af686a7d3dbe0b6e1a3e292a109e2f5bc31bcd26ebbe42dac8c9cac3fa53c6fae3c8c7c3c113a4f1a8823d13c78c27dc WHERE `OXVARNAME` = 'aLanguageParams';
 
@@ -251,15 +254,15 @@ REPLACE INTO `oxpayments` (`OXID`,         `OXACTIVE`, `OXDESC`,                
                          ('testpayment10', 0,         '9 DE test payment šÄßüл',        0,         'abs',           0,            0,              0,           '',                       0,          '9 EN test payment šÄßüл',        '',                             '',                               '',                                     10);
 
 #Discount demodata
-REPLACE INTO `oxdiscount` (`OXID`,            `OXSHOPID`,  `OXACTIVE`, `OXTITLE`,                          `OXTITLE_1`,                        `OXAMOUNT`, `OXAMOUNTTO`, `OXPRICETO`, `OXPRICE`, `OXADDSUMTYPE`, `OXADDSUM`, `OXITMARTID`, `OXITMAMOUNT`, `OXITMMULTIPLE`) VALUES
-                         ('testcatdiscount', 1, 1,         'discount for category [DE] šÄßüл', 'discount for category [EN] šÄßüл',  1,          999999,       0,           0,        'abs',           5,         '',            0,             0),
-                         ('testartdiscount', 1, 1,         'discount for product [DE] šÄßüл',  'discount for product [EN] šÄßüл',   0,          0,            999999,      100,      '%',             10,        '',            0,             0),
-                         ('testitmdiscount', 1, 1,         'Itm discount [DE] šÄßüл',          'Itm discount [EN] šÄßüл',           5,          999999,       0,           0,        'itm',           0,         '1003',        1,             0),
-                         ('testdiscount4',   1, 0,         '4 DE test discount šÄßüл',         '4 EN test discount šÄßüл',          0,          0,            0,           0,        'abs',           0,         '',            0,             0),
-                         ('testdiscount3',   1, 0,         '3 DE test discount šÄßüл',         '2 EN test discount šÄßüл',          0,          0,            0,           0,        'abs',           0,         '',            0,             0),
-                         ('testdiscount1',   1, 1,         '1 DE test discount šÄßüл',         '[last] EN test discount šÄßüл',     0,          999999,       999999,      0,        'abs',           5,         '',            0,             0),
-                         ('testdiscount2',   1, 0,         '2 DE test discount šÄßüл',         '3 EN test discount šÄßüл',          0,          0,            0,           0,        'abs',           0,         '',            0,             0),
-                         ('testdiscount5',   1, 0,         '[last] DE test discount šÄßüл',    '1 EN test discount šÄßüл',          1,          999999,       0,           0,        'abs',           10,        '',            0,             0);
+REPLACE INTO `oxdiscount` (`OXID`,            `OXSHOPID`,  `OXACTIVE`, `OXTITLE`,                          `OXTITLE_1`,                        `OXAMOUNT`, `OXAMOUNTTO`, `OXPRICETO`, `OXPRICE`, `OXADDSUMTYPE`, `OXADDSUM`, `OXITMARTID`, `OXITMAMOUNT`, `OXITMMULTIPLE`, `OXSORT`) VALUES
+                         ('testcatdiscount', 1, 1,         'discount for category [DE] šÄßüл', 'discount for category [EN] šÄßüл',  1,          999999,       0,           0,        'abs',           5,         '',            0,             0, 100),
+                         ('testartdiscount', 1, 1,         'discount for product [DE] šÄßüл',  'discount for product [EN] šÄßüл',   0,          0,            999999,      100,      '%',             10,        '',            0,             0, 110),
+                         ('testdiscount4',   1, 0,         '4 DE test discount šÄßüл',         '4 EN test discount šÄßüл',          0,          0,            0,           0,        'abs',           0,         '',            0,             0, 120),
+                         ('testdiscount3',   1, 0,         '3 DE test discount šÄßüл',         '2 EN test discount šÄßüл',          0,          0,            0,           0,        'abs',           0,         '',            0,             0, 130),
+                         ('testdiscount1',   1, 1,         '1 DE test discount šÄßüл',         '[last] EN test discount šÄßüл',     0,          999999,       999999,      0,        'abs',           5,         '',            0,             0, 140),
+                         ('testdiscount2',   1, 0,         '2 DE test discount šÄßüл',         '3 EN test discount šÄßüл',          0,          0,            0,           0,        'abs',           0,         '',            0,             0, 150),
+                         ('testdiscount5',   1, 0,         '[last] DE test discount šÄßüл',    '1 EN test discount šÄßüл',          1,          999999,       0,           0,        'abs',           10,        '',            0,             0, 160),
+                         ('testitmdiscount', 1, 1,         'Itm discount [DE] šÄßüл',          'Itm discount [EN] šÄßüл',           5,          999999,       0,           0,        'itm',           0,         '1003',        1,             0, 170);
 
 #Links demodata
 REPLACE INTO `oxlinks` (`OXID`,      `OXSHOPID`,  `OXACTIVE`, `OXURL`,                    `OXURLDESC`,                          `OXURLDESC_1`,                        `OXINSERT`) VALUES

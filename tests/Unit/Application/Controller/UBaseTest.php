@@ -21,10 +21,7 @@
  */
 namespace Unit\Application\Controller;
 
-use oxActionList;
-use \oxUbase;
 use oxUBaseHelper;
-use oxUser;
 use \stdClass;
 use \oxField;
 use \exception;
@@ -384,8 +381,8 @@ class UBaseTest extends \OxidTestCase
 
         $aComponents = $oView->getComponents();
         $this->assertEquals(1, count($aComponents));
-        $this->assertEquals('oxidesales\eshop\application\component\languagecomponent', $aComponents["oxcmp_lang"]->getThisAction());
-        $this->assertEquals("oxubaseproxy", $aComponents["oxcmp_lang"]->getParent()->getThisAction());
+        $this->assertEquals('oxidesales\eshopcommunity\application\component\languagecomponent', $aComponents["oxcmp_lang"]->getThisAction());
+        $this->assertEquals(strtolower(get_class($oView)), $aComponents["oxcmp_lang"]->getParent()->getThisAction());
     }
 
     /*
@@ -399,8 +396,8 @@ class UBaseTest extends \OxidTestCase
 
         $aComponents = $oView->getComponents();
         $this->assertEquals(2, count($aComponents));
-        $this->assertEquals('oxidesales\eshop\application\component\languagecomponent', $aComponents["oxcmp_lang"]->getThisAction());
-        $this->assertEquals('oxidesales\eshop\application\component\currencycomponent', $aComponents["oxcmp_cur"]->getThisAction());
+        $this->assertEquals('oxidesales\eshopcommunity\application\component\languagecomponent', $aComponents["oxcmp_lang"]->getThisAction());
+        $this->assertEquals('oxidesales\eshopcommunity\application\component\currencycomponent', $aComponents["oxcmp_cur"]->getThisAction());
         $this->assertEquals(strtolower(get_class($oView)), $aComponents["oxcmp_lang"]->getParent()->getThisAction());
     }
 
@@ -958,10 +955,10 @@ class UBaseTest extends \OxidTestCase
      */
     public function testSetItemSortingGetSortingGetSortingSql()
     {
-        $aSorting = array('sortby' => 'oxid', 'sortdir' => 'asc');
+        $aSorting = array('sortby' => '`oxid`', 'sortdir' => 'asc');
 
         $oView = oxNew('oxubase');
-        $oView->setItemSorting('xxx', 'oxid', 'asc');
+        $oView->setItemSorting('xxx', '`oxid`', 'asc');
 
         $this->assertEquals($oView->getDefaultSorting(), $oView->getSorting('yyy'));
 
@@ -1089,11 +1086,11 @@ class UBaseTest extends \OxidTestCase
 
         $articleId = '1964';
         $sVndExp = "Nach-Hersteller/Bush/Original-BUSH-Beach-Radio.html";
-        $sVndExpEng = "en/By-Manufacturer/Bush/Original-BUSH-Beach-Radio.html";
+        $sVndExpEng = "en/By-manufacturer/Bush/Original-BUSH-Beach-Radio.html";
         if ($this->getTestConfig()->getShopEdition() == 'EE') {
             $articleId = '1889';
             $sVndExp = "Nach-Hersteller/Hersteller-2/Bierspiel-OANS-ZWOA-GSUFFA.html";
-            $sVndExpEng = "en/By-Manufacturer/Manufacturer-2/Beergame-OANS-ZWOA-GSUFFA.html";
+            $sVndExpEng = "en/By-manufacturer/Manufacturer-2/Beergame-OANS-ZWOA-GSUFFA.html";
         }
 
         $oArt = oxNew('oxArticle');
@@ -1641,7 +1638,7 @@ class UBaseTest extends \OxidTestCase
 
         $oView = oxNew('oxUBase');
 
-        $this->assertTrue($oView->getPromoFinishedList() instanceof oxActionList);
+        $this->assertTrue($oView->getPromoFinishedList() instanceof \OxidEsales\EshopCommunity\Application\Model\ActionList);
     }
 
     /**
@@ -1657,7 +1654,7 @@ class UBaseTest extends \OxidTestCase
 
         $oView = oxNew('oxUBase');
 
-        $this->assertTrue($oView->getPromoCurrentList() instanceof oxActionList);
+        $this->assertTrue($oView->getPromoCurrentList() instanceof \OxidEsales\EshopCommunity\Application\Model\ActionList);
     }
 
     /**
@@ -1673,7 +1670,7 @@ class UBaseTest extends \OxidTestCase
 
         $oView = oxNew('oxUBase');
 
-        $this->assertTrue($oView->getPromoFutureList() instanceof oxActionList);
+        $this->assertTrue($oView->getPromoFutureList() instanceof \OxidEsales\EshopCommunity\Application\Model\ActionList);
     }
 
     /**
@@ -2164,7 +2161,7 @@ class UBaseTest extends \OxidTestCase
         $oView = $this->getMock("oxubase", array("getUser"));
         $oView->expects($this->once())->method('getUser')->will($this->returnValue(true));
 
-        $this->assertTrue($oView->getWishlistName() instanceof oxUser);
+        $this->assertTrue($oView->getWishlistName() instanceof \OxidEsales\EshopCommunity\Application\Model\User);
     }
 
     public function testGetWishlistNameIfNotLoggedIn()
@@ -2482,10 +2479,6 @@ class UBaseTest extends \OxidTestCase
 
         //empty field name
         $_GET[$baseController->getSortOrderByParameterName()] = '';
-        $this->assertNull($baseController->getUserSelectedSorting());
-
-        //invalid field name
-        $_GET[$baseController->getSortOrderByParameterName()] = '42';
         $this->assertNull($baseController->getUserSelectedSorting());
 
         //not existing order direction

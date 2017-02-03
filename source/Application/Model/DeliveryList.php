@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Model;
+namespace OxidEsales\EshopCommunity\Application\Model;
 
 use oxDb;
 use oxRegistry;
@@ -137,7 +137,6 @@ class DeliveryList extends \oxList
         }
 
         if (($sUserId . $sCountryId . $sDelSet) !== $this->_sUserId) {
-
             $this->selectString($this->_getFilterSelect($oUser, $sCountryId, $sDelSet));
             $this->_sUserId = $sUserId . $sCountryId . $sDelSet;
         }
@@ -161,7 +160,7 @@ class DeliveryList extends \oxList
         $oDb = oxDb::getDb();
 
         $sTable = getViewName('oxdelivery');
-        $sQ = "select $sTable.* from ( select $sTable.* from $sTable left join oxdel2delset on oxdel2delset.oxdelid=$sTable.oxid ";
+        $sQ = "select $sTable.* from ( select distinct $sTable.* from $sTable left join oxdel2delset on oxdel2delset.oxdelid=$sTable.oxid ";
         $sQ .= "where " . $this->getBaseObject()->getSqlActiveSnippet() . " and oxdel2delset.oxdelsetid = " . $oDb->quote($sDelSet) . " ";
 
         // defining initial filter parameters
@@ -170,7 +169,6 @@ class DeliveryList extends \oxList
 
         // checking for current session user which gives additional restrictions for user itself, users group and country
         if ($oUser) {
-
             // user ID
             $sUserId = $oUser->getId();
 
@@ -191,9 +189,9 @@ class DeliveryList extends \oxList
 
         $sCountrySql = $sCountryId ? "EXISTS(select oxobject2delivery.oxid from oxobject2delivery where oxobject2delivery.oxdeliveryid=$sTable.OXID and oxobject2delivery.oxtype='oxcountry' and oxobject2delivery.OXOBJECTID=" . $oDb->quote($sCountryId) . ")" : '0';
         $sUserSql = $sUserId ? "EXISTS(select oxobject2delivery.oxid from oxobject2delivery where oxobject2delivery.oxdeliveryid=$sTable.OXID and oxobject2delivery.oxtype='oxuser' and oxobject2delivery.OXOBJECTID=" . $oDb->quote($sUserId) . ")" : '0';
-        $sGroupSql = count($aIds) ? "EXISTS(select oxobject2delivery.oxid from oxobject2delivery where oxobject2delivery.oxdeliveryid=$sTable.OXID and oxobject2delivery.oxtype='oxgroups' and oxobject2delivery.OXOBJECTID in (" . implode(', ', oxDb::getInstance()->quoteArray($aIds)) . ") )" : '0';
+        $sGroupSql = count($aIds) ? "EXISTS(select oxobject2delivery.oxid from oxobject2delivery where oxobject2delivery.oxdeliveryid=$sTable.OXID and oxobject2delivery.oxtype='oxgroups' and oxobject2delivery.OXOBJECTID in (" . implode(', ', oxDb::getDb()->quoteArray($aIds)) . ") )" : '0';
 
-        $sQ .= ") as $sTable where (
+        $sQ .= " order by $sTable.oxsort asc ) as $sTable where (
             select
                 if(EXISTS(select 1 from oxobject2delivery, $sCountryTable where $sCountryTable.oxid=oxobject2delivery.oxobjectid and oxobject2delivery.oxdeliveryid=$sTable.OXID and oxobject2delivery.oxtype='oxcountry' LIMIT 1),
                     $sCountrySql,
@@ -206,7 +204,7 @@ class DeliveryList extends \oxList
                     1)
             )";
 
-        $sQ .= " order by $sTable.oxsort ";
+        $sQ .= " order by $sTable.oxsort asc ";
 
         return $sQ;
     }
@@ -250,13 +248,11 @@ class DeliveryList extends \oxList
 
         // must choose right delivery set to use its delivery list
         foreach ($aDelSetList as $sDeliverySetId => $oDeliverySet) {
-
             // loading delivery list to check if some of them fits
             $aDeliveries = $this->_getList($oUser, $sDelCountry, $sDeliverySetId);
             $blDelFound = false;
 
             foreach ($aDeliveries as $sDeliveryId => $oDelivery) {
-
                 // skipping that was checked and didn't fit before
                 if (in_array($sDeliveryId, $aSkipDeliveries)) {
                     continue;
@@ -265,7 +261,6 @@ class DeliveryList extends \oxList
                 $aSkipDeliveries[] = $sDeliveryId;
 
                 if ($oDelivery->isForBasket($oBasket)) {
-
                     // delivery fits conditions
                     $this->_aDeliveries[$sDeliveryId] = $aDeliveries[$sDeliveryId];
                     $blDelFound = true;
@@ -296,7 +291,6 @@ class DeliveryList extends \oxList
 
         //return deliveries sets if found
         if ($this->_blCollectFittingDeliveriesSets && count($aFittingDelSets)) {
-
             //resetting getting delivery sets list instead of deliveries before return
             $this->_blCollectFittingDeliveriesSets = false;
 

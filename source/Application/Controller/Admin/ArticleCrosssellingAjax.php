@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxDb;
@@ -144,7 +144,7 @@ class ArticleCrosssellingAjax extends \ajaxListComponent
             $sQ = $this->_addFilter("delete oxobject2article.* " . $this->_getQuery());
             oxDb::getDb()->Execute($sQ);
         } elseif (is_array($aChosenArt)) {
-            $sChosenArticles = implode(", ", oxDb::getInstance()->quoteArray($aChosenArt));
+            $sChosenArticles = implode(", ", oxDb::getDb()->quoteArray($aChosenArt));
             $sQ = "delete from oxobject2article where oxobject2article.oxid in (" . $sChosenArticles . ") ";
             oxDb::getDb()->Execute($sQ);
         }
@@ -182,7 +182,7 @@ class ArticleCrosssellingAjax extends \ajaxListComponent
     /**
      * Method is used to overload and add additional actions.
      *
-     * @var oxArticle $article
+     * @param oxArticle $article
      */
     protected function onArticleAddingToCrossSelling($article)
     {

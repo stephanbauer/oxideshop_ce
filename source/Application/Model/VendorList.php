@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Model;
+namespace OxidEsales\EshopCommunity\Application\Model;
 
 use oxRegistry;
 use oxField;
@@ -36,7 +36,7 @@ class VendorList extends \oxList
     /**
      * Vendor root.
      *
-     * @var stdClass
+     * @var \stdClass
      */
     protected $_oRoot = null;
 
@@ -106,7 +106,7 @@ class VendorList extends \oxList
      *
      * @param string $sLinkTarget  Name of class, responsible for category rendering
      * @param string $sActCat      Active category
-     * @param string $sShopHomeUrl base shop url ($myConfig->getShopHomeURL())
+     * @param string $sShopHomeUrl base shop url ($myConfig->getShopHomeUrl())
      */
     public function buildVendorTree($sLinkTarget, $sActCat, $sShopHomeUrl)
     {
@@ -125,7 +125,6 @@ class VendorList extends \oxList
         $this->_aPath[] = $this->_oRoot;
 
         foreach ($this as $sVndId => $oVendor) {
-
             // storing active vendor object
             if ($sVndId == $sActCat) {
                 $this->setClickVendor($oVendor);
@@ -203,7 +202,6 @@ class VendorList extends \oxList
     {
         // only when SEO id on and in front end
         if (oxRegistry::getUtils()->seoIsActive() && !$this->isAdmin()) {
-
             $oEncoder = oxRegistry::get("oxSeoEncoderVendor");
 
             // preparing root vendor category

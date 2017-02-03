@@ -15,13 +15,75 @@
  * You should have received a copy of the GNU General Public License
  * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
  *
- * @link          http://www.oxid-esales.com
+ * @link      http://www.oxid-esales.com
  * @copyright (C) OXID eSales AG 2003-2016
- * @version       OXID eShop CE
+ * @version   OXID eShop CE
  */
 
-use OxidEsales\Eshop\Core\Registry;
-use OxidEsales\Eshop\Core\Request;
+use OxidEsales\EshopCommunity\Core\Registry;
+use OxidEsales\EshopCommunity\Core\Request;
+
+if (!defined('ESHOP_CONFIG_FILE')) {
+    define('ESHOP_CONFIG_FILE', 'config.inc.php');
+}
+
+if (!function_exists('showErrorIfConfigIsMissing')) {
+    function showErrorIfConfigIsMissing()
+    {
+        $configFileName = __DIR__ . DIRECTORY_SEPARATOR . ESHOP_CONFIG_FILE;
+
+        if (file_exists($configFileName)) {
+            return;
+        }
+
+        $message = printf(
+            "Config file '%s' could not be found! Please use '%s.dist' to make a copy.",
+            ESHOP_CONFIG_FILE,
+            ESHOP_CONFIG_FILE
+        );
+
+        die($message);
+    }
+}
+
+if (!function_exists('redirectIfShopNotConfigured')) {
+    function redirectIfShopNotConfigured()
+    {
+        $configFileName = __DIR__ . DIRECTORY_SEPARATOR . ESHOP_CONFIG_FILE;
+
+        if (file_exists($configFileName) && strpos(file_get_contents($configFileName), '<dbHost') === false) {
+            return;
+        }
+
+        $message = printf(
+            "Config file '%s' is not updated! Please navigate to '/Setup' or update '%s' manually.",
+            ESHOP_CONFIG_FILE,
+            ESHOP_CONFIG_FILE
+        );
+
+        header("HTTP/1.1 302 Found");
+        header("Location: Setup/index.php");
+        header("Connection: close");
+
+        die($message);
+    }
+}
+
+if (!function_exists('showErrorIfAutoloaderIsMissing')) {
+    function showErrorIfAutoloaderIsMissing($fileName)
+    {
+        if (file_exists($fileName)) {
+            return;
+        }
+
+        $message = printf(
+            "Autoloader file '%s' was not found! Please run 'composer install' to generate it.",
+            $fileName
+        );
+
+        die($message);
+    }
+}
 
 if (!function_exists('registerComposerAutoload')) {
     /**
@@ -29,14 +91,33 @@ if (!function_exists('registerComposerAutoload')) {
      */
     function registerComposerAutoload()
     {
-        class AutoloadConfigFile {
+        class AutoloadConfigFile
+        {
             public function __construct()
             {
-                include 'config.inc.php';
+                showErrorIfConfigIsMissing();
+                include ESHOP_CONFIG_FILE;
             }
         }
         $configFile = new AutoloadConfigFile();
-        require_once $configFile->vendorDirectory . '/autoload.php';
+        $autoloaderFileName = $configFile->vendorDirectory . '/autoload.php';
+
+        showErrorIfAutoloaderIsMissing($autoloaderFileName);
+        require_once $autoloaderFileName;
+    }
+}
+
+if (!function_exists('registerVirtualNamespaceAutoLoad')) {
+    /**
+     * Registers auto-loader for classes of the virtual namespace
+     */
+    function registerVirtualNamespaceAutoLoad()
+    {
+        $classMapProvider = new \OxidEsales\EshopCommunity\Core\ClassMapProvider(new \OxidEsales\EshopCommunity\Core\Edition\EditionSelector());
+        $classMap = $classMapProvider->getOverridableVirtualNamespaceClassMap();
+        $virtualNamespaceAutoLoader = new \OxidEsales\EshopCommunity\Core\Autoload\VirtualNamespaceClassAutoload($classMap);
+
+        spl_autoload_register(array($virtualNamespaceAutoLoader, 'autoload'));
     }
 }
 
@@ -46,25 +127,12 @@ if (!function_exists('registerShopAutoLoad')) {
      */
     function registerShopAutoLoad()
     {
-        $classMapProvider = new \OxidEsales\Eshop\Core\ClassMapProvider(new \OxidEsales\Eshop\Core\Edition\EditionSelector());
-        $notOverridableClassAutoloader = new \OxidEsales\Eshop\Core\Autoload\NotOverridableClassAutoload($classMapProvider->getNotOverridableClassMap());
+        $classMapProvider = new \OxidEsales\EshopCommunity\Core\ClassMapProvider(new \OxidEsales\EshopCommunity\Core\Edition\EditionSelector());
+        $notOverridableClassAutoloader = new \OxidEsales\EshopCommunity\Core\Autoload\NotOverridableClassAutoload($classMapProvider->getNotOverridableClassMap());
         spl_autoload_register(array($notOverridableClassAutoloader, 'autoload'));
 
-        $shopAutoloader = new \OxidEsales\Eshop\Core\Autoload\ShopAutoload();
+        $shopAutoloader = new \OxidEsales\EshopCommunity\Core\Autoload\ShopAutoload();
         spl_autoload_register(array($shopAutoloader, 'autoload'));
-    }
-}
-
-if (!function_exists('registerModuleDependenciesAutoload')) {
-    /**
-     * Registers auto-loader for module dependencies.
-     */
-    function registerModuleDependenciesAutoload()
-    {
-        $autoloaderPath = __DIR__ . '/../modules/vendor/autoload.php';
-        if (file_exists($autoloaderPath)) {
-            include_once $autoloaderPath;
-        }
     }
 }
 
@@ -74,7 +142,7 @@ if (!function_exists('registerModuleAutoload')) {
      */
     function registerModuleAutoload()
     {
-        $moduleAutoloader = new \OxidEsales\Eshop\Core\Autoload\ModuleAutoload();
+        $moduleAutoloader = new \OxidEsales\EshopCommunity\Core\Autoload\ModuleAutoload();
         spl_autoload_register(array($moduleAutoloader, 'autoload'));
     }
 }
@@ -406,6 +474,7 @@ if (!function_exists('getViewName')) {
     function getViewName($table, $languageId = null, $shopId = null)
     {
         $viewNameGenerator = Registry::get('oxTableViewNameGenerator');
+
         return $viewNameGenerator->getViewName($table, $languageId, $shopId);
     }
 }
@@ -417,7 +486,7 @@ if (!function_exists('getRequestUrl')) {
      * @param string $sParams     Parameters to object
      * @param bool   $blReturnUrl If return url
      *
-     * @deprecated since v6.0.0 (2016-05-16); Use OxidEsales\Eshop\Core\Request::getRequestUrl().
+     * @deprecated since v6.0.0 (2016-05-16); Use OxidEsales\EshopCommunity\Core\Request::getRequestUrl().
      *
      * @return string
      */

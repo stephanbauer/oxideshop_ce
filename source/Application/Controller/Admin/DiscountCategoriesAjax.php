@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxDb;
 use oxField;
@@ -107,9 +107,8 @@ class DiscountCategoriesAjax extends \ajaxListComponent
         if ($config->getRequestParameter('all')) {
             $query = $this->_addFilter("delete oxobject2discount.* " . $this->_getQuery());
             oxDb::getDb()->Execute($query);
-
         } elseif (is_array($categoryIds)) {
-            $chosenCategories = implode(", ", oxDb::getInstance()->quoteArray($categoryIds));
+            $chosenCategories = implode(", ", oxDb::getDb()->quoteArray($categoryIds));
             $query = "delete from oxobject2discount where oxobject2discount.oxid in (" . $chosenCategories . ") ";
             oxDb::getDb()->Execute($query);
         }

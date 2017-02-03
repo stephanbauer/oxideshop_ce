@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxDb;
@@ -147,7 +147,7 @@ class ShopMain extends \oxAdminDetails
 
         try {
             $shop->save();
-        } catch (oxException $e) {
+        } catch (\OxidEsales\EshopCommunity\Core\Exception\StandardException $e) {
             $this->checkExceptionType($e);
             return;
         }
@@ -193,8 +193,8 @@ class ShopMain extends \oxAdminDetails
             "select oxvarname, oxvartype,
             DECODE( oxvarvalue, " . $db->quote($config->getConfigParam('sConfigKey')) . ") as oxvarvalue, oxmodule
             from oxconfig where oxshopid = '1'";
-        $shopConfiguration = $db->execute($selectShopConfigurationQuery);
-        if ($shopConfiguration != false && $shopConfiguration->recordCount() > 0) {
+        $shopConfiguration = $db->select($selectShopConfigurationQuery);
+        if ($shopConfiguration != false && $shopConfiguration->count() > 0) {
             while (!$shopConfiguration->EOF) {
                 $configName = $shopConfiguration->fields[0];
                 if (!in_array($configName, $nonCopyVars)) {
@@ -210,7 +210,7 @@ class ShopMain extends \oxAdminDetails
                         . ", " . $db->quote($shopConfiguration->fields[3]) . " )";
                     $db->execute($insertNewConfigQuery);
                 }
-                $shopConfiguration->moveNext();
+                $shopConfiguration->fetchRow();
             }
         }
 
@@ -228,7 +228,6 @@ class ShopMain extends \oxAdminDetails
      */
     protected function renderNewShop()
     {
-
         return '';
     }
 
@@ -265,6 +264,7 @@ class ShopMain extends \oxAdminDetails
     protected function updateParameters($parameters)
     {
         $parameters['oxshops__oxid'] = null;
+
         return $parameters;
     }
 

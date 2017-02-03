@@ -20,9 +20,9 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Model;
+namespace OxidEsales\EshopCommunity\Application\Model;
 
-use OxidEsales\Eshop\Application\Model\Contract\ArticleInterface;
+use OxidEsales\EshopCommunity\Application\Model\Contract\ArticleInterface;
 use oxRegistry;
 use oxField;
 use oxDb;
@@ -129,7 +129,6 @@ class OrderArticle extends \oxBase implements ArticleInterface
                 }
             }
         }
-
     }
 
     /**
@@ -183,11 +182,12 @@ class OrderArticle extends \oxBase implements ArticleInterface
      */
     protected function _getArtStock($dAddAmount = 0, $blAllowNegativeStock = false)
     {
-        $oDb = oxDb::getDb();
+        // We force reading from master to prevent issues with slow replications or open transactions (see ESDEV-3804).
+        $masterDb = oxDb::getMaster();
 
         // #1592A. must take real value
-        $sQ = 'select oxstock from oxarticles where oxid = ' . $oDb->quote($this->oxorderarticles__oxartid->value);
-        $iStockCount = ( float ) $oDb->getOne($sQ, false, false);
+        $sQ = 'select oxstock from oxarticles where oxid = ' . $masterDb->quote($this->oxorderarticles__oxartid->value);
+        $iStockCount = ( float ) $masterDb->getOne($sQ);
 
         $iStockCount += $dAddAmount;
 
@@ -277,18 +277,6 @@ class OrderArticle extends \oxBase implements ArticleInterface
     public function getProductId()
     {
         return $this->oxorderarticles__oxartid->value;
-    }
-
-    /**
-     * Returns product parent id
-     *
-     * @deprecated since v5.2.0/4.9.0 (2014-06-30); use getParentId
-     *
-     * @return string
-     */
-    public function getProductParentId()
-    {
-        return $this->getParentId();
     }
 
     /**
@@ -416,7 +404,6 @@ class OrderArticle extends \oxBase implements ArticleInterface
     public function getOrderArticleSelectList($sArtId = null, $sOrderArtSelList = null)
     {
         if ($this->_aOrderArticleSelList === null) {
-
             $sOrderArtSelList = $sOrderArtSelList ? $sOrderArtSelList : $this->oxorderarticles__oxselvariant->value;
 
             $aRet = array();
@@ -588,7 +575,6 @@ class OrderArticle extends \oxBase implements ArticleInterface
             // to update stock we must first check if it is possible - article exists?
             $oArticle = oxNew("oxArticle");
             if ($oArticle->load($this->oxorderarticles__oxartid->value)) {
-
                 // updating stock info
                 $iStockChange = $iNewAmount - $this->oxorderarticles__oxamount->value;
                 if ($iStockChange > 0 && ($iOnStock = $oArticle->checkForStock($iStockChange)) !== false) {
@@ -831,7 +817,6 @@ class OrderArticle extends \oxBase implements ArticleInterface
         $oArticle = $this->getArticle();
 
         if ($oArticle->oxarticles__oxisdownloadable->value) {
-
             $oConfig = $this->getConfig();
             $sOrderId = $this->oxorderarticles__oxorderid->value;
             $sOrderArticleId = $this->getId();

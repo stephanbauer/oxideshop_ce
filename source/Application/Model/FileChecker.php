@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Model;
+namespace OxidEsales\EshopCommunity\Application\Model;
 
 use oxRegistry;
 
@@ -56,7 +56,7 @@ class FileChecker
     /**
      * CURL handler
      *
-     * @var oxCurl
+     * @var \oxCurl
      */
     protected $_oCurlHandler = null;
 
@@ -280,8 +280,8 @@ class FileChecker
         }
 
         try {
-            $oXML = new SimpleXMLElement($sXML);
-        } catch (Exception $ex) {
+            $oXML = new \SimpleXMLElement($sXML);
+        } catch (\Exception $ex) {
             $this->_blError = true;
             $this->_sErrorMessage .= oxRegistry::getLang()->translateString('OXDIAG_ERRORMESSAGEWEBSERVICERETURNEDNOXML');
         }
@@ -312,7 +312,7 @@ class FileChecker
         $sURL = $this->_sWebServiceUrl . "?" . http_build_query($aParams);
 
         if ($sXML = @file_get_contents($sURL)) {
-            $oXML = new SimpleXMLElement($sXML);
+            $oXML = new \SimpleXMLElement($sXML);
             if (is_object($oXML)) {
                 if ($oXML->exists == 1) {
                     return true;
@@ -323,7 +323,9 @@ class FileChecker
         $this->_blError = true;
         $sError = sprintf(
             oxRegistry::getLang()->translateString('OXDIAG_ERRORMESSAGEVERSIONDOESNOTEXIST'),
-            $this->getEdition(), $this->getVersion(), $this->getRevision()
+            $this->getEdition(),
+            $this->getVersion(),
+            $this->getRevision()
         );
 
         $this->_sErrorMessage .= $sError;
@@ -360,7 +362,6 @@ class FileChecker
         $sMessage = oxRegistry::getLang()->translateString('OXDIAG_ERRORVERSIONCOMPARE');
 
         if (is_object($oXML)) {
-
             if ($oXML->res == 'OK') {
                 // If recognized, still can be source or snapshot
                 $aMatch = array();
@@ -410,7 +411,7 @@ class FileChecker
      * @param string $sMD5  MD5 to check
      * @param string $sFile File to check
      *
-     * @return SimpleXMLElement
+     * @return \SimpleXMLElement
      */
     protected function _getFileVersion($sMD5, $sFile)
     {
@@ -430,8 +431,8 @@ class FileChecker
         $sXML = $this->_oCurlHandler->execute();
         $oXML = null;
         try {
-            $oXML = new SimpleXMLElement($sXML);
-        } catch (Exception $ex) {
+            $oXML = new \SimpleXMLElement($sXML);
+        } catch (\Exception $ex) {
             $oXML = null;
         }
 

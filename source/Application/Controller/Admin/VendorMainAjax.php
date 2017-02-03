@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxDb;
@@ -170,18 +170,19 @@ class VendorMainAjax extends \ajaxListComponent
     /**
      * Condition for updating oxarticles on add / remove vendor actions.
      *
-     * @param $vendorOxid
+     * @param array $articleIds
+     *
+     * @return string
      */
     protected function onVendorActionArticleUpdateConditions($articleIds)
     {
-        $database = oxDb::getDb();;
-        return 'oxid in (' . implode(", ", $database->quoteArray($articleIds)) . ')';
+        return 'oxid in (' . implode(", ", oxDb::getDb()->quoteArray($articleIds)) . ')';
     }
 
     /**
      * Additional actions on vendor add/remove.
      *
-     * @param $vendorOxid
+     * @param string $vendorOxid
      */
     protected function onVendorAction($vendorOxid)
     {

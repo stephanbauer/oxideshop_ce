@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller;
+namespace OxidEsales\EshopCommunity\Application\Controller;
 
 use oxRegistry;
 
@@ -139,7 +139,6 @@ class CompareController extends \oxUBase
             }
 
             if ($sPrevArticleId) {
-
                 $aNewItems = array();
                 foreach ($aItems as $sOxid => $sVal) {
                     if ($sOxid == $sPrevArticleId) {
@@ -177,7 +176,6 @@ class CompareController extends \oxUBase
             }
 
             if ($sNextArticleId) {
-
                 $aNewItems = array();
                 foreach ($aItems as $sOxid => $sVal) {
                     if ($sOxid == $sArticleId) {
@@ -313,7 +311,6 @@ class CompareController extends \oxUBase
         if ($this->_oAttributeList === null) {
             $this->_oAttributeList = false;
             if ($oArtList = $this->getCompArtList()) {
-
                 $aProductIds = array_keys($oArtList);
                 foreach ($oArtList as $oArticle) {
                     if ($oArticle->getParentId()) {
@@ -330,7 +327,7 @@ class CompareController extends \oxUBase
 
     /**
      * Return array of id to form recommend list.
-     * 
+     *
      * @deprecated since v5.3 (2016-06-17); Listmania will be moved to an own module.
      *
      * @return array
@@ -405,9 +402,8 @@ class CompareController extends \oxUBase
         $iCnt = 0;
         $iActPage = $this->getActPage();
         foreach ($aItems as $sOxid => $sVal) {
-
             //#4391T, skipping non loaded products
-            if (!isset ($oList[$sOxid])) {
+            if (!isset($oList[$sOxid])) {
                 continue;
             }
 

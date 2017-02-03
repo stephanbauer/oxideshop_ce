@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxRegistry;
 use oxDb;
@@ -257,9 +257,7 @@ class LanguageMain extends \oxAdminDetails
     protected function _updateAbbervation($sOldId, $sNewId)
     {
         foreach (array_keys($this->_aLangData) as $sTypeKey) {
-
             if (is_array($this->_aLangData[$sTypeKey]) && count($this->_aLangData[$sTypeKey]) > 0) {
-
                 if ($sTypeKey == 'urls' || $sTypeKey == 'sslUrls') {
                     continue;
                 }
@@ -405,15 +403,14 @@ class LanguageMain extends \oxAdminDetails
      */
     protected function _addNewMultilangFieldsToDb()
     {
-        //creating new multilanguage fields with new id over whole DB
-        oxDb::getDb()->startTransaction();
-
+        //creating new multilingual fields with new id over whole DB
         $oDbMeta = oxNew("oxDbMetaDataHandler");
 
+        oxDb::getDb()->startTransaction();
         try {
             $oDbMeta->addNewLangToDb();
+            oxDb::getDb()->commitTransaction();
         } catch (Exception $oEx) {
-            // if exception, rollBack everything
             oxDb::getDb()->rollbackTransaction();
 
             //show warning
@@ -424,8 +421,6 @@ class LanguageMain extends \oxAdminDetails
 
             return;
         }
-
-        oxDb::getDb()->commitTransaction();
     }
 
     /**
@@ -440,11 +435,7 @@ class LanguageMain extends \oxAdminDetails
         $myConfig = $this->getConfig();
         $aAbbrs = array_keys($this->_aLangData['lang']);
 
-        if (in_array($sAbbr, $aAbbrs)) {
-            return true;
-        }
-
-        return false;
+        return in_array($sAbbr, $aAbbrs);
     }
 
     /**
@@ -475,7 +466,7 @@ class LanguageMain extends \oxAdminDetails
 
         // if creating new language, checking if language already exists with
         // entered language abbreviation
-        if ( ($oxid == -1) && $this->_checkLangExists($parameters['abbr']) ) {
+        if (($oxid == -1) && $this->_checkLangExists($parameters['abbr'])) {
             $this->addDisplayException('LANGUAGE_ALREADYEXISTS_ERROR');
             $result = false;
         }
@@ -503,21 +494,25 @@ class LanguageMain extends \oxAdminDetails
      *
      * @param string $abbreviation language abbreviation
      *
+     * @throws RegExException if pattern does not match
+     *
      * @return bool
      */
     protected function checkAbbreviationAllowedCharacters($abbreviation)
     {
-        $return = false;
-        if (preg_match('/^[a-zA-Z0-9_]*$/', $abbreviation)) {
-            $return = true;
+        $pattern = '/^[a-zA-Z0-9_]*$/';
+        $result = preg_match($pattern, $abbreviation);
+        if ($result === false) {
+            throw new \Exception(preg_last_error(), $pattern, $abbreviation);
         }
-        return $return;
+
+        return (bool) $result;
     }
 
     /**
      * Add exception to be displayed in frontend.
      *
-     * @param $message Language constant
+     * @param string $message Language constant
      */
     protected function addDisplayException($message)
     {

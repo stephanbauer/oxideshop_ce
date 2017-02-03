@@ -20,7 +20,7 @@
  * @version   OXID eShop CE
  */
 
-namespace OxidEsales\Eshop\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 
 use oxDb;
 use oxField;
@@ -87,19 +87,12 @@ class DiscountArticlesAjax extends \ajaxListComponent
         if (!$sOxid && $sSynchOxid) {
             $sQAdd = " from $sArticleTable where 1 ";
             $sQAdd .= $oConfig->getConfigParam('blVariantsSelection') ? '' : "and $sArticleTable.oxparentid = '' ";
-
-            //#6027
-            //if we have variants then depending on config option the parent may be non buyable
-            //when the checkbox is checked, blVariantParentBuyable is true.
-            $sQAdd .= $oConfig->getConfigParam('blVariantParentBuyable') ?  '' : "and $sArticleTable.oxvarcount = 0";
         } else {
             // selected category ?
             if ($sSynchOxid && $sOxid != $sSynchOxid) {
                 $sQAdd = " from $sO2CView left join $sArticleTable on ";
                 $sQAdd .= $oConfig->getConfigParam('blVariantsSelection') ? "($sArticleTable.oxid=$sO2CView.oxobjectid or $sArticleTable.oxparentid=$sO2CView.oxobjectid)" : " $sArticleTable.oxid=$sO2CView.oxobjectid ";
                 $sQAdd .= " where $sO2CView.oxcatnid = " . $oDb->quote($sOxid) . " and $sArticleTable.oxid is not null ";
-                //#6027
-                $sQAdd .= $oConfig->getConfigParam('blVariantParentBuyable') ?  '' : " and $sArticleTable.oxvarcount = 0";
 
                 // resetting
                 $sId = null;
@@ -133,12 +126,10 @@ class DiscountArticlesAjax extends \ajaxListComponent
         $aChosenArt = $this->_getActionIds('oxobject2discount.oxid');
 
         if ($this->getConfig()->getRequestParameter('all')) {
-
             $sQ = parent::_addFilter("delete oxobject2discount.* " . $this->_getQuery());
             oxDb::getDb()->execute($sQ);
-
         } elseif (is_array($aChosenArt)) {
-            $sQ = "delete from oxobject2discount where oxobject2discount.oxid in (" . implode(", ", oxDb::getInstance()->quoteArray($aChosenArt)) . ") ";
+            $sQ = "delete from oxobject2discount where oxobject2discount.oxid in (" . implode(", ", oxDb::getDb()->quoteArray($aChosenArt)) . ") ";
             oxDb::getDb()->execute($sQ);
         }
     }
