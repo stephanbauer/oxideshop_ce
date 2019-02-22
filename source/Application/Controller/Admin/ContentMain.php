@@ -1,23 +1,7 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 
 namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
@@ -25,7 +9,6 @@ namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
 use oxRegistry;
 use oxDb;
 use oxField;
-use oxUtilsObject;
 use stdClass;
 
 /**
@@ -33,9 +16,8 @@ use stdClass;
  * There is possibility to change content description, enter page text etc.
  * Admin Menu: Customerinformations -> Content.
  */
-class ContentMain extends \oxAdminDetails
+class ContentMain extends \OxidEsales\Eshop\Application\Controller\Admin\AdminDetailsController
 {
-
     /**
      * Loads contents info, passes it to Smarty engine and
      * returns name of template file "content_main.tpl".
@@ -44,17 +26,17 @@ class ContentMain extends \oxAdminDetails
      */
     public function render()
     {
-        $myConfig = $this->getConfig();
+        $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
 
         parent::render();
 
         $soxId = $this->_aViewData["oxid"] = $this->getEditObjectId();
 
         // categorie tree
-        $oCatTree = oxNew("oxCategoryList");
+        $oCatTree = oxNew(\OxidEsales\Eshop\Application\Model\CategoryList::class);
         $oCatTree->loadList();
 
-        $oContent = oxNew("oxcontent");
+        $oContent = oxNew(\OxidEsales\Eshop\Application\Model\Content::class);
         if (isset($soxId) && $soxId != "-1") {
             // load object
             $oContent->loadInLang($this->_iEditLang, $soxId);
@@ -66,7 +48,7 @@ class ContentMain extends \oxAdminDetails
             }
 
             // remove already created languages
-            $aLang = array_diff(oxRegistry::getLang()->getLanguageNames(), $oOtherLang);
+            $aLang = array_diff(\OxidEsales\Eshop\Core\Registry::getLang()->getLanguageNames(), $oOtherLang);
             if (count($aLang)) {
                 $this->_aViewData["posslang"] = $aLang;
             }
@@ -82,8 +64,8 @@ class ContentMain extends \oxAdminDetails
             }
         } else {
             // create ident to make life easier
-            $sUId = oxUtilsObject::getInstance()->generateUId();
-            $oContent->oxcontents__oxloadid = new oxField($sUId);
+            $sUId = \OxidEsales\Eshop\Core\Registry::getUtilsObject()->generateUId();
+            $oContent->oxcontents__oxloadid = new \OxidEsales\Eshop\Core\Field($sUId);
         }
 
         $this->_aViewData["edit"] = $oContent;
@@ -111,10 +93,8 @@ class ContentMain extends \oxAdminDetails
     {
         parent::save();
 
-        $myConfig = $this->getConfig();
-
         $soxId = $this->getEditObjectId();
-        $aParams = oxRegistry::getConfig()->getRequestParameter("editval");
+        $aParams = \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter("editval");
 
         if (isset($aParams['oxcontents__oxloadid'])) {
             $aParams['oxcontents__oxloadid'] = $this->_prepareIdent($aParams['oxcontents__oxloadid']);
@@ -125,7 +105,7 @@ class ContentMain extends \oxAdminDetails
             // loadid already used, display error message
             $this->_aViewData["blLoadError"] = true;
 
-            $oContent = oxNew("oxcontent");
+            $oContent = oxNew(\OxidEsales\Eshop\Application\Model\Content::class);
             if ($soxId != '-1') {
                 $oContent->load($soxId);
             }
@@ -152,7 +132,7 @@ class ContentMain extends \oxAdminDetails
             $aParams['oxcontents__oxfolder'] = '';
         }
 
-        $oContent = oxNew("oxcontent");
+        $oContent = oxNew(\OxidEsales\Eshop\Application\Model\Content::class);
 
         if ($soxId != "-1") {
             $oContent->loadInLang($this->_iEditLang, $soxId);
@@ -178,10 +158,8 @@ class ContentMain extends \oxAdminDetails
     {
         parent::save();
 
-        $myConfig = $this->getConfig();
-
         $soxId = $this->getEditObjectId();
-        $aParams = oxRegistry::getConfig()->getRequestParameter("editval");
+        $aParams = \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter("editval");
 
         if (isset($aParams['oxcontents__oxloadid'])) {
             $aParams['oxcontents__oxloadid'] = $this->_prepareIdent($aParams['oxcontents__oxloadid']);
@@ -192,7 +170,7 @@ class ContentMain extends \oxAdminDetails
             $aParams['oxcontents__oxactive'] = 0;
         }
 
-        $oContent = oxNew("oxcontent");
+        $oContent = oxNew(\OxidEsales\Eshop\Application\Model\Content::class);
 
         if ($soxId != "-1") {
             $oContent->loadInLang($this->_iEditLang, $soxId);
@@ -204,7 +182,7 @@ class ContentMain extends \oxAdminDetails
         $oContent->assign($aParams);
 
         // apply new language
-        $oContent->setLanguage(oxRegistry::getConfig()->getRequestParameter("new_lang"));
+        $oContent->setLanguage(\OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter("new_lang"));
         $oContent->save();
 
         // set oxid if inserted
@@ -236,7 +214,7 @@ class ContentMain extends \oxAdminDetails
     protected function _checkIdent($sIdent, $sOxId)
     {
         // We force reading from master to prevent issues with slow replications or open transactions (see ESDEV-3804).
-        $masterDb = oxDb::getMaster();
+        $masterDb = \OxidEsales\Eshop\Core\DatabaseProvider::getMaster();
 
         $blAllow = false;
 
@@ -244,7 +222,7 @@ class ContentMain extends \oxAdminDetails
         if (!strlen($sIdent)) {
             $blAllow = true;
         // We force reading from master to prevent issues with slow replications or open transactions (see ESDEV-3804).
-        } elseif ($masterDb->getOne("select oxid from oxcontents where oxloadid = " . $masterDb->quote($sIdent) . " and oxid != " . $masterDb->quote($sOxId) . " and oxshopid = '" . $this->getConfig()->getShopId() . "'")) {
+        } elseif ($masterDb->getOne("select oxid from oxcontents where oxloadid = " . $masterDb->quote($sIdent) . " and oxid != " . $masterDb->quote($sOxId) . " and oxshopid = '" . \OxidEsales\Eshop\Core\Registry::getConfig()->getShopId() . "'")) {
             $blAllow = true;
         }
 

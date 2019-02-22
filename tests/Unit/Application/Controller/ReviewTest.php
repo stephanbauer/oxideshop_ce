@@ -1,26 +1,11 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
-namespace Unit\Application\Controller;
+namespace OxidEsales\EshopCommunity\Tests\Unit\Application\Controller;
 
+use OxidEsales\Eshop\Core\Config;
 use OxidEsales\EshopCommunity\Application\Model\User;
 use OxidEsales\EshopCommunity\Core\Model\ListModel;
 use \Exception;
@@ -97,7 +82,7 @@ class ReviewTest extends \OxidTestCase
         $oUser = oxNew("oxuser");
         $sHash = $oUser->getReviewUserHash("oxdefaultadmin");
 
-        $oReview = $this->getMock("review", array("getReviewUserHash"));
+        $oReview = $this->getMock(\OxidEsales\Eshop\Application\Controller\ReviewController::class, array("getReviewUserHash"));
         $oReview->expects($this->once())->method('getReviewUserHash')->will($this->returnValue($sHash));
         $oUser = $oReview->getReviewUser();
 
@@ -120,10 +105,10 @@ class ReviewTest extends \OxidTestCase
         $oProducts->offsetSet(0, $oProd1);
         $oProducts->offsetSet(1, $oProd2);
 
-        $oRecommList = $this->getMock("oxRecommList", array("getArtCount"));
+        $oRecommList = $this->getMock(\OxidEsales\Eshop\Application\Model\RecommendationList::class, array("getArtCount"));
         $oRecommList->expects($this->atLeastOnce())->method('getArtCount')->will($this->returnValue(10));
 
-        $oReview = $this->getMock("review", array("getActiveRecommList", "getActiveRecommItems", "getReviewUser"));
+        $oReview = $this->getMock(\OxidEsales\Eshop\Application\Controller\ReviewController::class, array("getActiveRecommList", "getActiveRecommItems", "getReviewUser"));
         $oReview->expects($this->once())->method('getActiveRecommList')->will($this->returnValue($oRecommList));
         $oReview->expects($this->once())->method('getActiveRecommItems')->will($this->returnValue($oProducts));
         $oReview->expects($this->once())->method('getReviewUser')->will($this->returnValue(true));
@@ -141,7 +126,7 @@ class ReviewTest extends \OxidTestCase
         $oProd1 = oxNew('oxArticle');
         $oProd2 = oxNew('oxArticle');
 
-        $oReview = $this->getMock("review", array("getActiveRecommList", "getActiveRecommItems", "getReviewUser"));
+        $oReview = $this->getMock(\OxidEsales\Eshop\Application\Controller\ReviewController::class, array("getActiveRecommList", "getActiveRecommItems", "getReviewUser"));
         $oReview->expects($this->once())->method('getReviewUser');
         $oReview->expects($this->never())->method('getActiveRecommList');
         $oReview->expects($this->never())->method('getActiveRecommItems');
@@ -153,7 +138,7 @@ class ReviewTest extends \OxidTestCase
         $oConfig = $this->getConfig();
         $oConfig->setConfigParam("bl_perfLoadReviews", false);
 
-        $oUtils = $this->getMock('oxUtils', array('redirect'));
+        $oUtils = $this->getMock(\OxidEsales\Eshop\Core\Utils::class, array('redirect'));
         $oUtils->expects($this->once())->method('redirect')->with($this->equalTo($oConfig->getShopHomeURL()));
         oxTestModules::addModuleObject('oxUtils', $oUtils);
 
@@ -164,7 +149,7 @@ class ReviewTest extends \OxidTestCase
 
     public function testGetActiveRecommItemsNoRecommList()
     {
-        $oReview = $this->getMock("review", array("getActiveRecommList",));
+        $oReview = $this->getMock(\OxidEsales\Eshop\Application\Controller\ReviewController::class, array("getActiveRecommList",));
         $this->assertFalse($oReview->getActiveRecommItems());
     }
 
@@ -186,11 +171,11 @@ class ReviewTest extends \OxidTestCase
         $oTestProducts->offsetSet(0, $oProd3);
         $oTestProducts->offsetSet(1, $oProd4);
 
-        $oRecommList = $this->getMock("oxRecommList", array("getArticles", "getArtDescription"));
+        $oRecommList = $this->getMock(\OxidEsales\Eshop\Application\Model\RecommendationList::class, array("getArticles", "getArtDescription"));
         $oRecommList->expects($this->atLeastOnce())->method('getArticles')->will($this->returnValue($oProducts));
         $oRecommList->expects($this->atLeastOnce())->method('getArtDescription')->will($this->returnValue('testArtDescription'));
 
-        $oReview = $this->getMock("review", array("getActiveRecommList",));
+        $oReview = $this->getMock(\OxidEsales\Eshop\Application\Controller\ReviewController::class, array("getActiveRecommList",));
         $oReview->expects($this->atLeastOnce())->method('getActiveRecommList')->will($this->returnValue($oRecommList));
 
         $this->assertEquals(2, $oReview->getActiveRecommItems()->count());
@@ -204,12 +189,12 @@ class ReviewTest extends \OxidTestCase
 
     public function testGetActiveType()
     {
-        $oReview = $this->getMock('review', array('getProduct'));
+        $oReview = $this->getMock(\OxidEsales\Eshop\Application\Controller\ReviewController::class, array('getProduct'));
         $oReview->expects($this->once())->method('getProduct')->will($this->returnValue(true));
 
         $this->assertEquals('oxarticle', $oReview->UNITgetActiveType());
 
-        $oReview = $this->getMock('review', array('getProduct', 'getActiveRecommList'));
+        $oReview = $this->getMock(\OxidEsales\Eshop\Application\Controller\ReviewController::class, array('getProduct', 'getActiveRecommList'));
         $oReview->expects($this->once())->method('getProduct')->will($this->returnValue(false));
         $oReview->expects($this->once())->method('getActiveRecommList')->will($this->returnValue(true));
 
@@ -233,7 +218,7 @@ class ReviewTest extends \OxidTestCase
         $oRecommList = oxNew('oxRecommList');
         $oRecommList->setId('testRecommId');
 
-        $oReview = $this->getMock("review", array("getActiveRecommList"));
+        $oReview = $this->getMock(\OxidEsales\Eshop\Application\Controller\ReviewController::class, array("getActiveRecommList"));
         $oReview->expects($this->any())->method('getActiveRecommList')->will($this->returnValue($oRecommList));
         $oUbase = oxNew('oxUBase');
 
@@ -245,7 +230,7 @@ class ReviewTest extends \OxidTestCase
         $this->setRequestParameter('recommid', 'testRecommId');
         oxTestModules::addFunction("oxUtils", "redirect", "{ throw new Exception( 'testInitNoRecommListException' ); }");
 
-        $oReview = $this->getMock("review", array("getActiveRecommList"));
+        $oReview = $this->getMock(\OxidEsales\Eshop\Application\Controller\ReviewController::class, array("getActiveRecommList"));
         $oReview->expects($this->once())->method('getActiveRecommList')->will($this->returnValue(false));
 
         try {
@@ -264,21 +249,21 @@ class ReviewTest extends \OxidTestCase
         $this->setRequestParameter('artrating', '4');
         $this->setRequestParameter('anid', 'test');
 
-        /** @var oxSession|PHPUnit_Framework_MockObject_MockObject $oSession */
-        $oSession = $this->getMock('oxSession', array('checkSessionChallenge'));
+        /** @var oxSession|PHPUnit\Framework\MockObject\MockObject $oSession */
+        $oSession = $this->getMock(\OxidEsales\Eshop\Core\Session::class, array('checkSessionChallenge'));
         $oSession->expects($this->once())->method('checkSessionChallenge')->will($this->returnValue(true));
-        oxRegistry::set('oxSession', $oSession);
+        \OxidEsales\Eshop\Core\Registry::set(\OxidEsales\Eshop\Core\Session::class, $oSession);
 
-        /** @var oxArticle|PHPUnit_Framework_MockObject_MockObject $oProduct */
-        $oProduct = $this->getMock('oxarticle', array('getId', 'addToRatingAverage'));
+        /** @var oxArticle|PHPUnit\Framework\MockObject\MockObject $oProduct */
+        $oProduct = $this->getMock(\OxidEsales\Eshop\Application\Model\Article::class, array('getId', 'addToRatingAverage'));
         $oProduct->expects($this->any())->method('getId')->will($this->returnValue('test'));
         $oProduct->expects($this->once())->method('addToRatingAverage');
 
         $oUser = oxNew('oxUser');
         $oUser->load("oxdefaultadmin");
 
-        /** @var Review|PHPUnit_Framework_MockObject_MockObject $oReview */
-        $oReview = $this->getMock('review', array('getReviewUser', '_getActiveObject', 'canAcceptFormData', "_getActiveType"));
+        /** @var Review|PHPUnit\Framework\MockObject\MockObject $oReview */
+        $oReview = $this->getMock(\OxidEsales\Eshop\Application\Controller\ReviewController::class, array('getReviewUser', '_getActiveObject', 'canAcceptFormData', "_getActiveType"));
         $oReview->expects($this->once())->method('getReviewUser')->will($this->returnValue($oUser));
         $oReview->expects($this->once())->method('canAcceptFormData')->will($this->returnValue(true));
         $oReview->expects($this->once())->method('_getActiveObject')->will($this->returnValue($oProduct));
@@ -291,13 +276,13 @@ class ReviewTest extends \OxidTestCase
 
     public function testSaveReviewIfUserNotSet()
     {
-        /** @var oxSession|PHPUnit_Framework_MockObject_MockObject $oSession */
-        $oSession = $this->getMock('oxSession', array('checkSessionChallenge'));
+        /** @var oxSession|PHPUnit\Framework\MockObject\MockObject $oSession */
+        $oSession = $this->getMock(\OxidEsales\Eshop\Core\Session::class, array('checkSessionChallenge'));
         $oSession->expects($this->once())->method('checkSessionChallenge')->will($this->returnValue(true));
-        oxRegistry::set('oxSession', $oSession);
+        \OxidEsales\Eshop\Core\Registry::set(\OxidEsales\Eshop\Core\Session::class, $oSession);
 
-        /** @var Review|PHPUnit_Framework_MockObject_MockObject $oReview */
-        $oReview = $this->getMock('review', array('getReviewUser', '_getActiveObject', 'canAcceptFormData', "_getActiveType"));
+        /** @var Review|PHPUnit\Framework\MockObject\MockObject $oReview */
+        $oReview = $this->getMock(\OxidEsales\Eshop\Application\Controller\ReviewController::class, array('getReviewUser', '_getActiveObject', 'canAcceptFormData', "_getActiveType"));
         $oReview->expects($this->once())->method('getReviewUser')->will($this->returnValue(false));
         $oReview->expects($this->never())->method('canAcceptFormData');
         $oReview->expects($this->never())->method('_getActiveObject');
@@ -314,21 +299,21 @@ class ReviewTest extends \OxidTestCase
         $this->setRequestParameter('artrating', null);
         $this->setRequestParameter('anid', 'test');
 
-        /** @var oxSession|PHPUnit_Framework_MockObject_MockObject $oSession */
-        $oSession = $this->getMock('oxSession', array('checkSessionChallenge'));
+        /** @var oxSession|PHPUnit\Framework\MockObject\MockObject $oSession */
+        $oSession = $this->getMock(\OxidEsales\Eshop\Core\Session::class, array('checkSessionChallenge'));
         $oSession->expects($this->once())->method('checkSessionChallenge')->will($this->returnValue(true));
-        oxRegistry::set('oxSession', $oSession);
+        \OxidEsales\Eshop\Core\Registry::set(\OxidEsales\Eshop\Core\Session::class, $oSession);
 
         $oUser = oxNew('oxUser');
         $oUser->load("oxdefaultadmin");
 
-        /** @var oxArticle|PHPUnit_Framework_MockObject_MockObject $oProduct */
-        $oProduct = $this->getMock('oxarticle', array('getId', 'addToRatingAverage'));
+        /** @var oxArticle|PHPUnit\Framework\MockObject\MockObject $oProduct */
+        $oProduct = $this->getMock(\OxidEsales\Eshop\Application\Model\Article::class, array('getId', 'addToRatingAverage'));
         $oProduct->expects($this->any())->method('getId')->will($this->returnValue('test'));
         $oProduct->expects($this->never())->method('addToRatingAverage');
 
-        /** @var Review|PHPUnit_Framework_MockObject_MockObject $oReview */
-        $oReview = $this->getMock('review', array('getReviewUser', '_getActiveObject', 'canAcceptFormData', "_getActiveType"));
+        /** @var Review|PHPUnit\Framework\MockObject\MockObject $oReview */
+        $oReview = $this->getMock(\OxidEsales\Eshop\Application\Controller\ReviewController::class, array('getReviewUser', '_getActiveObject', 'canAcceptFormData', "_getActiveType"));
         $oReview->expects($this->once())->method('getReviewUser')->will($this->returnValue($oUser));
         $oReview->expects($this->once())->method('canAcceptFormData')->will($this->returnValue(true));
         $oReview->expects($this->once())->method('_getActiveObject')->will($this->returnValue($oProduct));
@@ -345,21 +330,21 @@ class ReviewTest extends \OxidTestCase
         $this->setRequestParameter('artrating', 6);
         $this->setRequestParameter('anid', 'test');
 
-        /** @var oxSession|PHPUnit_Framework_MockObject_MockObject $oSession */
-        $oSession = $this->getMock('oxSession', array('checkSessionChallenge'));
+        /** @var oxSession|PHPUnit\Framework\MockObject\MockObject $oSession */
+        $oSession = $this->getMock(\OxidEsales\Eshop\Core\Session::class, array('checkSessionChallenge'));
         $oSession->expects($this->once())->method('checkSessionChallenge')->will($this->returnValue(true));
-        oxRegistry::set('oxSession', $oSession);
+        \OxidEsales\Eshop\Core\Registry::set(\OxidEsales\Eshop\Core\Session::class, $oSession);
 
         $oUser = oxNew('oxUser');
         $oUser->load("oxdefaultadmin");
 
-        /** @var oxArticle|PHPUnit_Framework_MockObject_MockObject $oProduct */
-        $oProduct = $this->getMock('oxarticle', array('getId', 'addToRatingAverage'));
+        /** @var oxArticle|PHPUnit\Framework\MockObject\MockObject $oProduct */
+        $oProduct = $this->getMock(\OxidEsales\Eshop\Application\Model\Article::class, array('getId', 'addToRatingAverage'));
         $oProduct->expects($this->any())->method('getId')->will($this->returnValue('test'));
         $oProduct->expects($this->never())->method('addToRatingAverage');
 
-        /** @var Review|PHPUnit_Framework_MockObject_MockObject $oReview */
-        $oReview = $this->getMock('review', array('getReviewUser', '_getActiveObject', 'canAcceptFormData', "_getActiveType"));
+        /** @var Review|PHPUnit\Framework\MockObject\MockObject $oReview */
+        $oReview = $this->getMock(\OxidEsales\Eshop\Application\Controller\ReviewController::class, array('getReviewUser', '_getActiveObject', 'canAcceptFormData', "_getActiveType"));
         $oReview->expects($this->once())->method('getReviewUser')->will($this->returnValue($oUser));
         $oReview->expects($this->once())->method('canAcceptFormData')->will($this->returnValue(true));
         $oReview->expects($this->once())->method('_getActiveObject')->will($this->returnValue($oProduct));
@@ -376,21 +361,21 @@ class ReviewTest extends \OxidTestCase
         $this->setRequestParameter('artrating', '4');
         $this->setRequestParameter('anid', 'test');
 
-        /** @var oxSession|PHPUnit_Framework_MockObject_MockObject $oSession */
-        $oSession = $this->getMock('oxSession', array('checkSessionChallenge'));
+        /** @var oxSession|PHPUnit\Framework\MockObject\MockObject $oSession */
+        $oSession = $this->getMock(\OxidEsales\Eshop\Core\Session::class, array('checkSessionChallenge'));
         $oSession->expects($this->once())->method('checkSessionChallenge')->will($this->returnValue(true));
-        oxRegistry::set('oxSession', $oSession);
+        \OxidEsales\Eshop\Core\Registry::set(\OxidEsales\Eshop\Core\Session::class, $oSession);
 
         $oUser = oxNew('oxUser');
         $oUser->load("oxdefaultadmin");
 
-        /** @var oxArticle|PHPUnit_Framework_MockObject_MockObject $oProduct */
-        $oProduct = $this->getMock('oxarticle', array('getId', 'addToRatingAverage'));
+        /** @var oxArticle|PHPUnit\Framework\MockObject\MockObject $oProduct */
+        $oProduct = $this->getMock(\OxidEsales\Eshop\Application\Model\Article::class, array('getId', 'addToRatingAverage'));
         $oProduct->expects($this->any())->method('getId')->will($this->returnValue('test'));
         $oProduct->expects($this->once())->method('addToRatingAverage');
 
-        /** @var Review|PHPUnit_Framework_MockObject_MockObject $oReview */
-        $oReview = $this->getMock('review', array('getReviewUser', '_getActiveObject', 'canAcceptFormData', "_getActiveType"));
+        /** @var Review|PHPUnit\Framework\MockObject\MockObject $oReview */
+        $oReview = $this->getMock(\OxidEsales\Eshop\Application\Controller\ReviewController::class, array('getReviewUser', '_getActiveObject', 'canAcceptFormData', "_getActiveType"));
         $oReview->expects($this->once())->method('getReviewUser')->will($this->returnValue($oUser));
         $oReview->expects($this->once())->method('canAcceptFormData')->will($this->returnValue(true));
         $oReview->expects($this->once())->method('_getActiveObject')->will($this->returnValue($oProduct));
@@ -424,7 +409,7 @@ class ReviewTest extends \OxidTestCase
         $oUser = oxNew('oxUser');
         $oUser->load("oxdefaultadmin");
 
-        $oReview = $this->getMock("review", array("_getActiveObject", "getReviewUser", "_getActiveType"));
+        $oReview = $this->getMock(\OxidEsales\Eshop\Application\Controller\ReviewController::class, array("_getActiveObject", "getReviewUser", "_getActiveType"));
         $oReview->expects($this->any())->method('_getActiveObject')->will($this->returnValue($oRecommtList));
         $oReview->expects($this->any())->method('getReviewUser')->will($this->returnValue($oUser));
         $oReview->expects($this->any())->method('_getActiveType')->will($this->returnValue('oxarticle'));
@@ -442,7 +427,7 @@ class ReviewTest extends \OxidTestCase
         $oUser = oxNew('oxUser');
         $oUser->load("oxdefaultadmin");
 
-        $oReview = $this->getMock("review", array("_getActiveObject", "getReviewUser", "_getActiveType"));
+        $oReview = $this->getMock(\OxidEsales\Eshop\Application\Controller\ReviewController::class, array("_getActiveObject", "getReviewUser", "_getActiveType"));
         $oReview->expects($this->any())->method('_getActiveObject')->will($this->returnValue($oArticle));
         $oReview->expects($this->any())->method('getReviewUser')->will($this->returnValue($oUser));
         $oReview->expects($this->any())->method('_getActiveType')->will($this->returnValue('oxarticle'));
@@ -453,10 +438,10 @@ class ReviewTest extends \OxidTestCase
 
     public function testGetReviewsForRecomm()
     {
-        $oRecommtList = $this->getMock("oxRecommList", array("getReviews"));
+        $oRecommtList = $this->getMock(\OxidEsales\Eshop\Application\Model\RecommendationList::class, array("getReviews"));
         $oRecommtList->expects($this->any())->method('getReviews')->will($this->returnValue("testReviews"));
 
-        $oReview = $this->getMock("review", array("_getActiveObject"));
+        $oReview = $this->getMock(\OxidEsales\Eshop\Application\Controller\ReviewController::class, array("_getActiveObject"));
         $oReview->expects($this->any())->method('_getActiveObject')->will($this->returnValue($oRecommtList));
 
         $this->assertEquals("testReviews", $oReview->getReviews());
@@ -497,7 +482,7 @@ class ReviewTest extends \OxidTestCase
         $oRecommtList = oxNew('oxRecommList');
         $oRecommtList->setId('testid');
 
-        $oReview = $this->getMock("review", array("getProduct", "getActiveRecommList"));
+        $oReview = $this->getMock(\OxidEsales\Eshop\Application\Controller\ReviewController::class, array("getProduct", "getActiveRecommList"));
         $oReview->expects($this->any())->method('getActiveRecommList')->will($this->returnValue($oRecommtList));
 
         $this->assertEquals('testid', $oReview->UNITgetActiveObject()->getId());
@@ -551,7 +536,7 @@ class ReviewTest extends \OxidTestCase
         $oRecommList = oxNew('oxRecommList');
         $oRecommList->setId("testlist");
 
-        $oReview = $this->getMock('review', array('getActiveRecommList'));
+        $oReview = $this->getMock(\OxidEsales\Eshop\Application\Controller\ReviewController::class, array('getActiveRecommList'));
         $oReview->expects($this->any())->method('getActiveRecommList')->will($this->returnValue($oRecommList));
         $this->assertEquals($sParams . '&amp;recommid=testlist', $oReview->getAdditionalParams());
     }
@@ -560,7 +545,7 @@ class ReviewTest extends \OxidTestCase
     {
         $this->setRequestParameter('recommid', 'testlist');
         $this->setRequestParameter('reviewuserid', 'oxdefaultadmin');
-        $oReview = $this->getMock('review', array('generatePageNavigation'));
+        $oReview = $this->getMock(\OxidEsales\Eshop\Application\Controller\ReviewController::class, array('generatePageNavigation'));
         $oReview->expects($this->any())->method('generatePageNavigation')->will($this->returnValue("aaa"));
         $oReview->getActiveRecommList();
         $this->assertEquals('aaa', $oReview->getPageNavigation());
@@ -573,10 +558,10 @@ class ReviewTest extends \OxidTestCase
      */
     public function testGetActiveRecommListIfOff()
     {
-        $oCfg = $this->getMock("stdClass", array("getShowListmania"));
+        $oCfg = $this->getMock(Config::class, array("getShowListmania"));
         $oCfg->expects($this->once())->method('getShowListmania')->will($this->returnValue(false));
 
-        $oRecomm = $this->getMock("review", array("getViewConfig"));
+        $oRecomm = $this->getMock(\OxidEsales\Eshop\Application\Controller\ReviewController::class, array("getViewConfig"));
         $oRecomm->expects($this->once())->method('getViewConfig')->will($this->returnValue($oCfg));
 
         $this->assertSame(false, $oRecomm->getActiveRecommList());

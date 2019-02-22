@@ -1,26 +1,11 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
-namespace Unit\Application\Model;
+namespace OxidEsales\EshopCommunity\Tests\Unit\Application\Model;
 
+use OxidEsales\Eshop\Core\Registry;
 use OxidEsales\EshopCommunity\Application\Model\Manufacturer;
 
 use \oxField;
@@ -90,7 +75,7 @@ class ManufacturerTest extends \OxidTestCase
         $this->assertEquals('big_matsol_1_mico.png', basename($oManufacturer->getIconUrl()));
 
 
-        $oManufacturer = $this->getMock('oxManufacturer', array('getLink', 'getNrOfArticles', 'getIsVisible', 'getHasVisibleSubCats'));
+        $oManufacturer = $this->getMock(\OxidEsales\Eshop\Application\Model\Manufacturer::class, array('getLink', 'getNrOfArticles', 'getIsVisible', 'getHasVisibleSubCats'));
 
         $oManufacturer->expects($this->exactly(4))->method('getLink')->will($this->returnValue('Link'));
         $oManufacturer->expects($this->once())->method('getNrOfArticles')->will($this->returnValue('NrOfArticles'));
@@ -133,7 +118,7 @@ class ManufacturerTest extends \OxidTestCase
         $sQ = "select count(*) from oxarticles where oxmanufacturerid = '$sManufacturerId' ";
         $iCnt = $myDB->getOne($sQ);
 
-        $oManufacturer = $this->getMock('oxManufacturer', array('isAdmin'));
+        $oManufacturer = $this->getMock(\OxidEsales\Eshop\Application\Model\Manufacturer::class, array('isAdmin'));
         $oManufacturer->expects($this->any())->method('isAdmin')->will($this->returnValue(false));
         $oManufacturer->setShowArticleCnt(true);
         $oManufacturer->load($sManufacturerId);
@@ -290,7 +275,7 @@ class ManufacturerTest extends \OxidTestCase
         $oManufacturer->setNonPublicVar("_blShowArticleCnt", true);
         $oManufacturer->load($sManufacturerId);
 
-        $this->assertEquals(oxRegistry::get("oxUtilsCount")->getManufacturerArticleCount($sManufacturerId), $oManufacturer->getNrOfArticles());
+        $this->assertEquals(\OxidEsales\Eshop\Core\Registry::getUtilsCount()->getManufacturerArticleCount($sManufacturerId), $oManufacturer->getNrOfArticles());
     }
 
     public function testGetNrOfArticlesDonotShow()
@@ -346,16 +331,17 @@ class ManufacturerTest extends \OxidTestCase
      */
     public function testGetIconUrlAccordingToNewFilesStructure()
     {
-        $oConfig = $this->getMock('oxConfig', array('getConfigParam'));
-        $oConfig->expects($this->at(0))->method('getConfigParam')->with('sManufacturerIconsize')->will($this->returnValue(false));
-        $oConfig->expects($this->at(1))->method('getConfigParam')->with('sIconsize')->will($this->returnValue('87*87'));
+        $width = 80;
+        $height = 90;
 
-        $oManufacturer = $this->getMock("oxManufacturer", array("getConfig"), array(), '', false);
-        $oManufacturer->expects($this->exactly(1))->method('getConfig')->will($this->returnValue($oConfig));
+        Registry::getConfig()->setConfigParam('sManufacturerIconsize', false);
+        Registry::getConfig()->setConfigParam('sIconsize', "$width*$height");
+
+        $oManufacturer = $this->getMock(\OxidEsales\Eshop\Application\Model\Manufacturer::class, array("getConfig"), array(), '', false);
         $oManufacturer->oxmanufacturers__oxicon = new oxField('big_matsol_1_mico.png');
 
         $sUrl = $this->getConfig()->getOutUrl() . basename($this->getConfig()->getPicturePath(""));
-        $sUrl .= "/generated/manufacturer/icon/87_87_75/big_matsol_1_mico.png";
+        $sUrl .= "/generated/manufacturer/icon/${width}_${height}_75/big_matsol_1_mico.png";
 
         $this->assertEquals($sUrl, $oManufacturer->getIconUrl());
     }

@@ -1,23 +1,7 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 
 namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
@@ -28,35 +12,34 @@ use oxDb;
 /**
  * Class manages discount articles
  */
-class DiscountItemAjax extends \ajaxListComponent
+class DiscountItemAjax extends \OxidEsales\Eshop\Application\Controller\Admin\ListComponentAjax
 {
-
     /**
      * Columns array
      *
      * @var array
      */
-    protected $_aColumns = array(
+    protected $_aColumns = [
         // field , table, visible, multilanguage, id
-        'container1' => array(
-            array('oxartnum', 'oxarticles', 1, 0, 0),
-            array('oxtitle', 'oxarticles', 1, 1, 0),
-            array('oxean', 'oxarticles', 1, 0, 0),
-            array('oxmpn', 'oxarticles', 0, 0, 0),
-            array('oxprice', 'oxarticles', 0, 0, 0),
-            array('oxstock', 'oxarticles', 0, 0, 0),
-            array('oxid', 'oxarticles', 0, 0, 1)
-        ),
-         'container2' => array(
-             array('oxartnum', 'oxarticles', 1, 0, 0),
-             array('oxtitle', 'oxarticles', 1, 1, 0),
-             array('oxean', 'oxarticles', 1, 0, 0),
-             array('oxmpn', 'oxarticles', 0, 0, 0),
-             array('oxprice', 'oxarticles', 0, 0, 0),
-             array('oxstock', 'oxarticles', 0, 0, 0),
-             array('oxitmartid', 'oxdiscount', 0, 0, 1)
-         )
-    );
+        'container1' => [
+            ['oxartnum', 'oxarticles', 1, 0, 0],
+            ['oxtitle', 'oxarticles', 1, 1, 0],
+            ['oxean', 'oxarticles', 1, 0, 0],
+            ['oxmpn', 'oxarticles', 0, 0, 0],
+            ['oxprice', 'oxarticles', 0, 0, 0],
+            ['oxstock', 'oxarticles', 0, 0, 0],
+            ['oxid', 'oxarticles', 0, 0, 1]
+        ],
+         'container2' => [
+             ['oxartnum', 'oxarticles', 1, 0, 0],
+             ['oxtitle', 'oxarticles', 1, 1, 0],
+             ['oxean', 'oxarticles', 1, 0, 0],
+             ['oxmpn', 'oxarticles', 0, 0, 0],
+             ['oxprice', 'oxarticles', 0, 0, 0],
+             ['oxstock', 'oxarticles', 0, 0, 0],
+             ['oxitmartid', 'oxdiscount', 0, 0, 1]
+         ]
+    ];
 
     /**
      * Returns SQL query for data to fetc
@@ -65,12 +48,12 @@ class DiscountItemAjax extends \ajaxListComponent
      */
     protected function _getQuery()
     {
-        $oConfig = $this->getConfig();
+        $oConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
 
         $sArticleTable = $this->_getViewName('oxarticles');
         $sO2CView = $this->_getViewName('oxobject2category');
         $sDiscTable = $this->_getViewName('oxdiscount');
-        $oDb = oxDb::getDb();
+        $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
         $sOxid = $oConfig->getRequestParameter('oxid');
         $sSynchOxid = $oConfig->getRequestParameter('synchoxid');
 
@@ -121,11 +104,11 @@ class DiscountItemAjax extends \ajaxListComponent
      */
     public function removeDiscArt()
     {
-        $soxId = $this->getConfig()->getRequestParameter('oxid');
+        $soxId = \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('oxid');
         $aChosenArt = $this->_getActionIds('oxdiscount.oxitmartid');
         if (is_array($aChosenArt)) {
             $sQ = "update oxdiscount set oxitmartid = '' where oxid = ? and oxitmartid = ?";
-            oxDb::getDb()->execute($sQ, array($soxId, reset($aChosenArt)));
+            \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->execute($sQ, [$soxId, reset($aChosenArt)]);
         }
     }
 
@@ -135,10 +118,10 @@ class DiscountItemAjax extends \ajaxListComponent
     public function addDiscArt()
     {
         $aChosenArt = $this->_getActionIds('oxarticles.oxid');
-        $soxId = $this->getConfig()->getRequestParameter('synchoxid');
+        $soxId = \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('synchoxid');
         if ($soxId && $soxId != "-1" && is_array($aChosenArt)) {
             $sQ = "update oxdiscount set oxitmartid = ? where oxid = ?";
-            oxDb::getDb()->execute($sQ, array(reset($aChosenArt), $soxId));
+            \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->execute($sQ, [reset($aChosenArt), $soxId]);
         }
     }
 
@@ -150,8 +133,8 @@ class DiscountItemAjax extends \ajaxListComponent
      */
     protected function _getQueryCols()
     {
-        $oConfig = $this->getConfig();
-        $sLangTag = oxRegistry::getLang()->getLanguageTag();
+        $oConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
+        $sLangTag = \OxidEsales\Eshop\Core\Registry::getLang()->getLanguageTag();
 
         $sQ = '';
         $blSep = false;
@@ -163,7 +146,7 @@ class DiscountItemAjax extends \ajaxListComponent
             $sViewTable = $this->_getViewName($aCol[1]);
             // multilanguage
 
-            $sCol = $aCol[3] ? $aCol[0] : $aCol[0];
+            $sCol = $aCol[0];
 
             if ($oConfig->getConfigParam('blVariantsSelection') && $aCol[0] == 'oxtitle') {
                 $sVarSelect = "$sViewTable.oxvarselect" . $sLangTag;
@@ -182,7 +165,7 @@ class DiscountItemAjax extends \ajaxListComponent
             }
 
             // multilanguage
-            $sCol = $aCol[3] ? $aCol[0] : $aCol[0];
+            $sCol = $aCol[0];
             $sQ .= $this->_getViewName($aCol[1]) . '.' . $sCol . ' as _' . $iCnt;
         }
 

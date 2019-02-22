@@ -1,23 +1,7 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 
 namespace OxidEsales\EshopCommunity\Application\Model;
@@ -29,9 +13,8 @@ use oxDb;
  * Implements search
  *
  */
-class Search extends \oxSuperCfg
+class Search extends \OxidEsales\Eshop\Core\Base
 {
-
     /**
      * Active language id
      *
@@ -55,7 +38,7 @@ class Search extends \oxSuperCfg
     public function setLanguage($iLanguage = null)
     {
         if (!isset($iLanguage)) {
-            $this->_iLanguage = oxRegistry::getLang()->getBaseLanguage();
+            $this->_iLanguage = \OxidEsales\Eshop\Core\Registry::getLang()->getBaseLanguage();
         } else {
             $this->_iLanguage = $iLanguage;
         }
@@ -75,15 +58,15 @@ class Search extends \oxSuperCfg
     public function getSearchArticles($sSearchParamForQuery = false, $sInitialSearchCat = false, $sInitialSearchVendor = false, $sInitialSearchManufacturer = false, $sSortBy = false)
     {
         // sets active page
-        $this->iActPage = (int) oxRegistry::getConfig()->getRequestParameter('pgNr');
+        $this->iActPage = (int) \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('pgNr');
         $this->iActPage = ($this->iActPage < 0) ? 0 : $this->iActPage;
 
         // load only articles which we show on screen
         //setting default values to avoid possible errors showing article list
-        $iNrofCatArticles = $this->getConfig()->getConfigParam('iNrofCatArticles');
+        $iNrofCatArticles = \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('iNrofCatArticles');
         $iNrofCatArticles = $iNrofCatArticles ? $iNrofCatArticles : 10;
 
-        $oArtList = oxNew('oxArticleList');
+        $oArtList = oxNew(\OxidEsales\Eshop\Application\Model\ArticleList::class);
         $oArtList->setSqlLimit($iNrofCatArticles * $this->iActPage, $iNrofCatArticles);
 
         $sSelect = $this->_getSearchSelect($sSearchParamForQuery, $sInitialSearchCat, $sInitialSearchVendor, $sInitialSearchManufacturer, $sSortBy);
@@ -112,7 +95,7 @@ class Search extends \oxSuperCfg
             $sPartial = substr($sSelect, strpos($sSelect, ' from '));
             $sSelect = "select count( " . getViewName('oxarticles', $this->_iLanguage) . ".oxid ) $sPartial ";
 
-            $iCnt = oxDb::getDb()->getOne($sSelect);
+            $iCnt = \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->getOne($sSelect);
         }
 
         return $iCnt;
@@ -136,12 +119,12 @@ class Search extends \oxSuperCfg
             return null;
         }
 
-        $oDb = oxDb::getDb();
+        $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
 
         // performance
         if ($sInitialSearchCat) {
             // lets search this category - is no such category - skip all other code
-            $oCategory = oxNew('oxCategory');
+            $oCategory = oxNew(\OxidEsales\Eshop\Application\Model\Category::class);
             $sCatTable = $oCategory->getViewName();
 
             $sQ = "select 1 from $sCatTable where $sCatTable.oxid = " . $oDb->quote($sInitialSearchCat) . " ";
@@ -154,7 +137,7 @@ class Search extends \oxSuperCfg
         // performance:
         if ($sInitialSearchVendor) {
             // lets search this vendor - if no such vendor - skip all other code
-            $oVendor = oxNew('oxvendor');
+            $oVendor = oxNew(\OxidEsales\Eshop\Application\Model\Vendor::class);
             $sVndTable = $oVendor->getViewName();
 
             $sQ = "select 1 from $sVndTable where $sVndTable.oxid = " . $oDb->quote($sInitialSearchVendor) . " ";
@@ -167,7 +150,7 @@ class Search extends \oxSuperCfg
         // performance:
         if ($sInitialSearchManufacturer) {
             // lets search this Manufacturer - if no such Manufacturer - skip all other code
-            $oManufacturer = oxNew('oxmanufacturer');
+            $oManufacturer = oxNew(\OxidEsales\Eshop\Application\Model\Manufacturer::class);
             $sManTable = $oManufacturer->getViewName();
 
             $sQ = "select 1 from $sManTable where $sManTable.oxid = " . $oDb->quote($sInitialSearchManufacturer) . " ";
@@ -182,7 +165,7 @@ class Search extends \oxSuperCfg
             $sWhere = $this->_getWhere($sSearchParamForQuery);
         }
 
-        $oArticle = oxNew('oxArticle');
+        $oArticle = oxNew(\OxidEsales\Eshop\Application\Model\Article::class);
         $sArticleTable = $oArticle->getViewName();
         $sO2CView = getViewName('oxobject2category');
 
@@ -240,8 +223,8 @@ class Search extends \oxSuperCfg
      */
     protected function _getWhere($sSearchString)
     {
-        $oDb = oxDb::getDb();
-        $myConfig = $this->getConfig();
+        $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
+        $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
         $blSep = false;
         $sArticleTable = getViewName('oxarticles', $this->_iLanguage);
 
@@ -250,12 +233,10 @@ class Search extends \oxSuperCfg
             return '';
         }
 
-        $oTempArticle = oxNew('oxArticle');
         $sSearchSep = $myConfig->getConfigParam('blSearchUseAND') ? 'and ' : 'or ';
         $aSearch = explode(' ', $sSearchString);
         $sSearch = ' and ( ';
-        $myUtilsString = oxRegistry::get("oxUtilsString");
-        $oLang = oxRegistry::getLang();
+        $myUtilsString = \OxidEsales\Eshop\Core\Registry::getUtilsString();
 
         foreach ($aSearch as $sSearchString) {
             if (!strlen($sSearchString)) {
@@ -306,7 +287,7 @@ class Search extends \oxSuperCfg
     protected function getDescriptionJoin($table)
     {
         $descriptionJoin = '';
-        $searchColumns = $this->getConfig()->getConfigParam('aSearchCols');
+        $searchColumns = \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('aSearchCols');
 
         if (is_array($searchColumns) && in_array('oxlongdesc', $searchColumns)) {
             $viewName = getViewName('oxartextends', $this->_iLanguage);

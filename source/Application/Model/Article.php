@@ -1,23 +1,7 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 
 namespace OxidEsales\EshopCommunity\Application\Model;
@@ -25,7 +9,6 @@ namespace OxidEsales\EshopCommunity\Application\Model;
 use Exception;
 use oxDb;
 use oxField;
-use OxidEsales\Eshop\Application\Model\Contract\ArticleInterface;
 use OxidEsales\Eshop\Core\Registry;
 use oxList;
 use oxPrice;
@@ -47,9 +30,8 @@ define('OXARTICLE_LINKTYPE_RECOMM', 5);
  * discounts, etc.
  *
  */
-class Article extends \oxI18n implements ArticleInterface, \oxIUrl
+class Article extends \OxidEsales\Eshop\Core\Model\MultiLanguageModel implements \OxidEsales\Eshop\Application\Model\Contract\ArticleInterface, \OxidEsales\Eshop\Core\Contract\IUrl
 {
-
     /**
      * Current class name
      *
@@ -82,7 +64,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     /**
      * Article oxPrice object.
      *
-     * @var oxPrice
+     * @var \OxidEsales\Eshop\Core\Price
      */
     protected $_oPrice = null;
 
@@ -175,7 +157,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     /**
      * user object
      *
-     * @var oxUser
+     * @var \OxidEsales\Eshop\Application\Model\User
      */
     protected $_oUser = null;
 
@@ -189,8 +171,8 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
 
     /**
      * $_fPricePerUnit holds price per unit value in active shop currency.
-     * $_fPricePerUnit is calculated from oxArticle::oxarticles__oxunitquantity->value
-     * and from oxArticle::oxarticles__oxuniname->value. If either one of these values is empty then $_fPricePerUnit is not calculated.
+     * $_fPricePerUnit is calculated from \OxidEsales\Eshop\Application\Model\Article::oxarticles__oxunitquantity->value
+     * and from \OxidEsales\Eshop\Application\Model\Article::oxarticles__oxuniname->value. If either one of these values is empty then $_fPricePerUnit is not calculated.
      * Example: In case when product price is 10 EUR and product quantity is 0.5 (liters) then $_fPricePerUnit would be 20,00
      */
     protected $_fPricePerUnit = null;
@@ -219,8 +201,15 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
 
     /**
      * Object holding the list of attributes and attribute values associated with this article
+     * @var \OxidEsales\Eshop\Application\Model\AttributeList
      */
     protected $_oAttributeList = null;
+
+    /**
+     * Object holding the list of attributes and attribute values associated with this article and displayable in basket
+     * @var \OxidEsales\Eshop\Application\Model\AttributeList
+     */
+    protected $basketAttributeList = null;
 
     /**
      * Indicates whether the price is "From" price
@@ -267,7 +256,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     /**
      * loaded amount prices
      *
-     * @var oxAmountPriceList
+     * @var \OxidEsales\Eshop\Application\Model\AmountPriceList
      */
     protected $_oAmountPriceList = null;
 
@@ -286,28 +275,28 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      *
      * @var array
      */
-    protected $_aStdUrls = array();
+    protected $_aStdUrls = [];
 
     /**
      * Seo article urls for languages
      *
      * @var array
      */
-    protected $_aSeoUrls = array();
+    protected $_aSeoUrls = [];
 
     /**
      * Additional parameters to seo urls
      *
      * @var array
      */
-    protected $_aSeoAddParams = array();
+    protected $_aSeoAddParams = [];
 
     /**
      * Additional parameters to std urls
      *
      * @var array
      */
-    protected $_aStdAddParams = array();
+    protected $_aStdAddParams = [];
 
     /**
      * Image url
@@ -342,7 +331,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      *
      * @var array
      */
-    protected $_aSortingFieldsOnLoad = array();
+    protected $_aSortingFieldsOnLoad = [];
 
     /**
      * Stock status
@@ -377,46 +366,46 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      *
      * @var array
      */
-    protected static $_aArticleManufacturers = array();
+    protected static $_aArticleManufacturers = [];
 
     /**
      * Articles vendor ids cache
      *
      * @var array
      */
-    protected static $_aArticleVendors = array();
+    protected static $_aArticleVendors = [];
 
     /**
      * Articles category ids cache
      *
      * @var array
      */
-    protected static $_aArticleCats = array();
+    protected static $_aArticleCats = [];
 
     /**
      * Do not copy certain parent fields to variant
      *
      * @var array
      */
-    protected $_aNonCopyParentFields = array(
+    protected $_aNonCopyParentFields = [
         'oxarticles__oxinsert',
         'oxarticles__oxtimestamp',
         'oxarticles__oxnid',
         'oxarticles__oxid',
         'oxarticles__oxparentid'
-    );
+    ];
 
     /**
      * Override certain parent fields to variant
      *
      * @var array
      */
-    protected $_aCopyParentField = array(
+    protected $_aCopyParentField = [
         'oxarticles__oxnonmaterial',
         'oxarticles__oxfreeshipping',
         'oxarticles__oxisdownloadable',
         'oxarticles__oxshowcustomagreement'
-    );
+    ];
 
     /**
      * Multidimensional variant tree structure
@@ -439,14 +428,14 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      *
      * @var array
      */
-    protected $_aVariantSelections = array();
+    protected $_aVariantSelections = [];
 
     /**
      * Array of product selections
      *
      * @var array
      */
-    protected static $_aSelections = array();
+    protected static $_aSelections = [];
 
     /**
      * Category instance cache
@@ -477,7 +466,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     protected $_blCanUpdateAnyField = null;
 
     /**
-     * Constructor, sets shop ID for article (oxconfig::getShopId()),
+     * Constructor, sets shop ID for article (\OxidEsales\Eshop\Core\Config::getShopId()),
      * initiates parent constructor (parent::oxI18n()).
      *
      * @param array $aParams The array of names and values of oxArticle instance properties to be set on object instantiation
@@ -513,18 +502,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     }
 
     /**
-     * Sets article parameter
-     *
-     * @param string $sName  name of parameter to set
-     * @param mixed  $sValue parameter value
-     */
-    public function __set($sName, $sValue)
-    {
-        parent::__set($sName, $sValue);
-    }
-
-    /**
-     * @param oxAmountPriceList $amountPriceList
+     * @param \OxidEsales\Eshop\Application\Model\AmountPriceList $amountPriceList
      */
     public function setAmountPriceList($amountPriceList)
     {
@@ -532,7 +510,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     }
 
     /**
-     * @return oxAmountPriceList
+     * @return \OxidEsales\Eshop\Application\Model\AmountPriceList
      */
     protected function getAmountPriceList()
     {
@@ -561,7 +539,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     {
         $sId = parent::setId($sId);
 
-        // TODO: in oxbase::setId make it to check if exists and update, not recreate, then delete this overload
+        // TODO: in \OxidEsales\Eshop\Core\Model\BaseModel::setId make it to check if exists and update, not recreate, then delete this overload
         $this->oxarticles__oxnid = $this->oxarticles__oxid;
 
         return $sId;
@@ -586,7 +564,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         $sQ .= " and $sTable.oxhidden = 0 ";
 
         // enabled time range check ?
-        if ($this->getConfig()->getConfigParam('blUseTimeCheck')) {
+        if (\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('blUseTimeCheck')) {
             $sQ = $this->addSqlActiveRangeSnippet($sQ, $sTable);
         }
 
@@ -608,7 +586,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     public function getStockCheckQuery($blForceCoreTable = null)
     {
-        $myConfig = $this->getConfig();
+        $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
         $sTable = $this->getViewName($blForceCoreTable);
 
         $sQ = "";
@@ -646,7 +624,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         $sQ = " and $sTable.oxparentid = '" . $this->getId() . "' ";
 
         //checking if variant is active and stock status
-        if ($this->getConfig()->getConfigParam('blUseStock')) {
+        if (\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('blUseStock')) {
             $sQ .= " and ( $sTable.oxstock > 0 or ( $sTable.oxstock <= 0 and $sTable.oxstockflag != 2 ";
             if ($blRemoveNotOrderables) {
                 $sQ .= " and $sTable.oxstockflag != 3 ";
@@ -875,7 +853,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         if ($this->_fPricePerUnit == null) {
             if ($oPrice = $this->getUnitPrice()) {
                 if ($dPrice = $this->_getPriceForView($oPrice)) {
-                    $this->_fPricePerUnit = oxRegistry::getLang()->formatCurrency($dPrice);
+                    $this->_fPricePerUnit = \OxidEsales\Eshop\Core\Registry::getLang()->formatCurrency($dPrice);
                 }
             }
         }
@@ -891,7 +869,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     public function getUnitPrice()
     {
         // Performance
-        if (!$this->getConfig()->getConfigParam('bl_perfLoadPrice') || !$this->_blLoadPrice) {
+        if (!\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('bl_perfLoadPrice') || !$this->_blLoadPrice) {
             return;
         }
 
@@ -916,7 +894,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         $sPrice = '';
         if ($oPrice = $this->getMinPrice()) {
             $dPrice = $this->_getPriceForView($oPrice);
-            $sPrice = oxRegistry::getLang()->formatCurrency($dPrice);
+            $sPrice = \OxidEsales\Eshop\Core\Registry::getLang()->formatCurrency($dPrice);
         }
 
         return $sPrice;
@@ -934,7 +912,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         $sPrice = '';
         if ($oPrice = $this->getVarMinPrice()) {
             $dPrice = $this->_getPriceForView($oPrice);
-            $sPrice = oxRegistry::getLang()->formatCurrency($dPrice);
+            $sPrice = \OxidEsales\Eshop\Core\Registry::getLang()->formatCurrency($dPrice);
         }
 
         return $sPrice;
@@ -943,11 +921,11 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     /**
      * Returns article min price of variants
      *
-     * @return oxPrice
+     * @return \OxidEsales\Eshop\Core\Price
      */
     public function getVarMinPrice()
     {
-        if (!$this->getConfig()->getConfigParam('bl_perfLoadPrice') || !$this->_blLoadPrice) {
+        if (!\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('bl_perfLoadPrice') || !$this->_blLoadPrice) {
             return;
         }
 
@@ -977,11 +955,11 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     /**
      * Returns article min price in calculation included variants
      *
-     * @return oxPrice
+     * @return \OxidEsales\Eshop\Core\Price
      */
     public function getMinPrice()
     {
-        if (!$this->getConfig()->getConfigParam('bl_perfLoadPrice') || !$this->_blLoadPrice) {
+        if (!\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('bl_perfLoadPrice') || !$this->_blLoadPrice) {
             return;
         }
 
@@ -1059,7 +1037,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     public function isVisible()
     {
         // admin preview mode
-        if (($blCanPreview = oxRegistry::getUtils()->canPreview()) !== null) {
+        if (($blCanPreview = \OxidEsales\Eshop\Core\Registry::getUtils()->canPreview()) !== null) {
             return $blCanPreview;
         }
 
@@ -1074,9 +1052,9 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         }
 
         // stock flags
-        if ($this->getConfig()->getConfigParam('blUseStock') && $this->oxarticles__oxstockflag->value == 2) {
+        if (\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('blUseStock') && $this->oxarticles__oxstockflag->value == 2) {
             $iOnStock = $this->oxarticles__oxstock->value + $this->oxarticles__oxvarstock->value;
-            if ($this->getConfig()->getConfigParam('blPsBasketReservationEnabled')) {
+            if (\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('blPsBasketReservationEnabled')) {
                 $iOnStock += $this->getSession()->getBasketReservations()->getReservedAmount($this->getId());
             }
             if ($iOnStock <= 0) {
@@ -1103,7 +1081,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         parent::assign($aRecord);
 
         //clear seo urls
-        $this->_aSeoUrls = array();
+        $this->_aSeoUrls = [];
 
         $this->oxarticles__oxnid = $this->oxarticles__oxid;
 
@@ -1137,8 +1115,8 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
 
     /**
      * Loads object data from DB (object data ID must be passed to method).
-     * Converts dates (oxArticle::oxarticles__oxinsert)
-     * to international format (oxUtils.php oxRegistry::get("oxUtilsDate")->formatDBDate(...)).
+     * Converts dates (\OxidEsales\Eshop\Application\Model\Article::oxarticles__oxinsert)
+     * to international format (oxUtils.php \OxidEsales\Eshop\Core\Registry::getUtilsDate()->formatDBDate(...)).
      * Returns true if article was loaded successfully.
      *
      * @param string $sOXID Article object ID
@@ -1186,8 +1164,8 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     public function hasSortingFieldsChanged()
     {
-        $aSortingFields = oxRegistry::getConfig()->getConfigParam('aSortCols');
-        $aSortingFields = !empty($aSortingFields) ? (array) $aSortingFields : array();
+        $aSortingFields = \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('aSortCols');
+        $aSortingFields = !empty($aSortingFields) ? (array) $aSortingFields : [];
         $blChanged = false;
         foreach ($aSortingFields as $sField) {
             $sParameterName = 'oxarticles__' . $sField;
@@ -1214,7 +1192,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         $dRating = ($dOldRating * $dOldCnt + $rating) / ($dOldCnt + 1);
         $dRatingCnt = (int) ($dOldCnt + 1);
         // oxarticles.oxtimestamp = oxarticles.oxtimestamp to keep old timestamp value
-        $oDb = oxDb::getDb();
+        $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
         $oDb->execute('update oxarticles set oxarticles.oxrating = ' . $dRating . ',oxarticles.oxratingcnt = ' . $dRatingCnt . ', oxarticles.oxtimestamp = oxarticles.oxtimestamp where oxarticles.oxid = ' . $oDb->quote($this->getId()));
     }
 
@@ -1225,7 +1203,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     public function setRatingAverage($iRating)
     {
-        $this->oxarticles__oxrating = new oxField($iRating);
+        $this->oxarticles__oxrating = new \OxidEsales\Eshop\Core\Field($iRating);
     }
 
     /**
@@ -1235,7 +1213,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     public function setRatingCount($iRatingCnt)
     {
-        $this->oxarticles__oxratingcnt = new oxField($iRatingCnt);
+        $this->oxarticles__oxratingcnt = new \OxidEsales\Eshop\Core\Field($iRatingCnt);
     }
 
     /**
@@ -1250,7 +1228,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         if (!$blIncludeVariants) {
             return round($this->oxarticles__oxrating->value, 1);
         } else {
-            $oRating = oxNew('oxRating');
+            $oRating = oxNew(\OxidEsales\Eshop\Application\Model\Rating::class);
 
             return $oRating->getRatingAverage($this->getId(), 'oxarticle', $this->getVariantIds());
         }
@@ -1268,7 +1246,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         if (!$blIncludeVariants) {
             return $this->oxarticles__oxratingcnt->value;
         } else {
-            $oRating = oxNew('oxRating');
+            $oRating = oxNew(\OxidEsales\Eshop\Application\Model\Rating::class);
 
             return $oRating->getRatingCount($this->getId(), 'oxarticle', $this->getVariantIds());
         }
@@ -1282,21 +1260,21 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     public function getReviews()
     {
-        $aIds = array($this->getId());
+        $aIds = [$this->getId()];
 
         if ($this->oxarticles__oxparentid->value) {
             $aIds[] = $this->oxarticles__oxparentid->value;
         }
 
         // showing variant reviews ..
-        if ($this->getConfig()->getConfigParam('blShowVariantReviews')) {
+        if (\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('blShowVariantReviews')) {
             $aAdd = $this->getVariantIds();
             if (is_array($aAdd)) {
                 $aIds = array_merge($aIds, $aAdd);
             }
         }
 
-        $oReview = oxNew('oxreview');
+        $oReview = oxNew(\OxidEsales\Eshop\Application\Model\Review::class);
         $oRevs = $oReview->loadList('oxarticle', $aIds);
 
         //if no review found, return null
@@ -1314,7 +1292,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     public function getCrossSelling()
     {
-        $oCrosslist = oxNew("oxArticleList");
+        $oCrosslist = oxNew(\OxidEsales\Eshop\Application\Model\ArticleList::class);
         $oCrosslist->loadArticleCrossSell($this->oxarticles__oxid->value);
         if ($oCrosslist->count()) {
             return $oCrosslist;
@@ -1328,14 +1306,14 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     public function getAccessoires()
     {
-        $myConfig = $this->getConfig();
+        $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
 
         // Performance
         if (!$myConfig->getConfigParam('bl_perfLoadAccessoires')) {
             return;
         }
 
-        $oAcclist = oxNew("oxArticleList");
+        $oAcclist = oxNew(\OxidEsales\Eshop\Application\Model\ArticleList::class);
         $oAcclist->setSqlLimit(0, $myConfig->getConfigParam('iNrofCrossellArticles'));
         $oAcclist->loadArticleAccessoires($this->oxarticles__oxid->value);
 
@@ -1352,7 +1330,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     public function getSimilarProducts()
     {
         // Performance
-        $myConfig = $this->getConfig();
+        $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
         if (!$myConfig->getConfigParam('bl_perfLoadSimilar')) {
             return;
         }
@@ -1384,7 +1362,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
 
             $sSearch = $this->_generateSimListSearchStr($sArticleTable, $aList);
 
-            $oSimilarlist = oxNew('oxArticleList');
+            $oSimilarlist = oxNew(\OxidEsales\Eshop\Application\Model\ArticleList::class);
             $oSimilarlist->setSqlLimit(0, $myConfig->getConfigParam('iNrofSimilarArticles'));
             $oSimilarlist->selectString($sSearch);
 
@@ -1400,7 +1378,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     public function getCustomerAlsoBoughtThisProducts()
     {
         // Performance
-        $myConfig = $this->getConfig();
+        $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
         if (!$myConfig->getConfigParam('bl_perfLoadCustomerWhoBoughtThis')) {
             return;
         }
@@ -1408,7 +1386,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         // selecting products that fits
         $sQ = $this->_generateSearchStrForCustomerBought();
 
-        $oArticles = oxNew('oxArticleList');
+        $oArticles = oxNew(\OxidEsales\Eshop\Application\Model\ArticleList::class);
         $oArticles->setSqlLimit(0, $myConfig->getConfigParam('iNrofCustomerWhoArticles'));
         $oArticles->selectString($sQ);
         if ($oArticles->count()) {
@@ -1424,13 +1402,13 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     public function loadAmountPriceInfo()
     {
-        $myConfig = $this->getConfig();
+        $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
         if (!$myConfig->getConfigParam('bl_perfLoadPrice') || !$this->_blLoadPrice || !$this->_blCalcPrice || !$this->hasAmountPrice()) {
-            return array();
+            return [];
         }
 
         if ($this->_oAmountPriceInfo === null) {
-            $this->_oAmountPriceInfo = array();
+            $this->_oAmountPriceInfo = [];
             if (count(($aAmPriceList = $this->_getAmountPriceList()->getArray()))) {
                 $this->_oAmountPriceInfo = $this->_fillAmountPriceList($aAmPriceList);
             }
@@ -1456,14 +1434,14 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         }
 
         if (!isset(self::$_aSelList[$sKey])) {
-            $oDb = oxDb::getDb();
+            $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
             $sSLViewName = getViewName('oxselectlist');
 
             $sQ = "select {$sSLViewName}.* from oxobject2selectlist join {$sSLViewName} on $sSLViewName.oxid=oxobject2selectlist.oxselnid
                    where oxobject2selectlist.oxobjectid=%s order by oxobject2selectlist.oxsort";
 
             // all selectlists this article has
-            $oLists = oxNew('oxlist');
+            $oLists = oxNew(\OxidEsales\Eshop\Core\Model\ListModel::class);
             $oLists->init('oxselectlist');
             $oLists->selectString(sprintf($sQ, $oDb->quote($this->getId())));
 
@@ -1479,7 +1457,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
             $dVat = $this->getArticleVat();
 
             $iCnt = 0;
-            self::$_aSelList[$sKey] = array();
+            self::$_aSelList[$sKey] = [];
             foreach ($oLists as $oSelectlist) {
                 self::$_aSelList[$sKey][$iCnt] = $oSelectlist->getFieldList($dVat);
                 self::$_aSelList[$sKey][$iCnt]['name'] = $oSelectlist->oxselectlist__oxtitle->value;
@@ -1546,7 +1524,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
             $aVariantSelections = false;
             if ($this->oxarticles__oxvarcount->value) {
                 $oVariants = $this->getVariants(false);
-                $aVariantSelections = oxNew("oxVariantHandler")->buildVariantSelections(
+                $aVariantSelections = oxNew(\OxidEsales\Eshop\Application\Model\VariantHandler::class)->buildVariantSelections(
                     $this->oxarticles__oxvarname->getRawValue(),
                     $oVariants,
                     $aFilterIds,
@@ -1576,7 +1554,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     {
         $sId = $this->getId() . ((int) $iLimit);
         if (!array_key_exists($sId, self::$_aSelections)) {
-            $oDb = oxDb::getDb();
+            $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
             $sSLViewName = getViewName('oxselectlist');
 
             $sQ = "select {$sSLViewName}.* from oxobject2selectlist join {$sSLViewName} on $sSLViewName.oxid=oxobject2selectlist.oxselnid
@@ -1593,7 +1571,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
             }
 
             // all selectlists this article has
-            $oList = oxNew('oxlist');
+            $oList = oxNew(\OxidEsales\Eshop\Core\Model\ListModel::class);
             $oList->init('oxselectlist');
             $oList->getBaseObject()->setVat($dVat);
             $oList->selectString(sprintf($sQ, $oDb->quote($this->getId())));
@@ -1608,7 +1586,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
 
         if (self::$_aSelections[$sId]) {
             // marking active from filter
-            $aFilter = ($aFilter === null) ? oxRegistry::getConfig()->getRequestParameter("sel") : $aFilter;
+            $aFilter = ($aFilter === null) ? \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter("sel") : $aFilter;
             if ($aFilter) {
                 $iSelIdx = 0;
                 foreach (self::$_aSelections[$sId] as $oSelection) {
@@ -1638,7 +1616,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
 
     /**
      * Collects and returns article variants.
-     * Note: Only active variants are returned by this method. If you need full variant list use oxArticle::getAdminVariants()
+     * Note: Only active variants are returned by this method. If you need full variant list use \OxidEsales\Eshop\Application\Model\Article::getAdminVariants()
      *
      * @param bool $blRemoveNotOrderables if true, removes from list not orderable articles, which are out of stock
      * @param bool $blForceCoreTable      if true forces core table use, default is false [optional]
@@ -1672,12 +1650,12 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     public function getAdminVariants($sLanguage = null)
     {
-        $oVariants = oxNew('oxArticleList');
+        $oVariants = oxNew(\OxidEsales\Eshop\Application\Model\ArticleList::class);
         if (($sId = $this->getId())) {
             $oBaseObj = $oVariants->getBaseObject();
 
             if (is_null($sLanguage)) {
-                $oBaseObj->setLanguage(oxRegistry::getLang()->getBaseLanguage());
+                $oBaseObj->setLanguage(\OxidEsales\Eshop\Core\Registry::getLang()->getBaseLanguage());
             } else {
                 $oBaseObj->setLanguage($sLanguage);
             }
@@ -1686,7 +1664,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
             $oVariants->selectString($sSql);
 
             //if we have variants then depending on config option the parent may be non buyable
-            if (!$this->getConfig()->getConfigParam('blVariantParentBuyable') && ($oVariants->count() > 0)) {
+            if (!\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('blVariantParentBuyable') && ($oVariants->count() > 0)) {
                 //$this->blNotBuyable = true;
                 $this->_blNotBuyableParent = true;
             }
@@ -1704,7 +1682,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     public function getCategory()
     {
-        $oCategory = oxNew('oxCategory');
+        $oCategory = oxNew(\OxidEsales\Eshop\Application\Model\Category::class);
         $oCategory->setLanguage($this->getLanguage());
 
         // variant handling
@@ -1785,7 +1763,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     {
         $sVendorId = $this->getVendorId();
         if ($sVendorId) {
-            $oVendor = oxNew('oxvendor');
+            $oVendor = oxNew(\OxidEsales\Eshop\Application\Model\Vendor::class);
         } elseif (!$blShopCheck && $this->oxarticles__oxvendorid->value) {
             $oVendor = $this->_createMultilanguageVendorObject();
             $sVendorId = $this->oxarticles__oxvendorid->value;
@@ -1802,7 +1780,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     protected function _createMultilanguageVendorObject()
     {
-        $oVendor = oxNew('oxi18n');
+        $oVendor = oxNew(\OxidEsales\Eshop\Core\Model\MultiLanguageModel::class);
         $oVendor->init('oxvendor');
         $oVendor->setReadOnly(true);
 
@@ -1841,11 +1819,11 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      *
      * @param bool $blShopCheck Set false if shop check is not required (default is true)
      *
-     * @return oxManufacturer|null
+     * @return \OxidEsales\Eshop\Application\Model\Manufacturer|null
      */
     public function getManufacturer($blShopCheck = true)
     {
-        $oManufacturer = oxNew('oxmanufacturer');
+        $oManufacturer = oxNew(\OxidEsales\Eshop\Application\Model\Manufacturer::class);
         if (!($sManufacturerId = $this->getManufacturerId()) &&
             !$blShopCheck && $this->oxarticles__oxmanufacturerid->value
         ) {
@@ -1854,7 +1832,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         }
 
         if ($sManufacturerId && $oManufacturer->load($sManufacturerId)) {
-            if (!$this->getConfig()->getConfigParam('bl_perfLoadManufacturerTree')) {
+            if (!\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('bl_perfLoadManufacturerTree')) {
                 $oManufacturer->setReadOnly(true);
             }
             $oManufacturer = $oManufacturer->oxmanufacturers__oxactive->value ? $oManufacturer : null;
@@ -1893,7 +1871,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
             $sOXID = $this->oxarticles__oxparentid->value;
         }
 
-        $oDb = oxDb::getDb();
+        $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
         $sSelect = $this->_generateSelectCatStr($sOXID, $sCatId);
         $sOXID = $oDb->getOne($sSelect);
         // article is assigned to passed category!
@@ -1902,7 +1880,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         }
 
         // maybe this category is price category ?
-        if ($this->getConfig()->getConfigParam('bl_perfLoadPrice') && $this->_blLoadPrice) {
+        if (\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('bl_perfLoadPrice') && $this->_blLoadPrice) {
             $dPriceFromTo = $this->getPrice()->getBruttoPrice();
             if ($dPriceFromTo > 0) {
                 $sSelect = $this->_generateSelectCatStr($sOXID, $sCatId, $dPriceFromTo);
@@ -1920,11 +1898,11 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     /**
      * Returns T price
      *
-     * @return oxPrice
+     * @return \OxidEsales\Eshop\Core\Price
      */
     public function getTPrice()
     {
-        if (!$this->getConfig()->getConfigParam('bl_perfLoadPrice') || !$this->_blLoadPrice) {
+        if (!\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('bl_perfLoadPrice') || !$this->_blLoadPrice) {
             return;
         }
 
@@ -1979,8 +1957,8 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
 
 
         $this->_blSkipDiscounts = false;
-        if (oxRegistry::get("oxDiscountList")->hasSkipDiscountCategories()) {
-            $oDb = oxDb::getDb();
+        if (\OxidEsales\Eshop\Core\Registry::get(\OxidEsales\Eshop\Application\Model\DiscountList::class)->hasSkipDiscountCategories()) {
+            $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
             $sO2CView = getViewName('oxobject2category', $this->getLanguage());
             $sViewName = getViewName('oxcategories', $this->getLanguage());
             $sSelect = "select 1 from $sO2CView as $sO2CView left join {$sViewName} on {$sViewName}.oxid = $sO2CView.oxcatnid
@@ -1994,9 +1972,9 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     /**
      * Sets the current oxPrice object
      *
-     * @param oxPrice $oPrice the new price object
+     * @param \OxidEsales\Eshop\Core\Price $oPrice the new price object
      */
-    public function setPrice(\OxidEsales\EshopCommunity\Core\Price $oPrice)
+    public function setPrice(\OxidEsales\Eshop\Core\Price $oPrice)
     {
         $this->_oPrice = $oPrice;
     }
@@ -2015,7 +1993,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         // for diff. user groups.
 
         // Performance
-        $myConfig = $this->getConfig();
+        $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
         if (!$myConfig->getConfigParam('bl_perfLoadPrice') || !$this->_blLoadPrice) {
             return;
         }
@@ -2043,11 +2021,11 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      *
      * @param float|int $dAmount article amount.
      *
-     * @return oxPrice
+     * @return \OxidEsales\Eshop\Core\Price
      */
     public function getPrice($dAmount = 1)
     {
-        $myConfig = $this->getConfig();
+        $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
         // Performance
         if (!$myConfig->getConfigParam('bl_perfLoadPrice') || !$this->_blLoadPrice) {
             return;
@@ -2082,7 +2060,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     /**
      * sets article user
      *
-     * @param oxUser $oUser user to set
+     * @param \OxidEsales\Eshop\Application\Model\User $oUser user to set
      */
     public function setArticleUser($oUser)
     {
@@ -2090,7 +2068,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     }
 
     /**
-     * @return oxUser article user.
+     * @return \OxidEsales\Eshop\Application\Model\User article user.
      */
     public function getArticleUser()
     {
@@ -2105,10 +2083,10 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      * Creates, calculates and returns oxPrice object for basket product.
      *
      * @param float  $dAmount  Amount
-     * @param string $aSelList Selection list
+     * @param array  $aSelList Selection list
      * @param object $oBasket  User shopping basket object
      *
-     * @return oxPrice
+     * @return \OxidEsales\Eshop\Core\Price
      */
     public function getBasketPrice($dAmount, $aSelList, $oBasket)
     {
@@ -2128,7 +2106,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         // setting price
         $oBasketPrice->setPrice($dBasePrice);
 
-        $dVat = oxRegistry::get("oxVatSelector")->getBasketItemVat($this, $oBasket);
+        $dVat = \OxidEsales\Eshop\Core\Registry::get(\OxidEsales\Eshop\Application\Model\VatSelector::class)->getBasketItemVat($this, $oBasket);
         $this->_calculatePrice($oBasketPrice, $dVat);
 
         // returning final price object
@@ -2154,7 +2132,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
             return false;
         }
 
-        $database = oxDb::getDb();
+        $database = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
         $database->startTransaction();
         try {
             // #2339 delete first variants before deleting parent product
@@ -2168,7 +2146,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
 
             $this->_deleteRecords($sOXID);
 
-            Registry::get("oxSeoEncoderArticle")->onDeleteArticle($this);
+            Registry::get(\OxidEsales\Eshop\Application\Model\SeoEncoderArticle::class)->onDeleteArticle($this);
 
             $this->onChange(ACTION_DELETE, $sOXID, $this->oxarticles__oxparentid->value);
 
@@ -2194,15 +2172,20 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     {
         $this->beforeUpdate();
 
-        $iStockCount = $this->oxarticles__oxstock->value - $dAmount;
+        $database = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
+        $query = 'select oxstock from oxarticles where oxid = ' . $database->quote($this->getId()) . ' FOR UPDATE ';
+        $actualStock = $database->getOne($query);
+
+        $iStockCount = $actualStock - $dAmount;
         if (!$blAllowNegativeStock && ($iStockCount < 0)) {
             $dAmount += $iStockCount;
             $iStockCount = 0;
         }
-        $this->oxarticles__oxstock = new oxField($iStockCount);
+        $this->oxarticles__oxstock = new \OxidEsales\Eshop\Core\Field($iStockCount);
 
-        $oDb = oxDb::getDb();
-        $oDb->execute('update oxarticles set oxarticles.oxstock = ' . $oDb->quote($iStockCount) . ' where oxarticles.oxid = ' . $oDb->quote($this->getId()));
+        $query = 'update oxarticles set oxarticles.oxstock = ' . $database->quote($iStockCount) .
+                 ' where oxarticles.oxid = ' . $database->quote($this->getId());
+        $database->execute($query);
         $this->onChange(ACTION_UPDATE_STOCK);
 
         return $dAmount;
@@ -2226,7 +2209,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         if (!$this->oxarticles__oxparentid->value) {
             //updating by SQL query, due to wrong behaviour if saving article using not admin mode
             $dAmount = (double) $dAmount;
-            $oDb = oxDb::getDb();
+            $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
             $rs = $oDb->execute("update oxarticles set oxarticles.oxsoldamount = oxarticles.oxsoldamount + $dAmount where oxarticles.oxid = " . $oDb->quote($this->oxarticles__oxid->value));
         } elseif ($this->oxarticles__oxparentid->value) {
             // article is variant - should be updated this article parent amount
@@ -2246,13 +2229,13 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     public function disableReminder()
     {
-        $oDb = oxDb::getDb();
+        $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
 
         return (bool) $oDb->execute("update oxarticles set oxarticles.oxremindactive = 2 where oxarticles.oxid = " . $oDb->quote($this->oxarticles__oxid->value));
     }
 
     /**
-     * (oxArticle::_saveArtLongDesc()) save the object using parent::save() method.
+     * (\OxidEsales\Eshop\Application\Model\Article::_saveArtLongDesc()) save the object using parent::save() method.
      *
      * @return bool
      */
@@ -2272,7 +2255,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     public function resetParent()
     {
         $sParentId = $this->oxarticles__oxparentid->value;
-        $this->oxarticles__oxparentid = new oxField('', oxField::T_RAW);
+        $this->oxarticles__oxparentid = new \OxidEsales\Eshop\Core\Field('', \OxidEsales\Eshop\Core\Field::T_RAW);
         $this->_blAllowEmptyParentId = true;
         $this->save();
         $this->_blAllowEmptyParentId = false;
@@ -2290,17 +2273,17 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     public function getPictureGallery()
     {
-        $myConfig = $this->getConfig();
+        $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
 
         //initialize
         $blMorePic = false;
-        $aArtPics = array();
-        $aArtIcons = array();
+        $aArtPics = [];
+        $aArtIcons = [];
         $iActPicId = 1;
         $sActPic = $this->getPictureUrl($iActPicId);
 
-        if (oxRegistry::getConfig()->getRequestParameter('actpicid')) {
-            $iActPicId = oxRegistry::getConfig()->getRequestParameter('actpicid');
+        if (\OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('actpicid')) {
+            $iActPicId = \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('actpicid');
         }
 
         $oStr = getStr();
@@ -2334,7 +2317,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         }
 
         $blZoomPic = false;
-        $aZoomPics = array();
+        $aZoomPics = [];
         $iZoomPicCount = $myConfig->getConfigParam('iPicCount');
 
         for ($j = 1, $c = 1; $j <= $iZoomPicCount; $j++) {
@@ -2352,7 +2335,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
             }
         }
 
-        $aPicGallery = array(
+        $aPicGallery = [
             'ActPicID' => $iActPicId,
             'ActPic'   => $sActPic,
             'MorePics' => $blMorePic,
@@ -2360,7 +2343,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
             'Icons'    => $aArtIcons,
             'ZoomPic'  => $blZoomPic,
             'ZoomPics' => $aZoomPics
-        );
+        ];
 
         return $aPicGallery;
     }
@@ -2369,7 +2352,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      * This function is triggered whenever article is saved or deleted or after the stock is changed.
      * Originally we need to update the oxstock for possible article parent in case parent is not buyable
      * Plus you may want to extend this function to update some extended information.
-     * Call oxArticle::onChange($sAction, $sOXID) with ID parameter when changes are executed over SQL.
+     * Call \OxidEsales\Eshop\Application\Model\Article::onChange($sAction, $sOXID) with ID parameter when changes are executed over SQL.
      * (or use module class instead of oxArticle if such exists)
      *
      * @param string $action          Action constant
@@ -2380,7 +2363,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     public function onChange($action = null, $articleId = null, $parentArticleId = null)
     {
-        $myConfig = $this->getConfig();
+        $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
 
         if (!isset($articleId)) {
             if ($this->getId()) {
@@ -2402,7 +2385,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
             //if article has variants then updating oxvarstock field
             //getting parent id
             if (!isset($parentArticleId)) {
-                $oDb = oxDb::getDb();
+                $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
                 $sQ = 'select oxparentid from oxarticles where oxid = ' . $oDb->quote($articleId);
                 $parentArticleId = $oDb->getOne($sQ);
             }
@@ -2448,36 +2431,46 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      *
      * @param double     $dAmount         buyable amount
      * @param double|int $dArtStockAmount stock amount
+     * @param bool       $selectForUpdate Set true to select for update
      *
      * @return mixed
      */
-    public function checkForStock($dAmount, $dArtStockAmount = 0)
+    public function checkForStock($dAmount, $dArtStockAmount = 0, $selectForUpdate = false)
     {
-        $myConfig = $this->getConfig();
+        $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
         if (!$myConfig->getConfigParam('blUseStock')) {
             return true;
         }
 
-        $oDb = oxDb::getDb(oxDb::FETCH_MODE_ASSOC);
+        $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb(\OxidEsales\Eshop\Core\DatabaseProvider::FETCH_MODE_ASSOC);
         // fetching DB info as its up-to-date
         $sQ = 'select oxstock, oxstockflag from oxarticles where oxid = ' . $oDb->quote($this->getId());
+        $sQ .= $selectForUpdate ? ' FOR UPDATE ' : '';
         $rs = $oDb->select($sQ);
 
         $iOnStock = 0;
-        $iStockFlag = 0;
         if ($rs !== false && $rs->count() > 0) {
             $iOnStock = $rs->fields['oxstock'] - $dArtStockAmount;
             $iStockFlag = $rs->fields['oxstockflag'];
 
-            // foreign stock is also always considered as on stock
-            if ($iStockFlag == 1 || $iStockFlag == 4) {
-                return true;
+            //When using stockflag 1 and 4 with basket reservations enabled but disallowing
+            //negative stock values we would allow to reserve more items than are initially available
+            //by keeping the stock level not lower than zero. When discarding reservations
+            //stock level might differ from original value.
+            if (!$myConfig->getConfigParam('blPsBasketReservationEnabled')
+                 || ($myConfig->getConfigParam('blPsBasketReservationEnabled')
+                     && $myConfig->getConfigParam('blAllowNegativeStock'))
+            ) {
+                // foreign stock is also always considered as on stock
+                if ($iStockFlag == 1 || $iStockFlag == 4) {
+                    return true;
+                }
             }
             if (!$myConfig->getConfigParam('blAllowUnevenAmounts')) {
                 $iOnStock = floor($iOnStock);
             }
         }
-        if ($this->getConfig()->getConfigParam('blPsBasketReservationEnabled')) {
+        if (\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('blPsBasketReservationEnabled')) {
             $iOnStock += $this->getSession()->getBasketReservations()->getReservedAmount($this->getId());
         }
         if ($iOnStock >= $dAmount) {
@@ -2486,9 +2479,9 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
             if ($iOnStock > 0) {
                 return $iOnStock;
             } else {
-                $oEx = oxNew('oxArticleInputException');
+                $oEx = oxNew(\OxidEsales\Eshop\Core\Exception\ArticleInputException::class);
                 $oEx->setMessage('ERROR_MESSAGE_ARTICLE_ARTICLE_NOT_BUYABLE');
-                oxRegistry::get("oxUtilsView")->addErrorToDisplay($oEx);
+                \OxidEsales\Eshop\Core\Registry::getUtilsView()->addErrorToDisplay($oEx);
 
                 return false;
             }
@@ -2504,22 +2497,22 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     {
         if ($this->_oLongDesc === null) {
             // initializing
-            $this->_oLongDesc = new oxField();
+            $this->_oLongDesc = new \OxidEsales\Eshop\Core\Field();
 
             // choosing which to get..
             $sOxid = $this->getId();
             $sViewName = getViewName('oxartextends', $this->getLanguage());
 
-            $oDb = oxDb::getDb();
+            $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
             $sDbValue = $oDb->getOne("select oxlongdesc from {$sViewName} where oxid = " . $oDb->quote($sOxid));
 
             if ($sDbValue != false) {
-                $this->_oLongDesc->setValue($sDbValue, oxField::T_RAW);
+                $this->_oLongDesc->setValue($sDbValue, \OxidEsales\Eshop\Core\Field::T_RAW);
             } elseif ($this->oxarticles__oxparentid->value) {
                 if (!$this->isAdmin() || $this->_blLoadParentData) {
                     $oParent = $this->getParentArticle();
                     if ($oParent) {
-                        $this->_oLongDesc->setValue($oParent->getLongDescription()->getRawValue(), oxField::T_RAW);
+                        $this->_oLongDesc->setValue($oParent->getLongDescription()->getRawValue(), \OxidEsales\Eshop\Core\Field::T_RAW);
                     }
                 }
             }
@@ -2536,7 +2529,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     public function getLongDesc()
     {
-        return oxRegistry::get("oxUtilsView")->parseThroughSmarty($this->getLongDescription()->getRawValue(), $this->getId() . $this->getLanguage(), null, true);
+        return \OxidEsales\Eshop\Core\Registry::getUtilsView()->parseThroughSmarty($this->getLongDescription()->getRawValue(), $this->getId() . $this->getLanguage(), null, true);
     }
 
     /**
@@ -2547,19 +2540,29 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     public function setArticleLongDesc($longDescription)
     {
         // setting current value
-        $this->_oLongDesc = new oxField($longDescription, oxField::T_RAW);
-        $this->oxarticles__oxlongdesc = new oxField($longDescription, oxField::T_RAW);
+        $this->_oLongDesc = new \OxidEsales\Eshop\Core\Field($longDescription, \OxidEsales\Eshop\Core\Field::T_RAW);
+        $this->oxarticles__oxlongdesc = new \OxidEsales\Eshop\Core\Field($longDescription, \OxidEsales\Eshop\Core\Field::T_RAW);
+    }
+
+    /**
+     * the uninitilized list of attributes
+     * use getAttributes
+     * @return \OxidEsales\Eshop\Application\Model\AttributeList
+     */
+    protected function newAttributeList()
+    {
+        return oxNew(\OxidEsales\Eshop\Application\Model\AttributeList::class);
     }
 
     /**
      * Loads and returns attribute list associated with this article
      *
-     * @return object
+     * @return \OxidEsales\Eshop\Application\Model\AttributeList
      */
     public function getAttributes()
     {
         if ($this->_oAttributeList === null) {
-            $this->_oAttributeList = oxNew('oxattributelist');
+            $this->_oAttributeList = $this->newAttributelist();
             $this->_oAttributeList->loadAttributes($this->getId(), $this->getParentId());
         }
 
@@ -2567,18 +2570,18 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     }
 
     /**
-     * Loads and returns displayable in basket/order attributes list associated with this article
+     * Loads and returns attribute list for display in basket
      *
-     * @return object
+     * @return \OxidEsales\Eshop\Application\Model\AttributeList
      */
     public function getAttributesDisplayableInBasket()
     {
-        if ($this->_oAttributeList === null) {
-            $this->_oAttributeList = oxNew('oxattributelist');
-            $this->_oAttributeList->loadAttributesDisplayableInBasket($this->getId(), $this->getParentId());
+        if ($this->basketAttributeList === null) {
+            $this->basketAttributeList = $this->newAttributelist();
+            $this->basketAttributeList->loadAttributesDisplayableInBasket($this->getId(), $this->getParentId());
         }
 
-        return $this->_oAttributeList;
+        return $this->basketAttributeList;
     }
 
 
@@ -2610,8 +2613,8 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     public function getBaseSeoLink($iLang, $blMain = false)
     {
-        /** @var oxSeoEncoderArticle $oEncoder */
-        $oEncoder = oxRegistry::get("oxSeoEncoderArticle");
+        /** @var \OxidEsales\Eshop\Application\Model\SeoEncoderArticle $oEncoder */
+        $oEncoder = \OxidEsales\Eshop\Core\Registry::get(\OxidEsales\Eshop\Application\Model\SeoEncoderArticle::class);
         if (!$blMain) {
             return $oEncoder->getArticleUrl($this, $iLang, $this->getLinkType());
         }
@@ -2629,7 +2632,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     public function getLink($iLang = null, $blMain = false)
     {
-        if (!oxRegistry::getUtils()->seoIsActive()) {
+        if (!\OxidEsales\Eshop\Core\Registry::getUtils()->seoIsActive()) {
             return $this->getStdLink($iLang);
         }
 
@@ -2719,7 +2722,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         $sUrl = '';
         if ($blFull) {
             //always returns shop url, not admin
-            $sUrl = $this->getConfig()->getShopUrl($iLang, false);
+            $sUrl = \OxidEsales\Eshop\Core\Registry::getConfig()->getShopUrl($iLang, false);
         }
 
         $sUrl .= "index.php?cl=details" . ($blAddId ? "&amp;anid=" . $this->getId() : "");
@@ -2735,7 +2738,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      *
      * @return string
      */
-    public function getStdLink($iLang = null, $aParams = array())
+    public function getStdLink($iLang = null, $aParams = [])
     {
         if ($iLang === null) {
             $iLang = $this->getLanguage();
@@ -2745,7 +2748,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
             $this->_aStdUrls[$iLang] = $this->getBaseStdLink($iLang);
         }
 
-        return oxRegistry::get("oxUtilsUrl")->processUrl($this->_aStdUrls[$iLang], true, $aParams, $iLang);
+        return \OxidEsales\Eshop\Core\Registry::getUtilsUrl()->processUrl($this->_aStdUrls[$iLang], true, $aParams, $iLang);
     }
 
     /**
@@ -2756,7 +2759,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     public function getMediaUrls()
     {
         if ($this->_aMediaUrls === null) {
-            $this->_aMediaUrls = oxNew("oxlist");
+            $this->_aMediaUrls = oxNew(\OxidEsales\Eshop\Core\Model\ListModel::class);
             $this->_aMediaUrls->init("oxmediaurl");
             $this->_aMediaUrls->getBaseObject()->setLanguage($this->getLanguage());
 
@@ -2786,7 +2789,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     public function getDispSelList()
     {
         if ($this->_aDispSelList === null) {
-            if ($this->getConfig()->getConfigParam('bl_perfLoadSelectLists') && $this->getConfig()->getConfigParam('bl_perfLoadSelectListsInAList')) {
+            if (\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('bl_perfLoadSelectLists') && \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('bl_perfLoadSelectListsInAList')) {
                 $this->_aDispSelList = $this->getSelectLists();
             }
         }
@@ -2803,10 +2806,10 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     {
         if ($this->_sMoreDetailLink == null) {
             // and assign special article values
-            $this->_sMoreDetailLink = $this->getConfig()->getShopHomeUrl() . 'cl=moredetails';
+            $this->_sMoreDetailLink = \OxidEsales\Eshop\Core\Registry::getConfig()->getShopHomeUrl() . 'cl=moredetails';
 
             // not always it is okey, as not all the time active category is the same as primary article cat.
-            if ($sActCat = oxRegistry::getConfig()->getRequestParameter('cnid')) {
+            if ($sActCat = \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('cnid')) {
                 $this->_sMoreDetailLink .= '&amp;cnid=' . $sActCat;
             }
             $this->_sMoreDetailLink .= '&amp;anid=' . $this->getId();
@@ -2823,29 +2826,29 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     public function getToBasketLink()
     {
         if ($this->_sToBasketLink == null) {
-            $myConfig = $this->getConfig();
+            $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
 
-            if (oxRegistry::getUtils()->isSearchEngine()) {
+            if (\OxidEsales\Eshop\Core\Registry::getUtils()->isSearchEngine()) {
                 $this->_sToBasketLink = $this->getLink();
             } else {
                 // and assign special article values
                 $this->_sToBasketLink = $myConfig->getShopHomeUrl();
 
                 // override some classes as these should never showup
-                $sActClass = oxRegistry::getConfig()->getRequestParameter('cl');
-                if ($sActClass == 'thankyou') {
-                    $sActClass = 'basket';
+                $actControllerId = \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestControllerId();
+                if ($actControllerId == 'thankyou') {
+                    $actControllerId = 'basket';
                 }
-                $this->_sToBasketLink .= 'cl=' . $sActClass;
+                $this->_sToBasketLink .= 'cl=' . $actControllerId;
 
                 // this is not very correct
-                if ($sActCat = oxRegistry::getConfig()->getRequestParameter('cnid')) {
+                if ($sActCat = \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('cnid')) {
                     $this->_sToBasketLink .= '&amp;cnid=' . $sActCat;
                 }
 
                 $this->_sToBasketLink .= '&amp;fnc=tobasket&amp;aid=' . $this->getId() . '&amp;anid=' . $this->getId();
 
-                if ($sTpl = basename(oxRegistry::getConfig()->getRequestParameter('tpl'))) {
+                if ($sTpl = basename(\OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('tpl'))) {
                     $this->_sToBasketLink .= '&amp;tpl=' . $sTpl;
                 }
             }
@@ -2865,14 +2868,25 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     }
 
     /**
-     * Returns formatted delivery date. If the date is not set ('0000-00-00') returns false.
+     * Get stock
+     *
+     * @return float
+     */
+    public function getStock()
+    {
+        return $this->oxarticles__oxstock->value;
+    }
+
+    /**
+     * Returns formatted delivery date. If the date is past or not set ('0000-00-00') returns false.
      *
      * @return string | bool
      */
     public function getDeliveryDate()
     {
-        if ($this->oxarticles__oxdelivery->value != '0000-00-00') {
-            return oxRegistry::get("oxUtilsDate")->formatDBDate($this->oxarticles__oxdelivery->value);
+        $deliveryDate = $this->getFieldData("oxdelivery");
+        if ($deliveryDate >= date('Y-m-d')) {
+            return \OxidEsales\Eshop\Core\Registry::getUtilsDate()->formatDBDate($deliveryDate);
         }
 
         return false;
@@ -2890,7 +2904,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         // module
         if ($oPrice = $this->getTPrice()) {
             if ($dPrice = $this->_getPriceForView($oPrice)) {
-                return oxRegistry::getLang()->formatCurrency($dPrice);
+                return \OxidEsales\Eshop\Core\Registry::getLang()->formatCurrency($dPrice);
             }
         }
     }
@@ -2907,7 +2921,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         if ($oPrice = $this->getPrice()) {
             $dPrice = $this->_getPriceForView($oPrice);
 
-            return oxRegistry::getLang()->formatCurrency($dPrice);
+            return \OxidEsales\Eshop\Core\Registry::getLang()->formatCurrency($dPrice);
         }
     }
 
@@ -2934,7 +2948,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     public function getFNetPrice()
     {
         if ($oPrice = $this->getPrice()) {
-            return oxRegistry::getLang()->formatCurrency($oPrice->getNettoPrice());
+            return \OxidEsales\Eshop\Core\Registry::getLang()->formatCurrency($oPrice->getNettoPrice());
         }
     }
 
@@ -2993,9 +3007,9 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
                 $sImgName = basename($this->{"oxarticles__oxpic$iIndex"}->value);
             }
 
-            $sSize = $this->getConfig()->getConfigParam('aDetailImageSizes');
+            $sSize = \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('aDetailImageSizes');
 
-            return oxRegistry::get("oxPictureHandler")
+            return \OxidEsales\Eshop\Core\Registry::getPictureHandler()
                 ->getProductPicUrl("product/{$iIndex}/", $sImgName, $sSize, 'oxpic' . $iIndex);
         }
     }
@@ -3022,9 +3036,9 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
             $sImgName = basename($this->oxarticles__oxpic1->value);
         }
 
-        $sSize = $this->getConfig()->getConfigParam('sIconsize');
+        $sSize = \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('sIconsize');
 
-        $sIconUrl = oxRegistry::get("oxPictureHandler")->getProductPicUrl($sDirname, $sImgName, $sSize, $iIndex);
+        $sIconUrl = \OxidEsales\Eshop\Core\Registry::getPictureHandler()->getProductPicUrl($sDirname, $sImgName, $sSize, $iIndex);
 
         return $sIconUrl;
     }
@@ -3047,9 +3061,9 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
             $sImgName = basename($this->oxarticles__oxpic1->value);
         }
 
-        $sSize = $this->getConfig()->getConfigParam('sThumbnailsize');
+        $sSize = \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('sThumbnailsize');
 
-        return oxRegistry::get("oxPictureHandler")->getProductPicUrl($sDirname, $sImgName, $sSize, 0, $bSsl);
+        return \OxidEsales\Eshop\Core\Registry::getPictureHandler()->getProductPicUrl($sDirname, $sImgName, $sSize, 0, $bSsl);
     }
 
     /**
@@ -3064,9 +3078,9 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         $iIndex = (int) $iIndex;
         if ($iIndex > 0 && !$this->_isFieldEmpty("oxarticles__oxpic" . $iIndex)) {
             $sImgName = basename($this->{"oxarticles__oxpic" . $iIndex}->value);
-            $sSize = $this->getConfig()->getConfigParam("sZoomImageSize");
+            $sSize = \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam("sZoomImageSize");
 
-            return oxRegistry::get("oxPictureHandler")->getProductPicUrl(
+            return \OxidEsales\Eshop\Core\Registry::getPictureHandler()->getProductPicUrl(
                 "product/{$iIndex}/",
                 $sImgName,
                 $sSize,
@@ -3078,9 +3092,9 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     /**
      * apply article and article use
      *
-     * @param oxPrice $oPrice target price
+     * @param \OxidEsales\Eshop\Core\Price $oPrice target price
      */
-    public function applyVats(\OxidEsales\EshopCommunity\Core\Price $oPrice)
+    public function applyVats(\OxidEsales\Eshop\Core\Price $oPrice)
     {
         $this->_applyVAT($oPrice, $this->getArticleVat());
     }
@@ -3088,13 +3102,13 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     /**
      * Applies discounts which should be applied in general case (for 0 amount)
      *
-     * @param oxprice $oPrice Price object
+     * @param \OxidEsales\Eshop\Core\Price $oPrice Price object
      */
     public function applyDiscountsForVariant($oPrice)
     {
         // apply discounts
         if (!$this->skipDiscounts()) {
-            $oDiscountList = oxRegistry::get("oxDiscountList");
+            $oDiscountList = \OxidEsales\Eshop\Core\Registry::get(\OxidEsales\Eshop\Application\Model\DiscountList::class);
             $aDiscounts = $oDiscountList->getArticleDiscounts($this, $this->getArticleUser());
 
             reset($aDiscounts);
@@ -3115,7 +3129,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         if (($sParentId = $this->oxarticles__oxparentid->value)) {
             $sIndex = $sParentId . "_" . $this->getLanguage();
             if (!isset(self::$_aLoadedParents[$sIndex])) {
-                self::$_aLoadedParents[$sIndex] = oxNew('oxArticle');
+                self::$_aLoadedParents[$sIndex] = oxNew(\OxidEsales\Eshop\Application\Model\Article::class);
                 self::$_aLoadedParents[$sIndex]->_blLoadPrice = false;
                 self::$_aLoadedParents[$sIndex]->_blLoadVariants = false;
 
@@ -3136,7 +3150,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     {
         // check if it is parent article
         if (!$this->isVariant() && $this->_hasAnyVariant()) {
-            $oDb = oxDb::getDb();
+            $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
             $sOxId = $oDb->quote($this->getId());
             $sOxShopId = $oDb->quote($this->getShopId());
             $iRemindActive = $oDb->quote($this->oxarticles__oxremindactive->value);
@@ -3198,7 +3212,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     public function isMdVariant()
     {
-        $oMdVariant = oxNew("oxVariantHandler");
+        $oMdVariant = oxNew(\OxidEsales\Eshop\Application\Model\VariantHandler::class);
 
         return $oMdVariant->isMdVariant($this);
     }
@@ -3216,7 +3230,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
             $sFields = 'oxid';
         }
         $sSelectWhere = "select $sFields from " . $this->_getObjectViewName('oxcategories') . " where";
-        $sQuotedPrice = oxDb::getDb()->quote($this->oxarticles__oxprice->value);
+        $sQuotedPrice = \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->quote($this->oxarticles__oxprice->value);
 
         return "$sSelectWhere oxpricefrom != 0 and oxpriceto != 0 and oxpricefrom <= $sQuotedPrice and oxpriceto >= $sQuotedPrice"
                . " union $sSelectWhere oxpricefrom != 0 and oxpriceto = 0 and oxpricefrom <= $sQuotedPrice"
@@ -3283,7 +3297,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     protected function getDatabase()
     {
-        return oxDb::getDb();
+        return \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
     }
 
     /**
@@ -3304,8 +3318,8 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
             $oVariants = $this->getVariants();
         }
 
-        /** @var oxVariantHandler $oVariantHandler */
-        $oVariantHandler = oxNew("oxVariantHandler");
+        /** @var \OxidEsales\Eshop\Application\Model\VariantHandler $oVariantHandler */
+        $oVariantHandler = oxNew(\OxidEsales\Eshop\Application\Model\VariantHandler::class);
         $this->_oMdVariants = $oVariantHandler->buildMdVariants($oVariants, $this->getId());
 
         return $this->_oMdVariants;
@@ -3351,7 +3365,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         $sPicName = basename($this->{"oxarticles__oxpic" . $iIndex}->value);
 
         if ($sPicName && $sPicName != "nopic.jpg") {
-            $sPicUrl = $this->getConfig()->getPictureUrl("master/product/" . $iIndex . "/" . $sPicName);
+            $sPicUrl = \OxidEsales\Eshop\Core\Registry::getConfig()->getPictureUrl("master/product/" . $iIndex . "/" . $sPicName);
             if (!$sPicUrl || basename($sPicUrl) == "nopic.jpg") {
                 $sPicUrl = false;
             }
@@ -3361,14 +3375,14 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     }
 
     /**
-     * Returns oxarticles__oxunitname value processed by oxLang::translateString()
+     * Returns oxarticles__oxunitname value processed by \OxidEsales\Eshop\Core\Language::translateString()
      *
      * @return string
      */
     public function getUnitName()
     {
         if ($this->oxarticles__oxunitname->value) {
-            return oxRegistry::getLang()->translateString($this->oxarticles__oxunitname->value);
+            return \OxidEsales\Eshop\Core\Registry::getLang()->translateString($this->oxarticles__oxunitname->value);
         }
     }
 
@@ -3386,11 +3400,11 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
 
             $sQ = "SELECT * FROM `oxfiles` WHERE `oxartid` = '" . $this->getId() . "'";
 
-            if (!$this->getConfig()->getConfigParam('blVariantParentBuyable') && $blAddFromParent) {
+            if (!\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('blVariantParentBuyable') && $blAddFromParent) {
                 $sQ .= " OR `oxartId` = '" . $this->oxarticles__oxparentid->value . "'";
             }
 
-            $oArticleFiles = oxNew("oxlist");
+            $oArticleFiles = oxNew(\OxidEsales\Eshop\Core\Model\ListModel::class);
             $oArticleFiles->init("oxfile");
             $oArticleFiles->selectString($sQ);
             $this->_aArticleFiles = $oArticleFiles;
@@ -3419,7 +3433,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         if (self::$_blHasAmountPrice === null) {
             self::$_blHasAmountPrice = false;
 
-            $oDb = oxDb::getDb();
+            $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
             $sQ = "SELECT 1 FROM `oxprice2article` LIMIT 1";
 
             if ($oDb->getOne($sQ)) {
@@ -3441,12 +3455,12 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     protected function _loadVariantList($loadSimpleVariants, $blRemoveNotOrderables = true, $forceCoreTableUsage = null)
     {
-        $variants = array();
+        $variants = [];
         if (($articleId = $this->getId())) {
             //do not load me as a parent later
             self::$_aLoadedParents[$articleId . "_" . $this->getLanguage()] = $this;
 
-            $config = $this->getConfig();
+            $config = \OxidEsales\Eshop\Core\Registry::getConfig();
 
             if (!$this->_blLoadVariants ||
                 (!$this->isAdmin() && !$config->getConfigParam('blLoadVariants')) ||
@@ -3472,11 +3486,11 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
             if (($this->_blHasVariants = $this->_hasAnyVariant($forceCoreTableUsage))) {
                 //load simple variants for lists
                 if ($loadSimpleVariants) {
-                    $variants = oxNew('oxSimpleVariantList');
+                    $variants = oxNew(\OxidEsales\Eshop\Application\Model\SimpleVariantList::class);
                     $variants->setParent($this);
                 } else {
                     //loading variants
-                    $variants = oxNew('oxArticleList');
+                    $variants = oxNew(\OxidEsales\Eshop\Application\Model\ArticleList::class);
                     $variants->getBaseObject()->modifyCacheKey('_variants');
                 }
 
@@ -3493,7 +3507,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
 
                 //if this is multidimensional variants, make additional processing
                 if ($config->getConfigParam('blUseMultidimensionVariants')) {
-                    $oMdVariants = oxNew("oxVariantHandler");
+                    $oMdVariants = oxNew(\OxidEsales\Eshop\Application\Model\VariantHandler::class);
                     $this->_blHasMdVariants = $oMdVariants->isMdVariant($variants->current());
                 }
                 stopProfile("selectVariants");
@@ -3523,9 +3537,9 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     protected function _selectCategoryIds($query, $field)
     {
-        $oDb = oxDb::getDb(oxDb::FETCH_MODE_ASSOC);
+        $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb(\OxidEsales\Eshop\Core\DatabaseProvider::FETCH_MODE_ASSOC);
         $aResult = $oDb->getAll($query);
-        $aReturn = array();
+        $aReturn = [];
 
         foreach ($aResult as $aValue) {
             $aValue = array_change_key_case($aValue, CASE_LOWER);
@@ -3548,9 +3562,9 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         $sO2CView = $this->_getObjectViewName('oxobject2category');
         $sCatView = $this->_getObjectViewName('oxcategories');
 
-        $sArticleIdSql = 'oxobject2category.oxobjectid=' . oxDb::getDb()->quote($this->getId());
+        $sArticleIdSql = 'oxobject2category.oxobjectid=' . \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->quote($this->getId());
         if ($this->getParentId()) {
-            $sArticleIdSql = '(' . $sArticleIdSql . ' or oxobject2category.oxobjectid=' . oxDb::getDb()->quote($this->getParentId()) . ')';
+            $sArticleIdSql = '(' . $sArticleIdSql . ' or oxobject2category.oxobjectid=' . \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->quote($this->getParentId()) . ')';
         }
         $sActiveCategorySql = $blActCats ? $this->_getActiveCategorySelectSnippet() : '';
 
@@ -3579,15 +3593,15 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     /**
      * Calculates price of article (adds taxes, currency and discounts).
      *
-     * @param oxPrice $oPrice price object
-     * @param double  $dVat   vat value, optional, if passed, bypasses "bl_perfCalcVatOnlyForBasketOrder" config value
+     * @param \OxidEsales\Eshop\Core\Price $oPrice price object
+     * @param double                       $dVat   vat value, optional, if passed, bypasses "bl_perfCalcVatOnlyForBasketOrder" config value
      *
-     * @return oxPrice
+     * @return \OxidEsales\Eshop\Core\Price
      */
     protected function _calculatePrice($oPrice, $dVat = null)
     {
         // apply VAT only if configuration requires it
-        if (isset($dVat) || !$this->getConfig()->getConfigParam('bl_perfCalcVatOnlyForBasketOrder')) {
+        if (isset($dVat) || !\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('bl_perfCalcVatOnlyForBasketOrder')) {
             $this->_applyVAT($oPrice, isset($dVat) ? $dVat : $this->getArticleVat());
         }
 
@@ -3595,7 +3609,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         $this->_applyCurrency($oPrice);
         // apply discounts
         if (!$this->skipDiscounts()) {
-            $oDiscountList = oxRegistry::get("oxDiscountList");
+            $oDiscountList = \OxidEsales\Eshop\Core\Registry::get(\OxidEsales\Eshop\Application\Model\DiscountList::class);
             $aDiscounts = $oDiscountList->getArticleDiscounts($this, $this->getArticleUser());
 
             reset($aDiscounts);
@@ -3618,12 +3632,12 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     protected function _hasAnyVariant($blForceCoreTable = null)
     {
         if (($sId = $this->getId())) {
-            if ($this->oxarticles__oxshopid->value == $this->getConfig()->getShopId()) {
+            if ($this->oxarticles__oxshopid->value == \OxidEsales\Eshop\Core\Registry::getConfig()->getShopId()) {
                 return (bool) $this->oxarticles__oxvarcount->value;
             }
             $sArticleTable = $this->getViewName($blForceCoreTable);
 
-            return (bool) oxDb::getDb()->getOne("select 1 from $sArticleTable where oxparentid='{$sId}'");
+            return (bool) \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->getOne("select 1 from $sArticleTable where oxparentid='{$sId}'");
         }
 
         return false;
@@ -3663,17 +3677,17 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         if ($this->_blEmployMultilanguage) {
             $sValue = $this->getLongDescription()->getRawValue();
             if ($sValue !== null) {
-                $oArtExt = oxNew('oxI18n');
+                $oArtExt = oxNew(\OxidEsales\Eshop\Core\Model\MultiLanguageModel::class);
                 $oArtExt->init('oxartextends');
                 $oArtExt->setLanguage((int) $this->getLanguage());
                 if (!$oArtExt->load($this->getId())) {
                     $oArtExt->setId($this->getId());
                 }
-                $oArtExt->oxartextends__oxlongdesc = new oxField($sValue, oxField::T_RAW);
+                $oArtExt->oxartextends__oxlongdesc = new \OxidEsales\Eshop\Core\Field($sValue, \OxidEsales\Eshop\Core\Field::T_RAW);
                 $oArtExt->save();
             }
         } else {
-            $oArtExt = oxNew('oxI18n');
+            $oArtExt = oxNew(\OxidEsales\Eshop\Core\Model\MultiLanguageModel::class);
             $oArtExt->setEnableMultilang(false);
             $oArtExt->init('oxartextends');
             $aObjFields = $oArtExt->_getAllFields(true);
@@ -3687,14 +3701,14 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
 
                     if (isset($this->$sField)) {
                         $sLongDesc = null;
-                        if ($this->$sField instanceof \OxidEsales\EshopCommunity\Core\Field) {
+                        if ($this->$sField instanceof \OxidEsales\Eshop\Core\Field) {
                             $sLongDesc = $this->$sField->getRawValue();
                         } elseif (is_object($this->$sField)) {
                             $sLongDesc = $this->$sField->value;
                         }
                         if (isset($sLongDesc)) {
                             $sAEField = $oArtExt->_getFieldLongName($sKey);
-                            $oArtExt->$sAEField = new oxField($sLongDesc, oxField::T_RAW);
+                            $oArtExt->$sAEField = new \OxidEsales\Eshop\Core\Field($sLongDesc, \OxidEsales\Eshop\Core\Field::T_RAW);
                         }
                     }
                 }
@@ -3708,7 +3722,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     protected function _skipSaveFields()
     {
-        $this->_aSkipSaveFields = array();
+        $this->_aSkipSaveFields = [];
 
         $this->_aSkipSaveFields[] = 'oxtimestamp';
         // $this->_aSkipSaveFields[] = 'oxlongdesc';
@@ -3755,7 +3769,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         $dPrice = $this->$sVarName->value;
 
         // #1437/1436C - added config option, and check for zero A,B,C price values
-        if ($this->getConfig()->getConfigParam('blOverrideZeroABCPrices') && (double) $dPrice == 0) {
+        if (\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('blOverrideZeroABCPrices') && (double) $dPrice == 0) {
             $dPrice = $this->oxarticles__oxprice->value;
         }
 
@@ -3800,7 +3814,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     protected function _modifySelectListPrice($dPrice, $aChosenList = null)
     {
-        $myConfig = $this->getConfig();
+        $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
         // #690
         if ($myConfig->getConfigParam('bl_perfLoadSelectLists') && $myConfig->getConfigParam('bl_perfUseSelectlistPrice')) {
             $aSelLists = $this->getSelectLists();
@@ -3811,7 +3825,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
                     if ($oSel->priceUnit == 'abs') {
                         $dPrice += $oSel->price;
                     } elseif ($oSel->priceUnit == '%') {
-                        $dPrice += oxPrice::percent($dPrice, $oSel->price);
+                        $dPrice += \OxidEsales\Eshop\Core\Price::percent($dPrice, $oSel->price);
                     }
                 }
             }
@@ -3829,11 +3843,11 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     protected function _fillAmountPriceList($aAmPriceList)
     {
-        $oLang = oxRegistry::getLang();
+        $oLang = \OxidEsales\Eshop\Core\Registry::getLang();
 
         // trying to find lowest price value
         foreach ($aAmPriceList as $sId => $oItem) {
-            /** @var oxPrice $oItemPrice */
+            /** @var \OxidEsales\Eshop\Core\Price $oItemPrice */
             $oItemPrice = $this->_getPriceObject();
             if ($oItem->oxprice2article__oxaddabs->value) {
                 $dBasePrice = $oItem->oxprice2article__oxaddabs->value;
@@ -3852,6 +3866,11 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
 
             $aAmPriceList[$sId]->fbrutprice = $oLang->formatCurrency($oItemPrice->getBruttoPrice());
             $aAmPriceList[$sId]->fnetprice = $oLang->formatCurrency($oItemPrice->getNettoPrice());
+
+            if ($quantity = $this->getUnitQuantity()) {
+                $aAmPriceList[$sId]->fbrutamountprice = $oLang->formatCurrency($oItemPrice->getBruttoPrice() / $quantity);
+                $aAmPriceList[$sId]->fnetamountprice = $oLang->formatCurrency($oItemPrice->getNettoPrice() / $quantity);
+            }
         }
 
         return $aAmPriceList;
@@ -3866,14 +3885,14 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     public function getVariantIds($blActiveVariants = true)
     {
-        $aSelect = array();
+        $aSelect = [];
         $sId = $this->getId();
         if ($sId) {
             $sActiveSqlSnippet = "";
             if ($blActiveVariants) {
                 $sActiveSqlSnippet = " and " . $this->getSqlActiveSnippet(true);
             }
-            $oDb = oxDb::getDb(oxDb::FETCH_MODE_ASSOC);
+            $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb(\OxidEsales\Eshop\Core\DatabaseProvider::FETCH_MODE_ASSOC);
             $sQ = "select oxid from " . $this->getViewName(true) . " where oxparentid = " . $oDb->quote($sId) .
                   $sActiveSqlSnippet . " order by oxsort";
             $oRs = $oDb->select($sQ);
@@ -3896,7 +3915,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     public function getArticleVat()
     {
         if (!isset($this->_dArticleVat)) {
-            $this->_dArticleVat = oxRegistry::get("oxVatSelector")->getArticleVat($this);
+            $this->_dArticleVat = \OxidEsales\Eshop\Core\Registry::get(\OxidEsales\Eshop\Application\Model\VatSelector::class)->getArticleVat($this);
         }
 
         return $this->_dArticleVat;
@@ -3905,15 +3924,15 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     /**
      * Applies VAT to article
      *
-     * @param oxPrice $oPrice Price object
-     * @param double  $dVat   VAT percent
+     * @param \OxidEsales\Eshop\Core\Price $oPrice Price object
+     * @param double                       $dVat   VAT percent
      */
-    protected function _applyVAT(\OxidEsales\EshopCommunity\Core\Price $oPrice, $dVat)
+    protected function _applyVAT(\OxidEsales\Eshop\Core\Price $oPrice, $dVat)
     {
         startProfile(__FUNCTION__);
         $oPrice->setVAT($dVat);
-        /** @var oxVatSelector $oVatSelector */
-        $oVatSelector = oxRegistry::get("oxVatSelector");
+        /** @var \OxidEsales\Eshop\Application\Model\VatSelector $oVatSelector */
+        $oVatSelector = \OxidEsales\Eshop\Core\Registry::get(\OxidEsales\Eshop\Application\Model\VatSelector::class);
         if (($dVat = $oVatSelector->getArticleUserVat($this)) !== false) {
             $oPrice->setUserVat($dVat);
         }
@@ -3923,13 +3942,13 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     /**
      * Applies currency factor
      *
-     * @param oxPrice $oPrice Price object
-     * @param object  $oCur   Currency object
+     * @param \OxidEsales\Eshop\Core\Price $oPrice Price object
+     * @param object                       $oCur   Currency object
      */
-    protected function _applyCurrency(\OxidEsales\EshopCommunity\Core\Price $oPrice, $oCur = null)
+    protected function _applyCurrency(\OxidEsales\Eshop\Core\Price $oPrice, $oCur = null)
     {
         if (!$oCur) {
-            $oCur = $this->getConfig()->getActShopCurrencyObject();
+            $oCur = \OxidEsales\Eshop\Core\Registry::getConfig()->getActShopCurrencyObject();
         }
 
         $oPrice->multiply($oCur->rate);
@@ -3944,7 +3963,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     protected function _getAttribsString(&$sAttributeSql, &$iCnt)
     {
         // we do not use lists here as we don't need this overhead right now
-        $oDb = oxDb::getDb();
+        $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
         $sSelect = 'select oxattrid from oxobject2attribute where oxobject2attribute.oxobjectid=' . $oDb->quote($this->getId());
         if ($this->getParentId()) {
             $sSelect .= ' OR oxobject2attribute.oxobjectid=' . $oDb->quote($this->getParentId());
@@ -3969,7 +3988,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     protected function _getSimList($sAttributeSql, $iCnt)
     {
         // #523A
-        $iAttrPercent = $this->getConfig()->getConfigParam('iAttributesPercent') / 100;
+        $iAttrPercent = \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('iAttributesPercent') / 100;
         // 70% same attributes
         if (!$iAttrPercent || $iAttrPercent < 0 || $iAttrPercent > 1) {
             $iAttrPercent = 0.70;
@@ -3977,7 +3996,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         // #1137V iAttributesPercent = 100 doesn't work
         $iHitMin = ceil($iCnt * $iAttrPercent);
 
-        $aExcludeIds = array();
+        $aExcludeIds = [];
         $aExcludeIds[] = $this->getId();
         if ($this->getParentId()) {
             $aExcludeIds[] = $this->getParentId();
@@ -3986,10 +4005,10 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         // we do not use lists here as we don't need this overhead right now
         $sSelect = "select oxobjectid from oxobject2attribute as t1 where
                     ( $sAttributeSql )
-                    and t1.oxobjectid NOT IN (" . implode(', ', oxDb::getDb()->quoteArray($aExcludeIds)) . ")
+                    and t1.oxobjectid NOT IN (" . implode(', ', \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->quoteArray($aExcludeIds)) . ")
                     group by t1.oxobjectid having count(*) >= $iHitMin LIMIT 0, 20";
 
-        return oxDb::getDb()->getCol($sSelect);
+        return \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->getCol($sSelect);
     }
 
     /**
@@ -4003,11 +4022,11 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     protected function _generateSimListSearchStr($sArticleTable, $aList)
     {
         $sFieldList = $this->getSelectFields();
-        $aList = array_slice($aList, 0, $this->getConfig()->getConfigParam('iNrofSimilarArticles'));
+        $aList = array_slice($aList, 0, \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('iNrofSimilarArticles'));
 
         $sSearch = "select $sFieldList from $sArticleTable where " . $this->getSqlActiveSnippet() . "  and $sArticleTable.oxissearch = 1 and $sArticleTable.oxid in ( ";
 
-        $sSearch .= implode(',', oxdb::getDb()->quoteArray($aList)) . ')';
+        $sSearch .= implode(',', \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->quoteArray($aList)) . ')';
 
         // #524A -- randomizing articles in attribute list
         $sSearch .= ' order by rand() ';
@@ -4033,7 +4052,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         if (!$blSearchPriceCat) {
             return "select {$sCatView}.* from {$sO2CView} as oxobject2category left join {$sCatView} on
                          {$sCatView}.oxid = oxobject2category.oxcatnid
-                         where oxobject2category.oxobjectid=" . oxDb::getDb()->quote($sOXID) . " and {$sCatView}.oxid is not null ";
+                         where oxobject2category.oxobjectid=" . \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->quote($sOXID) . " and {$sCatView}.oxid is not null ";
         }
         return "select {$sCatView}.* from {$sCatView} where
                       '{$this->oxarticles__oxprice->value}' >= {$sCatView}.oxpricefrom and
@@ -4061,7 +4080,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         }
 
         // adding variants
-        $oDb = oxDb::getDb(oxDb::FETCH_MODE_ASSOC);
+        $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb(\OxidEsales\Eshop\Core\DatabaseProvider::FETCH_MODE_ASSOC);
         $oRs = $oDb->select("select oxid from {$sArtTable} where oxparentid = " . $oDb->quote($sParentIdForVariants) . " and oxid != " . $oDb->quote($this->oxarticles__oxid->value));
         if ($oRs != false && $oRs->count() > 0) {
             while (!$oRs->EOF) {
@@ -4070,7 +4089,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
             }
         }
 
-        $iLimit = (int) $this->getConfig()->getConfigParam('iNrofCustomerWhoArticles');
+        $iLimit = (int) \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('iNrofCustomerWhoArticles');
         $iLimit = $iLimit ? ($iLimit * 10) : 50;
 
         // building sql (optimized)
@@ -4106,7 +4125,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         $sCategoryView = getViewName('oxcategories');
         $sO2CView = getViewName('oxobject2category');
 
-        $oDb = oxDb::getDb();
+        $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
         $sOXID = $oDb->quote($sOXID);
         $sCatId = $oDb->quote($sCatId);
 
@@ -4130,7 +4149,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      *
      * @deprecated on b-dev (2015-04-02); use buildAmountPriceList().
      *
-     * @return oxAmountPriceList
+     * @return \OxidEsales\Eshop\Application\Model\AmountPriceList
      */
     protected function _getAmountPriceList()
     {
@@ -4140,13 +4159,13 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     /**
      * Collecting assigned to article amount-price list.
      *
-     * @return oxAmountPriceList
+     * @return \OxidEsales\Eshop\Application\Model\AmountPriceList
      */
     protected function buildAmountPriceList()
     {
         if ($this->getAmountPriceList() === null) {
-            /** @var oxAmountPriceList $oAmPriceList */
-            $oAmPriceList = oxNew('oxAmountPriceList');
+            /** @var \OxidEsales\Eshop\Application\Model\AmountPriceList $oAmPriceList */
+            $oAmPriceList = oxNew(\OxidEsales\Eshop\Application\Model\AmountPriceList::class);
             $this->setAmountPriceList($oAmPriceList);
 
             if (!$this->skipDiscounts()) {
@@ -4157,9 +4176,9 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
                 $oBasePrice = $this->_getGroupPrice();
                 foreach ($oAmPriceList as $oAmPrice) {
                     if ($oAmPrice->oxprice2article__oxaddperc->value) {
-                        $oAmPrice->oxprice2article__oxaddabs = new oxField(
-                            oxPrice::percent($oBasePrice, 100 - $oAmPrice->oxprice2article__oxaddperc->value),
-                            oxField::T_RAW
+                        $oAmPrice->oxprice2article__oxaddabs = new \OxidEsales\Eshop\Core\Field(
+                            \OxidEsales\Eshop\Core\Price::percent($oBasePrice, 100 - $oAmPrice->oxprice2article__oxaddperc->value),
+                            \OxidEsales\Eshop\Core\Field::T_RAW
                         );
                     }
                 }
@@ -4191,7 +4210,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         }
 
         // certain fields with zero value treat as empty
-        $aZeroValueFields = array('oxarticles__oxprice', 'oxarticles__oxvat', 'oxarticles__oxunitquantity');
+        $aZeroValueFields = ['oxarticles__oxprice', 'oxarticles__oxvat', 'oxarticles__oxunitquantity'];
 
         if (!$mValue && in_array($sFieldName, $aZeroValueFields)) {
             return true;
@@ -4300,7 +4319,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     protected function _assignNotBuyableParent()
     {
-        if (!$this->getConfig()->getConfigParam('blVariantParentBuyable') &&
+        if (!\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('blVariantParentBuyable') &&
             ($this->_blHasVariants || $this->oxarticles__oxvarstock->value || $this->oxarticles__oxvarcount->value)
         ) {
             $this->_blNotBuyableParent = true;
@@ -4312,14 +4331,14 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     protected function _assignStock()
     {
-        $myConfig = $this->getConfig();
+        $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
         // -----------------------------------
         // stock
         // -----------------------------------
 
         // #1125 A. must round (using floor()) value taken from database and cast to int
         if (!$myConfig->getConfigParam('blAllowUnevenAmounts') && !$this->isAdmin()) {
-            $this->oxarticles__oxstock = new oxField((int) floor($this->oxarticles__oxstock->value));
+            $this->oxarticles__oxstock = new \OxidEsales\Eshop\Core\Field((int) floor($this->oxarticles__oxstock->value));
         }
         //GREEN light
         $this->_iStockStatus = 0;
@@ -4349,7 +4368,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         // stock
         if ($myConfig->getConfigParam('blUseStock') && ($this->oxarticles__oxstockflag->value == 3 || $this->oxarticles__oxstockflag->value == 2)) {
             $iOnStock = $this->oxarticles__oxstock->value;
-            if ($this->getConfig()->getConfigParam('blPsBasketReservationEnabled')) {
+            if (\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('blPsBasketReservationEnabled')) {
                 $iOnStock += $this->getSession()->getBasketReservations()->getReservedAmount($this->getId());
             }
             if ($iOnStock <= 0) {
@@ -4385,7 +4404,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     protected function _assignPersistentParam()
     {
         // Persistent Parameter Handling
-        $aPersParam = oxRegistry::getSession()->getVariable('persparam');
+        $aPersParam = \OxidEsales\Eshop\Core\Registry::getSession()->getVariable('persparam');
         if (isset($aPersParam) && isset($aPersParam[$this->getId()])) {
             $this->_aPersistParam = $aPersParam[$this->getId()];
         }
@@ -4396,7 +4415,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     protected function _assignDynImageDir()
     {
-        $myConfig = $this->getConfig();
+        $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
 
         $sThisShop = $this->oxarticles__oxshopid->value;
 
@@ -4413,7 +4432,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     {
         // #657 add a flag if article is on comparisonlist
 
-        $aItems = oxRegistry::getSession()->getVariable('aFiltcompproducts');
+        $aItems = \OxidEsales\Eshop\Core\Registry::getSession()->getVariable('aFiltcompproducts');
         if (isset($aItems[$this->getId()])) {
             $this->_blIsOnComparisonList = true;
         }
@@ -4421,7 +4440,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
 
     /**
      * Sets article creation date
-     * (oxarticle::oxarticles__oxinsert). Then executes parent method
+     * (\OxidEsales\Eshop\Application\Model\Article::oxarticles__oxinsert). Then executes parent method
      * parent::_insert() and returns insertion status.
      *
      * @return bool
@@ -4429,17 +4448,17 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     protected function _insert()
     {
         // set oxinsert
-        $sNow = date('Y-m-d H:i:s', oxRegistry::get("oxUtilsDate")->getTime());
-        $this->oxarticles__oxinsert = new oxField($sNow);
+        $sNow = date('Y-m-d H:i:s', \OxidEsales\Eshop\Core\Registry::getUtilsDate()->getTime());
+        $this->oxarticles__oxinsert = new \OxidEsales\Eshop\Core\Field($sNow);
         if (!is_object($this->oxarticles__oxsubclass) || $this->oxarticles__oxsubclass->value == '') {
-            $this->oxarticles__oxsubclass = new oxField('oxarticle');
+            $this->oxarticles__oxsubclass = new \OxidEsales\Eshop\Core\Field('oxarticle');
         }
 
         return parent::_insert();
     }
 
     /**
-     * Executes oxArticle::_skipSaveFields() and updates article information
+     * Executes \OxidEsales\Eshop\Application\Model\Article::_skipSaveFields() and updates article information
      *
      * @return bool
      */
@@ -4462,7 +4481,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     protected function _deleteRecords($articleId)
     {
-        $oDb = oxDb::getDb();
+        $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
 
         $articleId = $oDb->quote($articleId);
 
@@ -4519,11 +4538,11 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     protected function _deleteVariantRecords($sOXID)
     {
         if ($sOXID) {
-            $database = oxDb::getDb();
+            $database = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
             //collect variants to remove recursively
             $query= 'select oxid from ' . $this->getViewName() . ' where oxparentid = ?';
-            $rs = $database->select($query, array($sOXID));
-            $oArticle = oxNew("oxArticle");
+            $rs = $database->select($query, [$sOXID]);
+            $oArticle = oxNew(\OxidEsales\Eshop\Application\Model\Article::class);
             if ($rs != false && $rs->count() > 0) {
                 while (!$rs->EOF) {
                     $oArticle->setId($rs->fields[0]);
@@ -4539,17 +4558,14 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     protected function _deletePics()
     {
-        $myUtilsPic = oxRegistry::get("oxUtilsPic");
-        $myConfig = $this->getConfig();
-        $oPictureHandler = oxRegistry::get("oxPictureHandler");
+        $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
+        $oPictureHandler = \OxidEsales\Eshop\Core\Registry::getPictureHandler();
 
         //deleting custom main icon
         $oPictureHandler->deleteMainIcon($this);
 
         //deleting custom thumbnail
         $oPictureHandler->deleteThumbnail($this);
-
-        $sAbsDynImageDir = $myConfig->getPictureDir(false);
 
         // deleting master image and all generated images
         $iPicCount = $myConfig->getConfigParam('iPicCount');
@@ -4567,7 +4583,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     protected function _onChangeResetCounts($sOxid, $sVendorId = null, $sManufacturerId = null)
     {
-        $myUtilsCount = oxRegistry::get("oxUtilsCount");
+        $myUtilsCount = \OxidEsales\Eshop\Core\Registry::getUtilsCount();
 
         if ($sVendorId) {
             $myUtilsCount->resetVendorArticleCount($sVendorId);
@@ -4592,18 +4608,18 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     protected function _onChangeUpdateStock($parentId)
     {
         if ($parentId) {
-            $database = oxDb::getDb();
+            $database = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
             $query = 'SELECT oxstock, oxvendorid, oxmanufacturerid FROM oxarticles WHERE oxid = ?';
-            $rs = $database->select($query, array($parentId));
+            $rs = $database->select($query, [$parentId]);
             $oldStock = $rs->fields[0];
             $vendorId = $rs->fields[1];
             $manufacturerId = $rs->fields[2];
 
             $query = 'SELECT SUM(oxstock) FROM ' . $this->getViewName(true) . ' WHERE oxparentid = ? AND ' . $this->getSqlActiveSnippet(true) . ' AND oxstock > 0 ';
-            $stock = (float) $database->getOne($query, array($parentId));
+            $stock = (float) $database->getOne($query, [$parentId]);
 
             $query = 'UPDATE oxarticles SET oxvarstock = ? WHERE oxid = ?';
-            $database->execute($query, array($stock, $parentId));
+            $database->execute($query, [$stock, $parentId]);
 
             //now lets update category counts
             //first detect stock status change for this article (to or from 0)
@@ -4628,7 +4644,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     protected function _onChangeStockResetCount($sOxid)
     {
-        $myConfig = $this->getConfig();
+        $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
 
         if ($myConfig->getConfigParam('blUseStock') && $this->oxarticles__oxstockflag->value == 2 &&
             ($this->oxarticles__oxstock->value + $this->oxarticles__oxvarstock->value) <= 0
@@ -4649,13 +4665,13 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     protected function _onChangeUpdateVarCount($parentId)
     {
         if ($parentId) {
-            $database = oxDb::getDb();
+            $database = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
 
             $query = "SELECT COUNT(*) AS varcount FROM oxarticles WHERE oxparentid = ?";
-            $varCount = (int) $database->getOne($query, array($parentId));
+            $varCount = (int) $database->getOne($query, [$parentId]);
 
             $query = "UPDATE oxarticles SET oxvarcount = ? WHERE oxid = ?";
-            $database->execute($query, array($varCount, $parentId));
+            $database->execute($query, [$varCount, $parentId]);
         }
     }
 
@@ -4667,7 +4683,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     protected function _setVarMinMaxPrice($sParentId)
     {
         if ($sParentId) {
-            $database = oxDb::getDb(oxDb::FETCH_MODE_ASSOC);
+            $database = \OxidEsales\Eshop\Core\DatabaseProvider::getDb(\OxidEsales\Eshop\Core\DatabaseProvider::FETCH_MODE_ASSOC);
             $sQ = '
                 SELECT
                     MIN( IF( `oxarticles`.`oxprice` > 0, `oxarticles`.`oxprice`, `p`.`oxprice` ) ) AS `varminprice`,
@@ -4721,7 +4737,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
 
         $sMasterPic = 'product/' . $iIndex . "/" . $sPicName;
 
-        if ($this->getConfig()->getMasterPicturePath($sMasterPic)) {
+        if (\OxidEsales\Eshop\Core\Registry::getConfig()->getMasterPicturePath($sMasterPic)) {
             return true;
         }
 
@@ -4736,7 +4752,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     protected function _isPriceViewModeNetto()
     {
-        $blResult = (bool) $this->getConfig()->getConfigParam('blShowNetPrice');
+        $blResult = (bool) \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('blShowNetPrice');
         $oUser = $this->getArticleUser();
         if ($oUser) {
             $blResult = $oUser->isPriceViewModeNetto();
@@ -4755,8 +4771,8 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     protected function _getPriceObject($blCalculationModeNetto = null)
     {
-        /** @var oxPrice $oPrice */
-        $oPrice = oxNew('oxPrice');
+        /** @var \OxidEsales\Eshop\Core\Price $oPrice */
+        $oPrice = oxNew(\OxidEsales\Eshop\Core\Price::class);
 
         if ($blCalculationModeNetto === null) {
             $blCalculationModeNetto = $this->_isPriceViewModeNetto();
@@ -4774,7 +4790,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     /**
      * Depending on view mode prepare price for viewing
      *
-     * @param oxPrice $oPrice price object
+     * @param \OxidEsales\Eshop\Core\Price $oPrice price object
      *
      * @return double
      */
@@ -4805,13 +4821,13 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
             $blCalculationModeNetto = $this->_isPriceViewModeNetto();
         }
 
-        $oCurrency = $this->getConfig()->getActShopCurrencyObject();
+        $oCurrency = \OxidEsales\Eshop\Core\Registry::getConfig()->getActShopCurrencyObject();
 
-        $blEnterNetPrice = $this->getConfig()->getConfigParam('blEnterNetPrice');
+        $blEnterNetPrice = \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('blEnterNetPrice');
         if ($blCalculationModeNetto && !$blEnterNetPrice) {
-            $dPrice = round(oxPrice::brutto2Netto($dPrice, $dVat), $oCurrency->decimal);
+            $dPrice = round(\OxidEsales\Eshop\Core\Price::brutto2Netto($dPrice, $dVat), $oCurrency->decimal);
         } elseif (!$blCalculationModeNetto && $blEnterNetPrice) {
-            $dPrice = round(oxPrice::netto2Brutto($dPrice, $dVat), $oCurrency->decimal);
+            $dPrice = round(\OxidEsales\Eshop\Core\Price::netto2Brutto($dPrice, $dVat), $oCurrency->decimal);
         }
 
         return $dPrice;
@@ -4852,10 +4868,10 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         if ($sPriceSuffix === '') {
             $dPrice = $this->oxarticles__oxprice->value;
         } else {
-            if ($this->getConfig()->getConfigParam('blOverrideZeroABCPrices')) {
-                $dPrice = ($this->{oxarticles__oxprice . $sPriceSuffix}->value != 0) ? $this->{oxarticles__oxprice . $sPriceSuffix}->value : $this->oxarticles__oxprice->value;
+            if (\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('blOverrideZeroABCPrices')) {
+                $dPrice = ($this->{'oxarticles__oxprice' . $sPriceSuffix}->value != 0) ? $this->{'oxarticles__oxprice' . $sPriceSuffix}->value : $this->oxarticles__oxprice->value;
             } else {
-                $dPrice = $this->{oxarticles__oxprice . $sPriceSuffix}->value;
+                $dPrice = $this->{'oxarticles__oxprice' . $sPriceSuffix}->value;
             }
         }
 
@@ -4878,7 +4894,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
                     $dPrice = $this->oxarticles__oxvarminprice->value;
                 } else {
                     $sSql = 'SELECT ';
-                    if ($this->getConfig()->getConfigParam('blOverrideZeroABCPrices')) {
+                    if (\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('blOverrideZeroABCPrices')) {
                         $sSql .= 'MIN( IF(`oxprice' . $sPriceSuffix . '` = 0, `oxprice`, `oxprice' . $sPriceSuffix . '`) ) AS `varminprice` ';
                     } else {
                         $sSql .= 'MIN(`oxprice' . $sPriceSuffix . '`) AS `varminprice` ';
@@ -4886,9 +4902,9 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
 
                     $sSql .= ' FROM ' . $this->getViewName(true) . '
                     WHERE ' . $this->getSqlActiveSnippet(true) . '
-                        AND ( `oxparentid` = ' . oxDb::getDb()->quote($this->getId()) . ' )';
+                        AND ( `oxparentid` = ' . \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->quote($this->getId()) . ' )';
 
-                    $dPrice = oxDb::getDb()->getOne($sSql);
+                    $dPrice = \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->getOne($sSql);
                 }
             }
 
@@ -4914,7 +4930,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
                     $dPrice = $this->oxarticles__oxvarmaxprice->value;
                 } else {
                     $sSql = 'SELECT ';
-                    if ($this->getConfig()->getConfigParam('blOverrideZeroABCPrices')) {
+                    if (\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('blOverrideZeroABCPrices')) {
                         $sSql .= 'MAX( IF(`oxprice' . $sPriceSuffix . '` = 0, `oxprice`, `oxprice' . $sPriceSuffix . '`) ) AS `varmaxprice` ';
                     } else {
                         $sSql .= 'MAX(`oxprice' . $sPriceSuffix . '`) AS `varmaxprice` ';
@@ -4922,9 +4938,9 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
 
                     $sSql .= ' FROM ' . $this->getViewName(true) . '
                         WHERE ' . $this->getSqlActiveSnippet(true) . '
-                            AND ( `oxparentid` = ' . oxDb::getDb()->quote($this->getId()) . ' )';
+                            AND ( `oxparentid` = ' . \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->quote($this->getId()) . ' )';
 
-                    $dPrice = oxDb::getDb()->getOne($sSql);
+                    $dPrice = \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->getOne($sSql);
                 }
             }
 
@@ -4965,9 +4981,9 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     protected function _loadFromDb($articleId)
     {
-        $sSelect = $this->buildSelectString(array($this->getViewName() . ".oxid" => $articleId));
+        $sSelect = $this->buildSelectString([$this->getViewName() . ".oxid" => $articleId]);
 
-        return oxDb::getDb(oxDb::FETCH_MODE_ASSOC)->getRow($sSelect);
+        return \OxidEsales\Eshop\Core\DatabaseProvider::getDb(\OxidEsales\Eshop\Core\DatabaseProvider::FETCH_MODE_ASSOC)->getRow($sSelect);
     }
 
 
@@ -4988,7 +5004,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     protected function _updateParentDependFields()
     {
-        $oDb = oxDb::getDb();
+        $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
 
         foreach ($this->_getCopyParentFields() as $sField) {
             $sValue = isset($this->$sField->value) ? $this->$sField->value : 0;
@@ -5020,7 +5036,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
         $sParent = $this->getParentArticle();
         if ($sParent) {
             foreach ($this->_getCopyParentFields() as $sField) {
-                $this->$sField = new oxField($sParent->$sField->value);
+                $this->$sField = new \OxidEsales\Eshop\Core\Field($sParent->$sField->value);
             }
         }
     }
@@ -5030,8 +5046,8 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
      */
     protected function _saveSortingFieldValuesOnLoad()
     {
-        $aSortingFields = oxRegistry::getConfig()->getConfigParam('aSortCols');
-        $aSortingFields = !empty($aSortingFields) ? (array) $aSortingFields : array();
+        $aSortingFields = \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('aSortCols');
+        $aSortingFields = !empty($aSortingFields) ? (array) $aSortingFields : [];
 
         foreach ($aSortingFields as $sField) {
             $sFullField = $this->_getFieldLongName($sField);
@@ -5060,8 +5076,8 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     /**
      * Set needed parameters to article list object like language.
      *
-     * @param oxBase    $baseObject          article list template object.
-     * @param bool|null $forceCoreTableUsage if true forces core table use, default is false [optional]
+     * @param \OxidEsales\Eshop\Core\Model\BaseModel $baseObject          article list template object.
+     * @param bool|null                              $forceCoreTableUsage if true forces core table use, default is false [optional]
      */
     protected function updateVariantsBaseObject($baseObject, $forceCoreTableUsage = null)
     {
@@ -5069,7 +5085,7 @@ class Article extends \oxI18n implements ArticleInterface, \oxIUrl
     }
 
     /**
-     * @param oxManufacturer $oManufacturer
+     * @param \OxidEsales\Eshop\Application\Model\Manufacturer $oManufacturer
      */
     protected function updateManufacturerBeforeLoading($oManufacturer)
     {

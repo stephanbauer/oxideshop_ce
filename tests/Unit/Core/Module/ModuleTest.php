@@ -1,28 +1,15 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
-namespace Unit\Core;
+namespace OxidEsales\EshopCommunity\Tests\Unit\Core;
 
-use \shop;
-use \oxRegistry;
+use OxidEsales\Eshop\Core\Config;
+use OxidEsales\Eshop\Core\Module\Module;
+use OxidEsales\Eshop\Core\Registry;
+use oxModule;
+use oxRegistry;
 
 /**
  * @group module
@@ -97,7 +84,7 @@ class ModuleTest extends \OxidTestCase
     public function testLoadByDir()
     {
         $aModulesPaths = array("testModuleId" => "test/path");
-        $oModule = $this->getMock("oxModule", array("load", "getModulePaths"));
+        $oModule = $this->getMock(\OxidEsales\Eshop\Core\Module\Module::class, array("load", "getModulePaths"));
         $oModule->expects($this->at(0))->method('getModulePaths')->will($this->returnValue($aModulesPaths));
         $oModule->expects($this->at(1))->method('load')->with($this->equalTo("noSuchTest/path"))->will($this->returnValue(false));
         $oModule->expects($this->at(2))->method('getModulePaths')->will($this->returnValue($aModulesPaths));
@@ -272,7 +259,7 @@ class ModuleTest extends \OxidTestCase
      */
     public function testIsActiveWithNonExistingModuleLoaded()
     {
-        $oModule = $this->getMock("oxmodule", array("getDisabledModules"));
+        $oModule = $this->getMock(\OxidEsales\Eshop\Core\Module\Module::class, array("getDisabledModules"));
         $oModule->expects($this->any())->method('getDisabledModules')->will($this->returnValue(array()));
         $oModule->load('non_existing_module');
 
@@ -350,12 +337,12 @@ class ModuleTest extends \OxidTestCase
      */
     public function testIsActive_shopClassExtendedByMoreThanOneClass($aAlreadyActivatedModule, $aModuleToActivate, $blResult)
     {
-        $oConfig = $this->getMock('oxConfig', array('getModulesWithExtendedClass'));
+        $oConfig = $this->getMock(\OxidEsales\Eshop\Core\Config::class, array('getModulesWithExtendedClass'));
         $oConfig->expects($this->any())->method('getModulesWithExtendedClass')->will($this->returnValue($aAlreadyActivatedModule));
 
         $oModule = oxNew('oxModule');
         $oModule->setModuleData($aModuleToActivate);
-        $oModule->setConfig($oConfig);
+        Registry::set(Config::class, $oConfig);
 
         $this->assertSame($blResult, $oModule->isActive(), 'Module extends shop class, so methods should return true.');
     }
@@ -414,19 +401,16 @@ class ModuleTest extends \OxidTestCase
     {
         $sModId = "testModule";
 
-        $oConfig = $this->getMock('oxconfig', array('getModulesDir'));
+        $oConfig = $this->getMock(\OxidEsales\Eshop\Core\Config::class, array('getModulesDir'));
         $oConfig->expects($this->any())
             ->method('getModulesDir')
             ->will($this->returnValue("/var/path/to/modules/"));
+        Registry::set(Config::class, $oConfig);
 
-        $oModuleStub = $this->getMock('oxmodule', array('getModulePath', 'getConfig'));
+        $oModuleStub = $this->getMock(\OxidEsales\Eshop\Core\Module\Module::class, array('getModulePath'));
         $oModuleStub->expects($this->any())
             ->method('getModulePath')
             ->will($this->returnValue($sModuleId));
-
-        $oModuleStub->expects($this->any())
-            ->method('getConfig')
-            ->will($this->returnValue($oConfig));
 
         $aModule = array('id' => $sModId);
         /** @var oxModule $oModule */
@@ -448,6 +432,7 @@ class ModuleTest extends \OxidTestCase
             'testExt2' => 'testExt2'
         );
 
+        Registry::getConfig()->reinitialize();
         $this->getConfig()->setConfigParam("aModulePaths", $aModulePaths);
 
         $oModule = oxNew('oxModule');
@@ -464,20 +449,17 @@ class ModuleTest extends \OxidTestCase
     {
         $sModId = "testModule";
 
-        $oConfig = $this->getMock('oxconfig', array('getModulesDir'));
+        $oConfig = $this->getMock(\OxidEsales\Eshop\Core\Config::class, array('getModulesDir'));
         $oConfig->expects($this->any())
             ->method('getModulesDir')
             ->will($this->returnValue("/var/path/to/modules/"));
+        Registry::set(Config::class, $oConfig);
 
-        $oModule = $this->getMock('oxmodule', array('getModulePath', 'getConfig'));
+        $oModule = $this->getMock(\OxidEsales\Eshop\Core\Module\Module::class, array('getModulePath'));
         $oModule->expects($this->any())
             ->method('getModulePath')
             ->with($this->equalTo($sModId))
             ->will($this->returnValue("oe/module/"));
-
-        $oModule->expects($this->any())
-            ->method('getConfig')
-            ->will($this->returnValue($oConfig));
 
         $this->assertEquals("/var/path/to/modules/oe/module/", $oModule->getModuleFullPath($sModId));
     }
@@ -491,20 +473,17 @@ class ModuleTest extends \OxidTestCase
     {
         $sModId = "testModule";
 
-        $oConfig = $this->getMock('oxconfig', array('getModulesDir'));
+        $oConfig = $this->getMock(\OxidEsales\Eshop\Core\Config::class, array('getModulesDir'));
         $oConfig->expects($this->any())
             ->method('getModulesDir')
             ->will($this->returnValue("/var/path/to/modules/"));
+        Registry::set(Config::class, $oConfig);
 
-        $oModule = $this->getMock('oxmodule', array('getModulePath', 'getConfig'));
+        $oModule = $this->getMock(\OxidEsales\Eshop\Core\Module\Module::class, array('getModulePath'));
         $oModule->expects($this->any())
             ->method('getModulePath')
             ->with($this->equalTo($sModId))
             ->will($this->returnValue("oe/module/"));
-
-        $oModule->expects($this->any())
-            ->method('getConfig')
-            ->will($this->returnValue($oConfig));
 
         $aModule = array('id' => $sModId);
         $oModule->setModuleData($aModule);
@@ -521,12 +500,12 @@ class ModuleTest extends \OxidTestCase
     {
         $sModId = "testModule";
 
-        $oConfig = $this->getMock('oxconfig', array('getModulesDir'));
+        $oConfig = $this->getMock(\OxidEsales\Eshop\Core\Config::class, array('getModulesDir'));
         $oConfig->expects($this->any())
             ->method('getModulesDir')
             ->will($this->returnValue("/var/path/to/modules/"));
 
-        $oModule = $this->getMock('oxmodule', array('getModulePath', 'getConfig'));
+        $oModule = $this->getMock(\OxidEsales\Eshop\Core\Module\Module::class, array('getModulePath', 'getConfig'));
         $oModule->expects($this->any())
             ->method('getModulePath')
             ->with($this->equalTo($sModId))
@@ -579,6 +558,69 @@ class ModuleTest extends \OxidTestCase
         $this->assertEquals(array(), $oModule->getExtensions());
     }
 
+    public function dataProviderTestGetExtensions()
+    {
+        $data = [
+            'all_is_well' => ['metadata_extend' =>
+                                  [\OxidEsales\Eshop\Application\Model\Article::class => '\MyVendor\MyModule1\MyArticleClass',
+                                   \OxidEsales\Eshop\Application\Model\Order::class => '\MyVendor\MyModule1\MyOrderClass',
+                                   \OxidEsales\Eshop\Application\Model\User::class => '\MyVendor\MyModule1\MyUserClass'
+                                  ],
+                              'expected' =>
+                                  [\OxidEsales\Eshop\Application\Model\Article::class => '\MyVendor\MyModule1\MyArticleClass',
+                                   \OxidEsales\Eshop\Application\Model\Order::class => '\MyVendor\MyModule1\MyOrderClass',
+                                   \OxidEsales\Eshop\Application\Model\User::class => '\MyVendor\MyModule1\MyUserClass'
+                                  ]
+            ],
+            'all_is_well_bc' => ['metadata_extend' =>
+                                     ['oxArticle' => '\MyVendor\MyModule1\MyArticleClass',
+                                      'oxOrder' => '\MyVendor\MyModule1\MyOrderClass',
+                                      'oxUser' => '\MyVendor\MyModule1\MyUserClass'
+                                     ],
+                                 'expected' =>
+                                     [\OxidEsales\Eshop\Application\Model\Article::class => '\MyVendor\MyModule1\MyArticleClass',
+                                      \OxidEsales\Eshop\Application\Model\Order::class => '\MyVendor\MyModule1\MyOrderClass',
+                                      \OxidEsales\Eshop\Application\Model\User::class => '\MyVendor\MyModule1\MyUserClass'
+                                     ]
+            ],
+            'case_mismatch' => ['metadata_extend' =>
+                                    ['oxidEsales\eshop\application\model\article' => '\MyVendor\MyModule1\MyArticleClass',
+                                     'OxidEsales\Eshop\Application\Model\Order' => '\MyVendor\MyModule1\MyOrderClass',
+                                     'OxidEsales\Eshop\Application\Model\user' => '\MyVendor\MyModule1\MyUserClass'
+                                    ],
+                                'expected' => ['oxidEsales\eshop\application\model\article' => '\MyVendor\MyModule1\MyArticleClass',
+                                               'OxidEsales\Eshop\Application\Model\Order' => '\MyVendor\MyModule1\MyOrderClass',
+                                               'OxidEsales\Eshop\Application\Model\user' => '\MyVendor\MyModule1\MyUserClass'
+                                ],
+            ],
+            'edition_instead_of_vns' => ['metadata_extend' =>
+                                             [\OxidEsales\Eshop\Application\Model\Article::class => '\MyVendor\MyModule1\MyArticleClass',
+                                              \OxidEsales\EshopCommunity\Application\Model\Order::class => '\MyVendor\MyModule1\MyOrderClass',
+                                              \OxidEsales\EshopCommunity\Application\Model\User::class => '\MyVendor\MyModule1\MyUserClass'
+                                             ],
+                                         'expected' => [\OxidEsales\Eshop\Application\Model\Article::class => '\MyVendor\MyModule1\MyArticleClass',
+                                                        \OxidEsales\EshopCommunity\Application\Model\Order::class => '\MyVendor\MyModule1\MyOrderClass',
+                                                        \OxidEsales\EshopCommunity\Application\Model\User::class => '\MyVendor\MyModule1\MyUserClass'
+                                         ],
+            ]
+        ];
+
+        return $data;
+    }
+
+    /**
+     * Test getting extensions for bc and non bc classes.
+     *
+     * @dataProvider dataProviderTestGetExtensions()
+     */
+    public function testGetExtensions($metadata, $expected)
+    {
+        $module = oxNew(\OxidEsales\Eshop\Core\Module\Module::class);
+        $module->setModuleData(['extend' => $metadata]);
+
+        $this->assertEquals($expected, $module->getExtensions());
+    }
+
     public function testGetFilesWhenModuleHasFiles()
     {
         $aModule = array(
@@ -602,6 +644,159 @@ class ModuleTest extends \OxidTestCase
         $oModule->setModuleData($aModule);
 
         $this->assertEquals(array(), $oModule->getFiles());
+    }
+
+    /**
+     * @covers OxidEsales\Eshop\Core\Module\Module::getControllers()
+     */
+    public function testGetControllersWithMissingControllersKey() {
+        $metaData = array(
+            'id' => 'testModuleId'
+        );
+
+        $module = oxNew(Module::class);
+        $module->setModuleData($metaData);
+
+        $this->assertEquals(array(), $module->getControllers(), 'If key controllers is not set in metadata.php, Module::getControllers() will return an empty array');
+    }
+
+    /**
+     * @covers OxidEsales\Eshop\Core\Module\Module::getControllers()
+     *
+     * @dataProvider dataProviderTestGetControllersWithExistingControllers
+     *
+     * @param $metaDataControllers
+     * @param $expectedResult
+     * @param $message
+     */
+    public function testGetControllersWithExistingControllers($metaDataControllers, $expectedResult, $message) {
+        $expectedControllers = ['controller_id' => 'ControllerName'];
+
+        $metaData = array(
+            'id' => 'testModuleId',
+            'controllers' => $metaDataControllers
+        );
+
+        $module = oxNew(Module::class);
+        $module->setModuleData($metaData);
+
+        $this->assertEquals($expectedResult, $module->getControllers(), $message);
+    }
+
+    public function dataProviderTestGetControllersWithExistingControllers() {
+        return [
+            [
+                'metaDataControllers' => ['controller_id' => 'ControllerName'],
+                'expectedResult' => ['controller_id' => 'ControllerName'],
+                'message' => 'Controller value is not converted to lowercase'
+            ],
+            [
+                'metaDataControllers' => ['Controller_Id' => 'ControllerName'],
+                'expectedResult' => ['controller_id' => 'ControllerName'],
+                'message' => 'Controller Id is converted to lowercase'
+            ],
+            [
+                'metaDataControllers' => [],
+                'expectedResult' => [],
+                'message' => 'An empty array is returned, if controllers is an empty array'
+            ],
+            [
+                'metaDataControllers' => null,
+                'expectedResult' => [],
+                'message' => 'An empty array is returned, if controllers is null'
+            ],
+        ];
+    }
+
+    /**
+     * If the value for key controllers in metadata.php is set, but not an array an exception will be thrown
+     *
+     * @covers OxidEsales\Eshop\Core\Module\Module::getControllers()
+     *
+     * @dataProvider dataProviderTestGetControllersWithWrongMetadataValue
+     *
+     * @param $metaDataControllers
+     * @param $expectedException
+     */
+    public function testGetControllersWithWrongMetadataValue($metaDataControllers, $expectedException) {
+        $this->expectException($expectedException);
+        $metaData = array(
+            'id' => 'testModuleId',
+            'controllers' => $metaDataControllers
+        );
+
+        $module = oxNew(Module::class);
+        $module->setModuleData($metaData);
+
+        $module->getControllers();
+    }
+
+    public function dataProviderTestGetControllersWithWrongMetadataValue()
+    {
+        $expectedException = \InvalidArgumentException::class;
+
+        return [
+          [
+              'metaDataControllers' => false,
+              'expectedException' => $expectedException
+          ],
+          [
+              'metaDataControllers' => '',
+              'expectedException' => $expectedException
+          ],
+          [
+              'metaDataControllers' => 'string',
+              'expectedException' => $expectedException
+          ],
+          [
+              'metaDataControllers' => 1,
+              'expectedException' => $expectedException
+          ],
+          [
+              'metaDataControllers' => new \stdClass(),
+              'expectedException' => $expectedException
+          ],
+        ];
+    }
+
+    public function testGetSmartyPluginDirectories()
+    {
+        $directories = [
+            'first'      => '\first',
+            'and second' => 'second',
+        ];
+        $module = oxNew(Module::class);
+        $module->setModuleData(['smartyPluginDirectories' => $directories]);
+
+        $this->assertSame(
+            $directories,
+            $module->getSmartyPluginDirectories()
+        );
+    }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     *
+     * @param string $invalidValue
+     *
+     * @dataProvider invalidSmartyPluginDirectoriesValueProvider
+     */
+    public function testGetSmartyPluginDirectoriesWithInvalidValue($invalidValue)
+    {
+        $module = oxNew(Module::class);
+        $module->setModuleData(['smartyPluginDirectories' => $invalidValue]);
+
+        $module->getSmartyPluginDirectories();
+    }
+
+    public function invalidSmartyPluginDirectoriesValueProvider()
+    {
+        return [
+            [false],
+            ['string'],
+            [''],
+            [0],
+        ];
     }
 
     /**
@@ -643,7 +838,7 @@ class ModuleTest extends \OxidTestCase
     public function testGetTitle()
     {
         $iLang = oxRegistry::getLang()->getTplLanguage();
-        $oModule = $this->getMock('oxModule', array('getInfo'));
+        $oModule = $this->getMock(\OxidEsales\Eshop\Core\Module\Module::class, array('getInfo'));
         $oModule->expects($this->once())->method('getInfo')->with($this->equalTo("title"), $this->equalTo($iLang))->will($this->returnValue("testTitle"));
 
         $this->assertEquals("testTitle", $oModule->getTitle());
@@ -657,7 +852,7 @@ class ModuleTest extends \OxidTestCase
     public function testGetDescription()
     {
         $iLang = oxRegistry::getLang()->getTplLanguage();
-        $oModule = $this->getMock('oxModule', array('getInfo'));
+        $oModule = $this->getMock(\OxidEsales\Eshop\Core\Module\Module::class, array('getInfo'));
         $oModule->expects($this->once())->method('getInfo')->with($this->equalTo("description"), $this->equalTo($iLang))->will($this->returnValue("testDesc"));
 
         $this->assertEquals("testDesc", $oModule->getDescription());
@@ -701,5 +896,4 @@ class ModuleTest extends \OxidTestCase
         $oModule->getIdByPath($sModule);
         $this->assertEquals('myorder', $oModule->getIdByPath($sModule));
     }
-
 }

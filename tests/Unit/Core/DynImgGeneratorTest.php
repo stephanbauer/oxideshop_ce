@@ -1,25 +1,9 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
-namespace Unit\Core;
+namespace OxidEsales\EshopCommunity\Tests\Unit\Core;
 
 use oxDynImgGenerator;
 use OxidEsales\EshopCommunity\Core\DynamicImageGenerator;
@@ -78,7 +62,7 @@ class DynImgGeneratorTest extends \OxidTestCase
      */
     public function testGetImageName()
     {
-        $oGen = $this->getMock("oxDynImgGenerator", array("_getImageUri"));
+        $oGen = $this->getMock(\OxidEsales\Eshop\Core\DynamicImageGenerator::class, array("_getImageUri"));
         $oGen->expects($this->at(0))->method('_getImageUri')->will($this->returnValue("/test1/test2/test3/test4/test.jpg"));
         $oGen->expects($this->at(1))->method('_getImageUri')->will($this->returnValue(""));
 
@@ -93,7 +77,7 @@ class DynImgGeneratorTest extends \OxidTestCase
      */
     public function testGetImageMasterPath()
     {
-        $oGen = $this->getMock("oxDynImgGenerator", array("_getImageUri"));
+        $oGen = $this->getMock(\OxidEsales\Eshop\Core\DynamicImageGenerator::class, array("_getImageUri"));
         $oGen->expects($this->at(0))->method('_getImageUri')->will($this->returnValue(""));
         $oGen->expects($this->at(1))->method('_getImageUri')->will($this->returnValue("/test1/test2/test3/test4/test.jpg"));
 
@@ -108,7 +92,7 @@ class DynImgGeneratorTest extends \OxidTestCase
      */
     public function testGetImageInfo()
     {
-        $oGen = $this->getMock("oxDynImgGenerator", array("_getImageUri"));
+        $oGen = $this->getMock(\OxidEsales\Eshop\Core\DynamicImageGenerator::class, array("_getImageUri"));
         $oGen->expects($this->at(0))->method('_getImageUri')->will($this->returnValue(""));
         $oGen->expects($this->at(1))->method('_getImageUri')->will($this->returnValue("/test1/test2/test3/test4/test.jpg"));
         $oGen->expects($this->at(2))->method('_getImageUri')->will($this->returnValue("/test1/test2/test3/12_12_12/test.jpg"));
@@ -125,7 +109,7 @@ class DynImgGeneratorTest extends \OxidTestCase
      */
     public function testGetImageTarget()
     {
-        $oGen = $this->getMock("oxDynImgGenerator", array("_getImageUri"));
+        $oGen = $this->getMock(\OxidEsales\Eshop\Core\DynamicImageGenerator::class, array("_getImageUri"));
         $oGen->expects($this->at(0))->method('_getImageUri')->will($this->returnValue("/test1/test2/test3/12_12_12/test.jpg"));
 
         $this->assertEquals(getShopBasePath() . "/test1/test2/test3/12_12_12/test.jpg", $oGen->UNITgetImageTarget());
@@ -138,7 +122,7 @@ class DynImgGeneratorTest extends \OxidTestCase
      */
     public function testGetNopicImageTarget()
     {
-        $oGen = $this->getMock("oxDynImgGenerator", array("_getImageUri", "_getImageName"));
+        $oGen = $this->getMock(\OxidEsales\Eshop\Core\DynamicImageGenerator::class, array("_getImageUri", "_getImageName"));
         $oGen->expects($this->at(0))->method('_getImageUri')->will($this->returnValue("/test1/test2/test3/12_12_12/test.jpg"));
         $oGen->expects($this->at(1))->method('_getImageName')->will($this->returnValue("test.jpg"));
 
@@ -152,14 +136,14 @@ class DynImgGeneratorTest extends \OxidTestCase
      */
     public function testIsTargetPathValid()
     {
-        $oGen = $this->getMock("oxDynImgGenerator", array("_isValidPath", "_createFolders"));
+        $oGen = $this->getMock(\OxidEsales\Eshop\Core\DynamicImageGenerator::class, array("_isValidPath", "_createFolders"));
         $oGen->expects($this->once())->method('_isValidPath')->with($this->equalTo("/test1/test2/test3/12_12_12"))->will($this->returnValue(false));
         $oGen->expects($this->never())->method('_createFolders');
 
         // invalid path
         $this->assertFalse($oGen->UNITisTargetPathValid("/test1/test2/test3/12_12_12/nopic.jpg"));
 
-        $oGen = $this->getMock("oxDynImgGenerator", array("_isValidPath", "_createFolders"));
+        $oGen = $this->getMock(\OxidEsales\Eshop\Core\DynamicImageGenerator::class, array("_isValidPath", "_createFolders"));
         $oGen->expects($this->once())->method('_isValidPath')->with($this->equalTo("/test1/test2/test3/12_12_12"))->will($this->returnValue(true));
         $oGen->expects($this->once())->method('_createFolders')->with($this->equalTo("/test1/test2/test3/12_12_12"))->will($this->returnValue(true));
 
@@ -175,7 +159,7 @@ class DynImgGeneratorTest extends \OxidTestCase
     public function testIsValidPath()
     {
         $i = 0;
-        $oGen = $this->getMock("oxDynImgGenerator", array("_getImageInfo"));
+        $oGen = $this->getMock(\OxidEsales\Eshop\Core\DynamicImageGenerator::class, array("_getImageInfo"));
         $oGen->expects($this->at($i++))->method('_getImageInfo')->will($this->returnValue(false));
         $oGen->expects($this->at($i++))->method('_getImageInfo')->will($this->returnValue(array(1, 2, 3)));
         $oGen->expects($this->at($i++))->method('_getImageInfo')->will($this->returnValue(array(4, 5, 6)));
@@ -205,7 +189,7 @@ class DynImgGeneratorTest extends \OxidTestCase
      */
     public function testGetImageType()
     {
-        $oGen = $this->getMock("oxDynImgGenerator", array("_getImageName"));
+        $oGen = $this->getMock(\OxidEsales\Eshop\Core\DynamicImageGenerator::class, array("_getImageName"));
         $oGen->expects($this->at(0))->method('_getImageName')->will($this->returnValue("test.jpg"));
         $oGen->expects($this->at(1))->method('_getImageName')->will($this->returnValue("test.jpeg"));
         $oGen->expects($this->at(2))->method('_getImageName')->will($this->returnValue("test.png"));
@@ -260,7 +244,7 @@ class DynImgGeneratorTest extends \OxidTestCase
         $expectedException = StandardException::class;
         $expectedExceptionMessage = 'imageTarget path and generatedImage path differ';
 
-        $this->setExpectedException($expectedException, $expectedExceptionMessage);
+        $this->expectException($expectedException); $this->expectExceptionMessage( $expectedExceptionMessage);
 
         $oGen = $this->getMock(
             DynamicImageGenerator::class,
@@ -305,7 +289,7 @@ class DynImgGeneratorTest extends \OxidTestCase
      */
     public function __testGenerateImageFromSource()
     {
-        $oGen = $this->getMock("oxDynImgGenerator", [
+        $oGen = $this->getMock(\OxidEsales\Eshop\Core\DynamicImageGenerator::class, [
             '_getImageType',
             '_generatePng',
             '_generateJpg',
@@ -429,7 +413,7 @@ class DynImgGeneratorTest extends \OxidTestCase
         $sDir = basename($this->getConfig()->getPictureDir(false));
         $i = 0;
 
-        $oGen = $this->getMock("oxDynImgGenerator", array("_getImageMasterPath", "_getImageName", "_getImageTarget", "_getNopicImageTarget", "_generateImage", "_getImageType", "_setHeader", "_getHeaders"));
+        $oGen = $this->getMock(\OxidEsales\Eshop\Core\DynamicImageGenerator::class, array("_getImageMasterPath", "_getImageName", "_getImageTarget", "_getNopicImageTarget", "_generateImage", "_getImageType", "_setHeader", "_getHeaders"));
 
         $oGen->expects($this->at($i++))->method('_getImageMasterPath')->will($this->returnValue("/test/"));
         $oGen->expects($this->at($i++))->method('_getImageName')->will($this->returnValue("test.jpg"));

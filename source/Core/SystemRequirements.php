@@ -1,33 +1,13 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2017
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 
 namespace OxidEsales\EshopCommunity\Core;
 
-use OxidEsales\EshopCommunity\Core\Exception\SystemComponentException;
+use OxidEsales\Eshop\Core\Exception\SystemComponentException;
 use OxidEsales\Eshop\Core\Database\Adapter\ResultSetInterface;
-use OxidEsales\Eshop\Core\Edition\EditionSelector;
-use oxRegistry;
-use oxDb;
-use Exception;
 
 /**
  * System requirements class.
@@ -62,14 +42,14 @@ class SystemRequirements
      *
      * @var array
      */
-    protected $_aException = array('OXDELIVERY' => 'OXDELTYPE', 'OXSELECTLIST' => 'OXIDENT');
+    protected $_aException = ['OXDELIVERY' => 'OXDELTYPE', 'OXSELECTLIST' => 'OXIDENT'];
 
     /**
      * Columns to check for collation
      *
      * @var array
      */
-    protected $_aColumns = array(
+    protected $_aColumns = [
         'OXID',
         'OXOBJECTID',
         'OXARTICLENID',
@@ -116,22 +96,22 @@ class SystemRequirements
         'OXPAYMENTSID',
         'OXORDERID',
         'OXVOUCHERSERIEID',
-    );
+    ];
 
     /**
      * Installation info url
      *
      * @var string
      */
-    protected $_sReqInfoUrl = "http://oxidforge.org/en/installation.html";
+    protected $_sReqInfoUrl = "https://oxidforge.org/en/system-requirements";
 
     /**
      * Module or system configuration mapping with installation info url anchor
      *
      * @var array
      */
-    protected $_aInfoMap = array(
-        "php_version"        => "PHP_version_at_least_5.6",
+    protected $_aInfoMap = [
+        "php_version"        => "PHP_version_at_least_7.0",
         "php_xml"            => "DOM",
         "open_ssl"           => "OpenSSL",
         "soap"               => "SOAP",
@@ -153,7 +133,7 @@ class SystemRequirements
         "zend_optimizer"     => "Zend_Optimizer",
         "session_autostart"  => "session.auto_start_must_be_off",
         "mysql_version"      => "Not_recommended_MySQL_versions",
-    );
+    ];
 
     /**
      * Class constructor. The constructor is defined in order to be possible to call parent::__construct() in modules.
@@ -183,23 +163,13 @@ class SystemRequirements
                 $sMethod = str_replace("UNIT", "_", $sMethod);
             }
             if (method_exists($this, $sMethod)) {
-                return call_user_func_array(array(& $this, $sMethod), $aArgs);
+                return call_user_func_array([& $this, $sMethod], $aArgs);
             }
         }
 
-        throw new SystemComponentException(
+        throw new \OxidEsales\Eshop\Core\Exception\SystemComponentException(
             "Function '$sMethod' does not exist or is not accessible! (" . get_class($this) . ")" . PHP_EOL
         );
-    }
-
-    /**
-     * Returns config instance
-     *
-     * @return \oxConfig
-     */
-    public function getConfig()
-    {
-        return oxRegistry::getConfig();
     }
 
     /**
@@ -220,7 +190,7 @@ class SystemRequirements
     public function getRequiredModules()
     {
         if ($this->_aRequiredModules == null) {
-            $aRequiredPHPExtensions = array(
+            $aRequiredPHPExtensions = [
                 'php_xml',
                 'j_son',
                 'i_conv',
@@ -232,9 +202,9 @@ class SystemRequirements
                 'bc_math',
                 'open_ssl',
                 'soap',
-            );
+            ];
 
-            $aRequiredPHPConfigs = array(
+            $aRequiredPHPConfigs = [
                 'allow_url_fopen',
                 'request_uri',
                 'ini_set',
@@ -242,13 +212,13 @@ class SystemRequirements
                 'unicode_support',
                 'file_uploads',
                 'session_autostart',
-            );
+            ];
 
-            $aRequiredServerConfigs = array(
+            $aRequiredServerConfigs = [
                 'php_version',
                 'mod_rewrite',
                 'server_permissions'
-            );
+            ];
 
             if ($this->isAdmin()) {
                 $aRequiredServerConfigs[] = 'mysql_version';
@@ -305,13 +275,13 @@ class SystemRequirements
         }
 
         $sTmp = "$sPath/tmp/";
-        $config = new ConfigFile(getShopBasePath() . "/config.inc.php");
+        $config = new \OxidEsales\Eshop\Core\ConfigFile(getShopBasePath() . "/config.inc.php");
         $sCfgTmp = $config->getVar('sCompileDir');
         if ($sCfgTmp && strpos($sCfgTmp, '<sCompileDir') === false) {
             $sTmp = $sCfgTmp;
         }
 
-        $aPathsToCheck = array(
+        $aPathsToCheck = [
             $sPath . 'out/pictures/promo/',
             $sPath . 'out/pictures/master/',
             $sPath . 'out/pictures/generated/',
@@ -319,7 +289,7 @@ class SystemRequirements
             $sPath . 'out/media/',
             $sPath . 'log/',
             $sTmp
-        );
+        ];
         $iModStat = 2;
         $sPathToCheck = reset($aPathsToCheck);
         while ($sPathToCheck) {
@@ -360,7 +330,7 @@ class SystemRequirements
      */
     protected function _getShopHostInfoFromConfig()
     {
-        $sShopURL = $this->getConfig()->getConfigParam('sShopURL');
+        $sShopURL = Registry::getConfig()->getConfigParam('sShopURL');
         if (preg_match('#^(https?://)?([^/:]+)(:([0-9]+))?(/.*)?$#i', $sShopURL, $m)) {
             $sHost = $m[2];
             $iPort = (int) $m[4];
@@ -370,12 +340,12 @@ class SystemRequirements
             }
             $sScript = rtrim($m[5], '/') . '/';
 
-            return array(
+            return [
                 'host' => $sHost,
                 'port' => $iPort,
                 'dir'  => $sScript,
                 'ssl'  => $blSsl,
-            );
+            ];
         }
 
         return false;
@@ -389,7 +359,7 @@ class SystemRequirements
      */
     protected function _getShopSSLHostInfoFromConfig()
     {
-        $sSSLShopURL = $this->getConfig()->getConfigParam('sSSLShopURL');
+        $sSSLShopURL = Registry::getConfig()->getConfigParam('sSSLShopURL');
         if (preg_match('#^(https?://)?([^/:]+)(:([0-9]+))?(/.*)?$#i', $sSSLShopURL, $m)) {
             $sHost = $m[2];
             $iPort = (int) $m[4];
@@ -399,12 +369,12 @@ class SystemRequirements
             }
             $sScript = rtrim($m[5], '/') . '/';
 
-            return array(
+            return [
                 'host' => $sHost,
                 'port' => $iPort,
                 'dir'  => $sScript,
                 'ssl'  => $blSsl,
-            );
+            ];
         }
 
         return false;
@@ -427,12 +397,12 @@ class SystemRequirements
         }
         $sScript = rtrim(dirname(dirname($sScript)), '/') . '/';
 
-        return array(
+        return [
             'host' => $_SERVER['HTTP_HOST'],
             'port' => $iPort,
             'dir'  => $sScript,
             'ssl'  => $blSsl,
-        );
+        ];
     }
 
     /**
@@ -575,9 +545,9 @@ class SystemRequirements
     {
         $requirementFits = null;
 
-        $minimalRequiredVersion = '5.5.0';
-        $minimalRecommendedVersion = '5.6.0';
-        $maximalRecommendedVersion = '7.0.9999';
+        $minimalRequiredVersion = '7.0.0';
+        $minimalRecommendedVersion = '7.0.0';
+        $maximalRecommendedVersion = '7.1.9999';
 
         $installedPhpVersion = $this->getPhpVersion();
 
@@ -714,7 +684,7 @@ class SystemRequirements
         $maximalRequiredVersion = '5.7.9999';
 
         if ($installedVersion === null) {
-            $resultContainingDatabaseVersion = DatabaseProvider::getDb()->getRow("SHOW VARIABLES LIKE 'version'");
+            $resultContainingDatabaseVersion = \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->getRow("SHOW VARIABLES LIKE 'version'");
             $installedVersion = $resultContainingDatabaseVersion[1];
         }
 
@@ -808,7 +778,7 @@ class SystemRequirements
     }
 
     /**
-     * Additional sql: do not check collation for oxsysrequirements::$_aException columns
+     * Additional sql: do not check collation for \OxidEsales\Eshop\Core\SystemRequirements::$_aException columns
      *
      * @return string
      */
@@ -823,21 +793,21 @@ class SystemRequirements
     }
 
     /**
-     * Checks tables and columns (oxsysrequirements::$_aColumns) collation
+     * Checks tables and columns (\OxidEsales\Eshop\Core\SystemRequirements::$_aColumns) collation
      *
      * @return array
      */
     public function checkCollation()
     {
-        $myConfig = $this->getConfig();
+        $myConfig = Registry::getConfig();
 
-        $aCollations = array();
+        $aCollations = [];
         $sCollation = '';
         $sSelect = 'select TABLE_NAME, COLUMN_NAME, COLLATION_NAME from INFORMATION_SCHEMA.columns
                     where TABLE_NAME not like "oxv\_%" and table_schema = "' . $myConfig->getConfigParam('dbName') . '"
                     and COLUMN_NAME in ("' . implode('", "', $this->_aColumns) . '") ' . $this->_getAdditionalCheck() .
                    'ORDER BY TABLE_NAME, COLUMN_NAME DESC;';
-        $aRez = oxDb::getDb()->getAll($sSelect);
+        $aRez = \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->getAll($sSelect);
         foreach ($aRez as $aRetTable) {
             if (!$sCollation) {
                 $sCollation = $aRetTable[2];
@@ -930,12 +900,12 @@ class SystemRequirements
      */
     public function getSystemInfo()
     {
-        $aSysInfo = array();
+        $aSysInfo = [];
         $aRequiredModules = $this->getRequiredModules();
         $this->_blSysReqStatus = true;
         foreach ($aRequiredModules as $sModule => $sGroup) {
             if (isset($aSysInfo[$sGroup]) && !$aSysInfo[$sGroup]) {
-                $aSysInfo[$sGroup] = array();
+                $aSysInfo[$sGroup] = [];
             }
             $iModuleState = $this->getModuleInfo($sModule);
             $aSysInfo[$sGroup][$sModule] = $iModuleState;
@@ -1043,7 +1013,7 @@ class SystemRequirements
     }
 
     /**
-     * Parses and calculates given string form byte syze value
+     * Parses and calculates given string form byte size value
      *
      * @param string $sBytes string form byte value (64M, 32K etc)
      *
@@ -1082,10 +1052,10 @@ class SystemRequirements
      */
     protected function _checkTemplateBlock($sTemplate, $sBlockName)
     {
-        $sTplFile = $this->getConfig()->getTemplatePath($sTemplate, false);
+        $sTplFile = Registry::getConfig()->getTemplatePath($sTemplate, false);
         if (!$sTplFile || !file_exists($sTplFile)) {
             // check if file is in admin theme
-            $sTplFile = $this->getConfig()->getTemplatePath($sTemplate, true);
+            $sTplFile = Registry::getConfig()->getTemplatePath($sTemplate, true);
             if (!$sTplFile || !file_exists($sTplFile)) {
                 return false;
             }
@@ -1108,8 +1078,8 @@ class SystemRequirements
      */
     public function getMissingTemplateBlocks()
     {
-        $result = array();
-        $analized = array();
+        $result = [];
+        $analized = [];
 
         $blockRecords = $this->fetchBlockRecords();
 
@@ -1126,11 +1096,11 @@ class SystemRequirements
                 }
 
                 if (!$blockExistsInTemplate) {
-                    $result[] = array(
+                    $result[] = [
                         'module'   => $blockRecords->fields['OXMODULE'],
                         'block'    => $blockName,
                         'template' => $template,
-                    );
+                    ];
                 }
 
                 $blockRecords->fetchRow();
@@ -1149,13 +1119,13 @@ class SystemRequirements
      */
     protected function fetchBlockRecords()
     {
-        $activeThemeId = oxNew('oxTheme')->getActiveThemeId();
-        $config = $this->getConfig();
-        $database = oxDb::getDb(oxDb::FETCH_MODE_ASSOC);
+        $activeThemeId = oxNew(\OxidEsales\Eshop\Core\Theme::class)->getActiveThemeId();
+        $config = Registry::getConfig();
+        $database = \OxidEsales\Eshop\Core\DatabaseProvider::getDb(\OxidEsales\Eshop\Core\DatabaseProvider::FETCH_MODE_ASSOC);
 
         $query = "select * from oxtplblocks where oxactive=1 and oxshopid=? and oxtheme in ('', ?)";
 
-        return $database->select($query, array($config->getShopId(), $activeThemeId));
+        return $database->select($query, [$config->getShopId(), $activeThemeId]);
     }
 
     /**
@@ -1167,7 +1137,7 @@ class SystemRequirements
     {
         $sStatus = (strtolower((string) @ini_get('session.auto_start')));
 
-        return in_array($sStatus, array('on', '1')) ? 0 : 2;
+        return in_array($sStatus, ['on', '1']) ? 0 : 2;
     }
 
     /**

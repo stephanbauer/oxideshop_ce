@@ -1,28 +1,14 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
-namespace Unit\Core;
+namespace OxidEsales\EshopCommunity\Tests\Unit\Core;
 
 use \oxFileException;
 use \Exception;
+use OxidEsales\Eshop\Core\Config;
+use OxidEsales\Eshop\Core\Registry;
 use \oxRegistry;
 use \oxTestModules;
 
@@ -37,7 +23,7 @@ class UtilsFileTest extends \OxidTestCase
 
         foreach ($aTmpDirectories as $sDirectory) {
             if (is_dir(realpath($sDirectory))) {
-                oxRegistry::get('oxUtilsFile')->deleteDir($sDirectory);
+                \OxidEsales\Eshop\Core\Registry::getUtilsFile()->deleteDir($sDirectory);
             }
         }
     }
@@ -75,12 +61,16 @@ class UtilsFileTest extends \OxidTestCase
         $this->assertNull($oUtilsFile->UNITgetImageSize('nonexisting', '666', 'nonexisting'));
     }
 
+    /**
+     * @group slow-tests
+     */
     public function testUrlValidateBadUrl()
     {
         $oUtilsFile = oxNew('oxUtilsFile');
         $this->assertFalse($oUtilsFile->urlValidate("test/notvalid"));
         $this->assertFalse($oUtilsFile->urlValidate("http://www.oxid_non_existing_page.com"));
 
+        $this->activateTheme('azure');
         $shopUrl = $this->getTestConfig()->getShopUrl();
         $this->assertTrue($oUtilsFile->urlValidate($shopUrl ."?param=value"));
     }
@@ -90,7 +80,7 @@ class UtilsFileTest extends \OxidTestCase
         $sName1 = time();
         $sName2 = __FILE__;
 
-        $oUtilsFile = $this->getMock('oxUtilsFile', array('urlValidate'));
+        $oUtilsFile = $this->getMock(\OxidEsales\Eshop\Core\UtilsFile::class, array('urlValidate'));
         $oUtilsFile->expects($this->once())->method('urlValidate')->will($this->returnValue(true));
         $this->assertTrue($oUtilsFile->checkFile($sName1));
         $this->assertTrue($oUtilsFile->checkFile($sName1));
@@ -105,16 +95,14 @@ class UtilsFileTest extends \OxidTestCase
     public function testProcessFilesCallState()
     {
         $oObject = oxNew('oxbase');
-        $oObject->testfield = $this->getMock('oxfield', array('setValue'));
+        $oObject->testfield = $this->getMock(\OxidEsales\Eshop\Core\Field::class, array('setValue'));
         $oObject->testfield->expects($this->once())->method('setValue')->with($this->equalTo('testfilename'));
-
-        $sProcessPath = $this->getConfig()->getConfigParam("sCompileDir");
 
         $aFiles = array();
         $aFiles['myfile']['name']['gif@testfield'] = 'testfilename.gif';
         $aFiles['myfile']['tmp_name']['gif@testfield'] = 'testimagesource/testfilename';
 
-        $oUtilsFile = $this->getMock('oxutilsfile', array('_prepareImageName', '_getImagePath', '_moveImage'));
+        $oUtilsFile = $this->getMock(\OxidEsales\Eshop\Core\UtilsFile::class, array('_prepareImageName', '_getImagePath', '_moveImage'));
         $oUtilsFile->expects($this->once())->method('_prepareImageName')->with($this->equalTo('testfilename.gif'), $this->equalTo('gif'), $this->equalTo($this->getConfig()->isDemoShop()))->will($this->returnValue('testfilename'));
         $oUtilsFile->expects($this->once())->method('_getImagePath')->with($this->equalTo('gif'))->will($this->returnValue('testimagepath/'));
         $oUtilsFile->expects($this->once())->method('_moveImage')->with($this->equalTo('testimagesource/testfilename'), $this->equalTo('testimagepath/testfilename'))->will($this->returnValue(true));
@@ -130,15 +118,15 @@ class UtilsFileTest extends \OxidTestCase
         $_FILES['myfile']['tmp_name'] = array('P1@oxarticles__oxpic1' => 'testimagesource');
         $_FILES['myfile']['error'] = array('P1@oxarticles__oxpic1' => 0);
 
-        /** @var oxConfig|PHPUnit_Framework_MockObject_MockObject $oConfig */
-        $oConfig = $this->getMock('oxConfig', array('getPictureDir'));
+        /** @var oxConfig|PHPUnit\Framework\MockObject\MockObject $oConfig */
+        $oConfig = $this->getMock(\OxidEsales\Eshop\Core\Config::class, array('getPictureDir'));
         $oConfig->expects($this->once())->method('getPictureDir')->will($this->returnValue('pictures_dir'));
 
-        /** @var oxUtilsFile|PHPUnit_Framework_MockObject_MockObject $oUtilsFile */
-        $oUtilsFile = $this->getMock("oxUtilsFile", array("_moveImage"));
+        /** @var oxUtilsFile|PHPUnit\Framework\MockObject\MockObject $oUtilsFile */
+        $oUtilsFile = $this->getMock(\OxidEsales\Eshop\Core\UtilsFile::class, array("_moveImage"));
         $oUtilsFile->expects($this->once())->method('_moveImage')->will($this->returnValue(true));
 
-        $oUtilsFile->setConfig($oConfig);
+        Registry::set(Config::class, $oConfig);
         $oUtilsFile->processFiles(oxNew('oxArticle'));
     }
 
@@ -148,33 +136,33 @@ class UtilsFileTest extends \OxidTestCase
         $_FILES['myfile']['tmp_name'] = array('FL@oxarticles__oxfile' => 'testpdfsource');
         $_FILES['myfile']['error'] = array('P1@oxarticles__oxpic1' => 0);
 
-        /** @var oxConfig|PHPUnit_Framework_MockObject_MockObject $oConfig */
-        $oConfig = $this->getMock('oxConfig', array('getPictureDir'));
+        /** @var oxConfig|PHPUnit\Framework\MockObject\MockObject $oConfig */
+        $oConfig = $this->getMock(\OxidEsales\Eshop\Core\Config::class, array('getPictureDir'));
         $oConfig->expects($this->once())->method('getPictureDir')->will($this->returnValue('pictures_dir'));
 
-        /** @var oxUtilsFile|PHPUnit_Framework_MockObject_MockObject $oUtilsFile */
-        $oUtilsFile = $this->getMock("oxUtilsFile", array("_moveImage", "_copyFile"));
+        /** @var oxUtilsFile|PHPUnit\Framework\MockObject\MockObject $oUtilsFile */
+        $oUtilsFile = $this->getMock(\OxidEsales\Eshop\Core\UtilsFile::class, array("_moveImage", "_copyFile"));
         $oUtilsFile->expects($this->once())->method('_moveImage')->will($this->returnValue(true));
         $oUtilsFile->expects($this->never())->method('_copyFile')->will($this->returnValue(false));
 
-        $oUtilsFile->setConfig($oConfig);
+        Registry::set(Config::class, $oConfig);
         $oUtilsFile->processFiles();
     }
 
     public function testProcessFilesSkipBadFiles()
     {
-        $this->setExpectedException('oxFileException', 'this is ok');
+        $this->expectException('oxFileException'); $this->expectExceptionMessage( 'this is ok');
 
         $_FILES['myfile']['name'] = array('testname.php5');
         $_FILES['myfile']['tmp_name'] = 'testname';
 
-        /** @var oxConfig|PHPUnit_Framework_MockObject_MockObject $oConfig */
-        $oConfig = $this->getMock('oxConfig', array('isDemoShop'));
+        /** @var oxConfig|PHPUnit\Framework\MockObject\MockObject $oConfig */
+        $oConfig = $this->getMock(\OxidEsales\Eshop\Core\Config::class, array('isDemoShop'));
         $oConfig->expects($this->once())->method('isDemoShop')->will($this->returnValue(false));
 
-        /** @var oxUtilsFile|PHPUnit_Framework_MockObject_MockObject $oUtilsFile */
-        $oUtilsFile = oxRegistry::get("oxUtilsFile");
-        $oUtilsFile->setConfig($oConfig);
+        /** @var oxUtilsFile|PHPUnit\Framework\MockObject\MockObject $oUtilsFile */
+        $oUtilsFile = \OxidEsales\Eshop\Core\Registry::getUtilsFile();
+        Registry::set(Config::class, $oConfig);
         oxTestModules::addFunction('oxUtils', 'showMessageAndExit', '{throw new oxFileException("this is ok");}');
         $oUtilsFile->processFiles();
     }
@@ -183,12 +171,12 @@ class UtilsFileTest extends \OxidTestCase
     {
         $_FILES['myfile']['name'] = array('testname.unknown');
         $_FILES['myfile']['tmp_name'] = 'testname';
-        //$oConfig = $this->getMock('oxConfig', array('hasModule'));
+        //$oConfig = $this->getMock(\OxidEsales\Eshop\Core\Config::class, array('hasModule'));
         //$oConfig->expects( $this->once() )->method('hasModule')->with( $this->equalTo( 'demoshop' ) )->will( $this->returnValue( true ) );
-        $oConfig = $this->getMock('oxConfig', array('isDemoShop'));
+        $oConfig = $this->getMock(\OxidEsales\Eshop\Core\Config::class, array('isDemoShop'));
         $oConfig->expects($this->once())->method('isDemoShop')->will($this->returnValue(true));
-        $oUF = oxRegistry::get("oxUtilsFile");
-        $oUF->setConfig($oConfig);
+        $oUF = \OxidEsales\Eshop\Core\Registry::getUtilsFile();
+        Registry::set(Config::class, $oConfig);
         oxTestModules::addFunction('oxUtils', 'showMessageAndExit', '{throw new Exception("this is ok");}');
         try {
             $oUF->processFiles();
@@ -218,7 +206,7 @@ class UtilsFileTest extends \OxidTestCase
         //test with textfile
         if ($this->_prepareCopyDir($sSourceDir, $sTargetDir, $sSourceFilePathText)) {
 
-            oxRegistry::get("oxUtilsFile")->copyDir($sSourceDir, $sTargetDir);
+            \OxidEsales\Eshop\Core\Registry::getUtilsFile()->copyDir($sSourceDir, $sTargetDir);
             $this->assertEquals(is_file($sSourceFilePathText), is_file($sTargetFilePathText));
             $this->_cleanupCopyDir($sSourceDir, $sTargetDir, $sSourceFilePathText, $sTargetFilePathText);
         }
@@ -226,7 +214,7 @@ class UtilsFileTest extends \OxidTestCase
         //test with nopic.jpg
         if ($this->_prepareCopyDir($sSourceDir, $sTargetDir, $sSourceFilePathnopic)) {
 
-            oxRegistry::get("oxUtilsFile")->copyDir($sSourceDir, $sTargetDir);
+            \OxidEsales\Eshop\Core\Registry::getUtilsFile()->copyDir($sSourceDir, $sTargetDir);
             $this->assertEquals(is_file($sSourceFilePathnopic), is_file($sTargetFilePathnopic));
             $this->_cleanupCopyDir($sSourceDir, $sTargetDir, $sSourceFilePathnopic, $sTargetFilePathnopic);
         }
@@ -234,7 +222,7 @@ class UtilsFileTest extends \OxidTestCase
         //test with nopic_ico.jpg
         if ($this->_prepareCopyDir($sSourceDir, $sTargetDir, $sSourceFilePathnopicIco)) {
 
-            oxRegistry::get("oxUtilsFile")->copyDir($sSourceDir, $sTargetDir);
+            \OxidEsales\Eshop\Core\Registry::getUtilsFile()->copyDir($sSourceDir, $sTargetDir);
             $this->assertEquals(is_file($sSourceFilePathnopicIco), is_file($sTargetFilePathnopicIco));
             $this->_cleanupCopyDir($sSourceDir, $sTargetDir, $sSourceFilePathnopicIco, $sTargetFilePathnopicIco);
         }
@@ -243,7 +231,7 @@ class UtilsFileTest extends \OxidTestCase
         if ($this->_prepareCopyDir($sSourceDir, $sTargetDir, $sSourceFilePathText)) {
             $this->_prepareCopyDir($sSourceDeeperDir, $sTargetDeeperDir, $sSourceFilePathCVS);
 
-            oxRegistry::get("oxUtilsFile")->copyDir($sSourceDir, $sTargetDir);
+            \OxidEsales\Eshop\Core\Registry::getUtilsFile()->copyDir($sSourceDir, $sTargetDir);
             $this->assertEquals(is_file($sSourceFilePathCVS), is_file($sTargetFilePathCVS));
             $this->_cleanupCopyDir($sSourceDeeperDir, $sTargetDeeperDir, $sSourceFilePathCVS, $sTargetFilePathCVS);
             $this->_cleanupCopyDir($sSourceDir, $sTargetDir, $sSourceFilePathText, $sTargetFilePathText);
@@ -285,14 +273,14 @@ class UtilsFileTest extends \OxidTestCase
         $aFiles['name'] = 'testfile';
         $aFiles['tmp_name'] = 'testfile';
 
-        $this->setExpectedException('OxidEsales\EshopCommunity\Core\Exception\StandardException');
-        oxRegistry::get("oxUtilsFile")->handleUploadedFile($aFiles, '/out/media/');
+        $this->expectException('OxidEsales\EshopCommunity\Core\Exception\StandardException');
+        \OxidEsales\Eshop\Core\Registry::getUtilsFile()->handleUploadedFile($aFiles, '/out/media/');
     }
 
     public function testProcessFileEmpty()
     {
-        $this->setExpectedException('OxidEsales\EshopCommunity\Core\Exception\StandardException', 'EXCEPTION_NOFILE');
-        oxRegistry::get("oxUtilsFile")->processFile(null, '/out/media/');
+        $this->expectException('OxidEsales\EshopCommunity\Core\Exception\StandardException'); $this->expectExceptionMessage( 'EXCEPTION_NOFILE');
+        \OxidEsales\Eshop\Core\Registry::getUtilsFile()->processFile(null, '/out/media/');
     }
 
     public function testProcessFileWrongChar1()
@@ -301,15 +289,15 @@ class UtilsFileTest extends \OxidTestCase
         $_FILES['fileItem']['name'] = 'testfile_\xc4\xaf\xc5\xa1.jpg';
         $_FILES['fileItem']['tmp_name'] = 'testfile';
 
-        $this->setExpectedException('OxidEsales\EshopCommunity\Core\Exception\StandardException', 'EXCEPTION_FILENAMEINVALIDCHARS');
-        oxRegistry::get("oxUtilsFile")->processFile('fileItem', '/out/media/');
+        $this->expectException('OxidEsales\EshopCommunity\Core\Exception\StandardException'); $this->expectExceptionMessage( 'EXCEPTION_FILENAMEINVALIDCHARS');
+        \OxidEsales\Eshop\Core\Registry::getUtilsFile()->processFile('fileItem', '/out/media/');
     }
 
     public function testProcessFileWrongChar2()
     {
         $_FILES['fileItem']['name'] = 'TEST.te.stfile_0__.jpg';
         $_FILES['fileItem']['tmp_name'] = 'testfile';
-        oxRegistry::get("oxUtilsFile")->processFile('fileItem', '/out/media/');
+        \OxidEsales\Eshop\Core\Registry::getUtilsFile()->processFile('fileItem', '/out/media/');
     }
 
     public function testProcessFileWrongFileType()
@@ -317,8 +305,8 @@ class UtilsFileTest extends \OxidTestCase
         $_FILES['fileItem']['name'] = 'testfile';
         $_FILES['fileItem']['tmp_name'] = 'testfile';
 
-        $this->setExpectedException('OxidEsales\EshopCommunity\Core\Exception\StandardException');
-        oxRegistry::get("oxUtilsFile")->processFile('fileItem', '/out/media/');
+        $this->expectException('OxidEsales\EshopCommunity\Core\Exception\StandardException');
+        \OxidEsales\Eshop\Core\Registry::getUtilsFile()->processFile('fileItem', '/out/media/');
     }
 
     public function testProcessFileTooBigFile()
@@ -327,20 +315,20 @@ class UtilsFileTest extends \OxidTestCase
         $_FILES['fileItem']['tmp_name'] = 'testfile.jpg';
         $_FILES['fileItem']['error'] = 1;
 
-        $this->setExpectedException('OxidEsales\EshopCommunity\Core\Exception\StandardException');
-        oxRegistry::get("oxUtilsFile")->processFile('fileItem', '/out/media/');
+        $this->expectException('OxidEsales\EshopCommunity\Core\Exception\StandardException');
+        \OxidEsales\Eshop\Core\Registry::getUtilsFile()->processFile('fileItem', '/out/media/');
     }
 
     public function testNormalizeDir()
     {
         $sFullDir = "/test/good/dir/";
-        $this->assertEquals($sFullDir, oxRegistry::get("oxUtilsFile")->normalizeDir($sFullDir));
+        $this->assertEquals($sFullDir, \OxidEsales\Eshop\Core\Registry::getUtilsFile()->normalizeDir($sFullDir));
 
         $sHalfDir = "/test/good/dir";
-        $this->assertEquals($sFullDir, oxRegistry::get("oxUtilsFile")->normalizeDir($sHalfDir));
+        $this->assertEquals($sFullDir, \OxidEsales\Eshop\Core\Registry::getUtilsFile()->normalizeDir($sHalfDir));
 
-        $this->assertEquals('', oxRegistry::get("oxUtilsFile")->normalizeDir(''));
-        $this->assertEquals(null, oxRegistry::get("oxUtilsFile")->normalizeDir(null));
+        $this->assertEquals('', \OxidEsales\Eshop\Core\Registry::getUtilsFile()->normalizeDir(''));
+        $this->assertEquals(null, \OxidEsales\Eshop\Core\Registry::getUtilsFile()->normalizeDir(null));
     }
 
 
@@ -400,15 +388,15 @@ class UtilsFileTest extends \OxidTestCase
         $_FILES['myfile']['name'] = array('P1@oxarticles__oxpic1' => 'testname.gif', 'P1@oxarticles__oxpic2' => 'testname2.gif');
         $_FILES['myfile']['tmp_name'] = array('P1@oxarticles__oxpic1' => 'testimagesource', 'P1@oxarticles__oxpic2' => 'testimagesource2');
 
-        /** @var oxConfig|PHPUnit_Framework_MockObject_MockObject $oConfig */
-        $oConfig = $this->getMock('oxConfig', array('getPictureDir'));
+        /** @var oxConfig|PHPUnit\Framework\MockObject\MockObject $oConfig */
+        $oConfig = $this->getMock(\OxidEsales\Eshop\Core\Config::class, array('getPictureDir'));
         $oConfig->expects($this->any())->method('getPictureDir')->will($this->returnValue('pictures_dir'));
 
-        /** @var oxUtilsFile|PHPUnit_Framework_MockObject_MockObject $oUtilsFile */
-        $oUtilsFile = $this->getMock("oxUtilsFile", array("_moveImage"));
+        /** @var oxUtilsFile|PHPUnit\Framework\MockObject\MockObject $oUtilsFile */
+        $oUtilsFile = $this->getMock(\OxidEsales\Eshop\Core\UtilsFile::class, array("_moveImage"));
         $oUtilsFile->expects($this->any())->method('_moveImage')->will($this->returnValue(true));
 
-        $oUtilsFile->setConfig($oConfig);
+        Registry::set(Config::class, $oConfig);
         $oUtilsFile->processFiles(oxNew('oxArticle'));
 
         $this->assertEquals($oUtilsFile->getNewFilesCounter(), 2, "Check how much new files add.");
@@ -419,7 +407,7 @@ class UtilsFileTest extends \OxidTestCase
     protected function _cleanupDeleteDir($hFileHandle, $sDir, $sFileName, $sSubDir)
     {
         if (($hFileHandle != null) && (fclose($hFileHandle))) {
-            $blDeleted = oxRegistry::get("oxUtilsFile")->deleteDir($sDir); //actual test
+            $blDeleted = \OxidEsales\Eshop\Core\Registry::getUtilsFile()->deleteDir($sDir); //actual test
             $this->assertNotEquals($blDeleted, is_dir($sDir));
         } else {
             // cleanup the created dirs/subdirs/file
@@ -442,7 +430,7 @@ class UtilsFileTest extends \OxidTestCase
         if (!is_dir($sSourceDir)) {
             if (mkdir($sSourceDir)) {
                 //create textfile
-                $hHandle = fopen($sSourceFilePath, w);
+                $hHandle = fopen($sSourceFilePath, 'w');
                 if ($hHandle) {
                     if (!fclose($hHandle)) {
                         $this->fail("could not close file: $sSourceFilePath ");

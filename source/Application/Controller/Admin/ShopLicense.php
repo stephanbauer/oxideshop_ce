@@ -1,23 +1,7 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 
 namespace OxidEsales\EshopCommunity\Application\Controller\Admin;
@@ -30,7 +14,7 @@ use oxSystemComponentException;
  * Collects shop license settings, updates it on user submit, etc.
  * Admin Menu: Main Menu -> Core Settings -> License.
  */
-class ShopLicense extends \Shop_Config
+class ShopLicense extends \OxidEsales\Eshop\Application\Controller\Admin\ShopConfiguration
 {
     /**
      * Current class template.
@@ -50,10 +34,10 @@ class ShopLicense extends \Shop_Config
      */
     public function render()
     {
-        $myConfig = $this->getConfig();
+        $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
         if ($myConfig->isDemoShop()) {
-            /** @var oxSystemComponentException $oSystemComponentException */
-            $oSystemComponentException = oxNew("oxSystemComponentException", "license");
+            /** @var \OxidEsales\Eshop\Core\Exception\SystemComponentException $oSystemComponentException */
+            $oSystemComponentException = oxNew(\OxidEsales\Eshop\Core\Exception\SystemComponentException::class, "license");
             throw $oSystemComponentException;
         }
 
@@ -62,7 +46,7 @@ class ShopLicense extends \Shop_Config
         $soxId = $this->_aViewData["oxid"] = $this->getEditObjectId();
         if ($soxId != "-1") {
             // load object
-            $oShop = oxNew("oxshop");
+            $oShop = oxNew(\OxidEsales\Eshop\Application\Model\Shop::class);
             $oShop->load($soxId);
             $this->_aViewData["edit"] = $oShop;
         }
@@ -85,9 +69,9 @@ class ShopLicense extends \Shop_Config
      */
     protected function _canUpdate()
     {
-        $myConfig = $this->getConfig();
+        $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
 
-        $blIsMallAdmin = oxRegistry::getSession()->getVariable('malladmin');
+        $blIsMallAdmin = \OxidEsales\Eshop\Core\Registry::getSession()->getVariable('malladmin');
         if (!$blIsMallAdmin) {
             return false;
         }
@@ -108,12 +92,12 @@ class ShopLicense extends \Shop_Config
      */
     protected function _fetchCurVersionInfo($sUrl)
     {
-        $aParams = array("myversion" => $this->getConfig()->getVersion());
-        $oLang = oxRegistry::getLang();
+        $aParams = ["myversion" => \OxidEsales\Eshop\Core\Registry::getConfig()->getVersion()];
+        $oLang = \OxidEsales\Eshop\Core\Registry::getLang();
         $iLang = $oLang->getTplLanguage();
         $sLang = $oLang->getLanguageAbbr($iLang);
 
-        $oCurl = oxNew('oxCurl');
+        $oCurl = oxNew(\OxidEsales\Eshop\Core\Curl::class);
         $oCurl->setMethod("POST");
         $oCurl->setUrl($sUrl . "/" . $sLang);
         $oCurl->setParameters($aParams);
@@ -122,7 +106,7 @@ class ShopLicense extends \Shop_Config
         $sOutput = strip_tags($sOutput, "<br>, <b>");
         $aResult = explode("<br>", $sOutput);
         if (strstr($aResult[5], "update")) {
-            $sUpdateLink = oxRegistry::getLang()->translateString("VERSION_UPDATE_LINK");
+            $sUpdateLink = \OxidEsales\Eshop\Core\Registry::getLang()->translateString("VERSION_UPDATE_LINK");
             $aResult[5] = "<a id='linkToUpdate' href='$sUpdateLink' target='_blank'>" . $aResult[5] . "</a>";
         }
 

@@ -1,160 +1,21 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
-namespace Unit\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Tests\Unit\Application\Controller\Admin;
 
 use \DOMDocument;
 use \oxField;
 use \DOMXPath;
+use OxidEsales\Eshop\Core\Config;
+use OxidEsales\Eshop\Core\Registry;
 use \stdClass;
 use \DOMElement;
 use \oxTestModules;
 
 class NavigationTreeTest extends \OxidTestCase
 {
-
-    protected $_sWrongDynfile = 'wrongfile.xml';
-    protected $_sValidDynfile = 'goodfile.xml';
-
-    /**
-     * Initialize the fixture.
-     *
-     * @return null
-     */
-    protected function setUp()
-    {
-        parent::setUp();
-
-        // files for test
-        switch ($this->getName()) {
-            case 'testCheckDynFileWrongFileContent' :
-                // creating wrong file
-                if ($rHandle = @fopen($this->getConfig()->getConfigParam('sCompileDir') . "{$this->_sWrongDynfile}", 'w')) {
-                    fwrite($rHandle, 'some wrong content');
-                    fclose($rHandle);
-                }
-                break;
-            case 'testCheckDynFileFileIsValidXml' :
-                // creating valid file
-                if ($rHandle = @fopen($this->getConfig()->getConfigParam('sCompileDir') . "{$this->_sValidDynfile}", 'w')) {
-                    fwrite($rHandle, '<?xml version="1.0" encoding="UTF-8"?><OX>');
-                    fclose($rHandle);
-                }
-                break;
-        }
-    }
-
-    /**
-     * Tear down the fixture.
-     *
-     * @return null
-     */
-    protected function tearDown()
-    {
-        // deleting test files
-        switch ($this->getName()) {
-            case 'testCheckDynFileWrongFileContent' :
-                @unlink($this->getConfig()->getConfigParam('sCompileDir') . "{$this->_sWrongDynfile}");
-                break;
-            case 'testCheckDynFileFileIsValidXml' :
-                // creating valid file
-                @unlink($this->getConfig()->getConfigParam('sCompileDir') . "{$this->_sValidDynfile}");
-                break;
-        }
-        return parent::tearDown();
-    }
-
-    /**
-     * OxNavigationTree::_addDynLinks() test case
-     *
-     * @return null
-     */
-    public function testAddDynLinks()
-    {
-        oxTestModules::addFunction("oxUtilsFile", "checkFile", "{ return true; }");
-        $this->getConfig()->setConfigParam('sAdminDir', "admin");
-
-        $sXml = '<?xml version="1.0" encoding="UTF-8"?>
-                 <OXMENU type="dyn">
-                   <MAINMENU>
-                     <SUBMENU cl="login" clparam="loginParam"></SUBMENU>
-                   </MAINMENU>
-                   <MAINMENU>
-                     <SUBMENU cl="oxadminview" clparam="oxadminviewParam"></SUBMENU>
-                   </MAINMENU>
-                   <MAINMENU>
-                     <SUBMENU cl="oxadmindetails" clparam="oxadmindetailsParam"></SUBMENU>
-                   </MAINMENU>
-                   <MAINMENU>
-                     <SUBMENU cl="oxadminlist" clparam="oxadminlistParam"></SUBMENU>
-                   </MAINMENU>
-                 </OXMENU>';
-
-        $sRezXml = '<?xml version="1.0" encoding="UTF-8"?>
-                 <OXMENU type="dyn">
-                   <MAINMENU id="dyn_menu">
-                     <SUBMENU cl="login" clparam="loginParam" list="dynscreen_list" listparam="menu=login" link="index.php?cl=dynscreen&amp;menu=login&amp;loginParam">
-                       <TAB external="true" location="pages/login_about.php" id="dyn_about" />
-                       <TAB external="true" location="pages/login_technics.php" id="dyn_interface" />
-                       <TAB id="dyn_interface" cl="login" />
-                     </SUBMENU>
-                   </MAINMENU>
-                   <MAINMENU id="dyn_menu">
-                     <SUBMENU cl="oxadminview" clparam="oxadminviewParam" list="dynscreen_list" listparam="menu=oxadminview" link="index.php?cl=dynscreen&amp;menu=oxadminview&amp;oxadminviewParam">
-                       <TAB external="true" location="pages/oxadminview_about.php" id="dyn_about" />
-                       <TAB external="true" location="pages/oxadminview_technics.php" id="dyn_interface" />
-                       <TAB id="dyn_interface" cl="oxadminview" />
-                     </SUBMENU>
-                   </MAINMENU>
-                   <MAINMENU id="dyn_menu">
-                     <SUBMENU cl="oxadmindetails" clparam="oxadmindetailsParam" list="dynscreen_list" listparam="menu=oxadmindetails" link="index.php?cl=dynscreen&amp;menu=oxadmindetails&amp;oxadmindetailsParam">
-                       <TAB external="true" location="pages/oxadmindetails_about.php" id="dyn_about" />
-                       <TAB external="true" location="pages/oxadmindetails_technics.php" id="dyn_interface" />
-                       <TAB id="dyn_interface" cl="oxadmindetails" />
-                     </SUBMENU>
-                   </MAINMENU>
-                   <MAINMENU id="dyn_menu">
-                     <SUBMENU cl="oxadminlist" clparam="oxadminlistParam" list="dynscreen_list" listparam="menu=oxadminlist" link="index.php?cl=dynscreen&amp;menu=oxadminlist&amp;oxadminlistParam">
-                       <TAB external="true" location="pages/oxadminlist_about.php" id="dyn_about" />
-                       <TAB external="true" location="pages/oxadminlist_technics.php" id="dyn_interface" />
-                       <TAB id="dyn_interface" cl="oxadminlist" />
-                     </SUBMENU>
-                   </MAINMENU>
-                 </OXMENU>';
-
-        $oDom = new DOMDocument();
-        $oDom->formatOutput = true;
-        $oDom->loadXML($sXml);
-
-        $oRezDom = new DOMDocument();
-        $oRezDom->formatOutput = true;
-        $oRezDom->loadXML($sRezXml);
-
-        $oNavTree = $this->getMock("oxnavigationtree", array("_getAdminUrl"));
-        $oNavTree->expects($this->never())->method('_getAdminUrl');
-        $oNavTree->UNITaddDynLinks($oDom);
-        $this->assertEquals(str_replace(array("\t", " ", "\n", "\r"), "", $oRezDom->saveXML()), str_replace(array("\t", " ", "\n", "\r"), "", $oDom->saveXML()));
-
-    }
-
     /**
      * OxNavigationTree::getDomXml() test case
      *
@@ -164,7 +25,7 @@ class NavigationTreeTest extends \OxidTestCase
     {
         $aTestMethods = array("_getInitialDom", "_checkGroups", "_checkRights", "_checkDemoShopDenials", "_cleanEmptyParents", "removeInvisibleMenuNodes");
 
-        $oNavTree = $this->getMock("oxnavigationtree", $aTestMethods);
+        $oNavTree = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\NavigationTree::class, $aTestMethods);
         $oNavTree->expects($this->once())->method('_getInitialDom')->will($this->returnValue(new stdClass));
         $oNavTree->expects($this->once())->method('_checkGroups');
         $oNavTree->expects($this->once())->method('_checkRights');
@@ -176,34 +37,16 @@ class NavigationTreeTest extends \OxidTestCase
     }
 
     /**
-     * OxNavigationTree::_getDynMenuUrl() test case
-     *
-     * @return null
-     */
-    public function testGetDynMenuUrl()
-    {
-        $iLang = 0;
-
-        $oAdminView = oxNew('oxadminview');
-        $sDynscreenUrl = $oAdminView->getServiceUrl($iLang) . "menue/dynscreen.xml";
-        $sDynscreenLocalUrl = getShopBasePath() . "Application/views/admin/dynscreen_local.xml";
-
-        $oNavTree = oxNew('oxnavigationtree');
-        $this->assertEquals($sDynscreenUrl, $oNavTree->UNITgetDynMenuUrl($iLang, true));
-        $this->assertEquals($sDynscreenLocalUrl, $oNavTree->UNITgetDynMenuUrl($iLang, false));
-    }
-
-    /**
      * OxNavigationTree::_hasGroup() test case
      *
      * @return null
      */
     public function testHasGroup()
     {
-        $oUser = $this->getMock("oxuser", array("inGroup"));
+        $oUser = $this->getMock(\OxidEsales\Eshop\Application\Model\User::class, array("inGroup"));
         $oUser->expects($this->once())->method('inGroup')->with($this->equalTo("testGroupId"))->will($this->returnValue(true));
 
-        $oNavTree = $this->getMock("oxnavigationtree", array("getUser"));
+        $oNavTree = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\NavigationTree::class, array("getUser"));
         $oNavTree->expects($this->once())->method('getUser')->will($this->returnValue($oUser));
         $this->assertTrue($oNavTree->UNIThasGroup("testGroupId"));
     }
@@ -218,7 +61,7 @@ class NavigationTreeTest extends \OxidTestCase
         $oUser = oxNew('oxuser');
         $oUser->oxuser__oxrights = new oxField("testRights");
 
-        $oNavTree = $this->getMock("oxnavigationtree", array("getUser"));
+        $oNavTree = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\NavigationTree::class, array("getUser"));
         $oNavTree->expects($this->once())->method('getUser')->will($this->returnValue($oUser));
         $this->assertTrue($oNavTree->UNIThasRights("testRights"));
     }
@@ -239,7 +82,7 @@ class NavigationTreeTest extends \OxidTestCase
         $oDom = new DOMDocument();
         $oDom->loadXML($sXml);
 
-        $oNavTree = $this->getMock("oxnavigationtree", array("getDomXml"));
+        $oNavTree = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\NavigationTree::class, array("getDomXml"));
         $oNavTree->expects($this->once())->method('getDomXml')->will($this->returnValue($oDom));
         $this->assertEquals("cl=testTabClass2&testTabParam2", $oNavTree->getEditUrl("testClass", 1));
     }
@@ -260,7 +103,7 @@ class NavigationTreeTest extends \OxidTestCase
         $oDom = new DOMDocument();
         $oDom->loadXML($sXml);
 
-        $oNavTree = $this->getMock("oxnavigationtree", array("getDomXml"));
+        $oNavTree = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\NavigationTree::class, array("getDomXml"));
         $oNavTree->expects($this->once())->method('getDomXml')->will($this->returnValue($oDom));
         $this->assertEquals("testExternalUrl", $oNavTree->getEditUrl("testClass", 1));
     }
@@ -279,7 +122,7 @@ class NavigationTreeTest extends \OxidTestCase
         $oDom = new DOMDocument();
         $oDom->loadXML($sXml);
 
-        $oNavTree = $this->getMock("oxnavigationtree", array("getDomXml"));
+        $oNavTree = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\NavigationTree::class, array("getDomXml"));
         $oNavTree->expects($this->once())->method('getDomXml')->will($this->returnValue($oDom));
         $this->assertEquals("cl=testClass&testClassParam", $oNavTree->getListUrl("testClass"));
     }
@@ -300,7 +143,7 @@ class NavigationTreeTest extends \OxidTestCase
         $oDom = new DOMDocument();
         $oDom->loadXML($sXml);
 
-        $oNavTree = $this->getMock("oxnavigationtree", array("getDomXml"));
+        $oNavTree = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\NavigationTree::class, array("getDomXml"));
         $oNavTree->expects($this->once())->method('getDomXml')->will($this->returnValue($oDom));
         $oNodeList = $oNavTree->getListNodes(array("testClass1", "testClass2"));
 
@@ -342,7 +185,7 @@ class NavigationTreeTest extends \OxidTestCase
         $oXPath = new DOMXPath($oDom);
         $oNodeList = $oXPath->query("//*[@cl='testClass1' or @list='testClass1']");
 
-        $oNavTree = $this->getMock("oxnavigationtree", array("getDomXml"));
+        $oNavTree = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\NavigationTree::class, array("getDomXml"));
         $oNavTree->expects($this->once())->method('getDomXml')->will($this->returnValue($oDom));
         $oNavTree->markNodeActive("testClass1");
 
@@ -377,7 +220,7 @@ class NavigationTreeTest extends \OxidTestCase
         $oDom = new DOMDocument();
         $oDom->loadXML($sXml);
 
-        $oNavTree = $this->getMock("oxnavigationtree", array("getDomXml"));
+        $oNavTree = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\NavigationTree::class, array("getDomXml"));
         $oNavTree->expects($this->once())->method('getDomXml')->will($this->returnValue($oDom));
         $oBtnList = $oNavTree->getBtn("testClass");
 
@@ -403,7 +246,7 @@ class NavigationTreeTest extends \OxidTestCase
         $oTabs->expects($this->once())->method('item')->will($this->returnValue($oTab));
         $oTabs->length = 2;
 
-        $oNavTree = $this->getMock("oxnavigationtree", array("getTabs"));
+        $oNavTree = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\NavigationTree::class, array("getTabs"));
         $oNavTree->expects($this->once())->method('getTabs')->will($this->returnValue($oTabs));
 
         $this->assertEquals("testClassName", $oNavTree->getActiveTab("testClass", 1));
@@ -426,7 +269,7 @@ class NavigationTreeTest extends \OxidTestCase
         $oDom = new DOMDocument();
         $oDom->loadXML($sXml);
 
-        $oNavTree = $this->getMock("oxnavigationtree", array("getDomXml"));
+        $oNavTree = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\NavigationTree::class, array("getDomXml"));
         $oNavTree->expects($this->once())->method('getDomXml')->will($this->returnValue($oDom));
         $oTabs = $oNavTree->getTabs("testClass", 1, true);
 
@@ -492,7 +335,7 @@ class NavigationTreeTest extends \OxidTestCase
         $oDom->formatOutput = true;
         $oDom->loadXML($sXml);
 
-        $oNavTree = $this->getMock("oxnavigationtree", array("_hasGroup"));
+        $oNavTree = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\NavigationTree::class, array("_hasGroup"));
         $oNavTree->expects($this->at(0))->method('_hasGroup')->will($this->returnValue(false));
         $oNavTree->expects($this->at(1))->method('_hasGroup')->will($this->returnValue(true));
         $oNavTree->UNITcheckGroups($oDom);
@@ -524,7 +367,7 @@ class NavigationTreeTest extends \OxidTestCase
         $dom->formatOutput = true;
         $dom->loadXML($xml);
 
-        $navTree = $this->getMock("oxnavigationtree", array("_getInitialDom"));
+        $navTree = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\NavigationTree::class, array("_getInitialDom"));
         $navTree->expects($this->any())->method('_getInitialDom')->will($this->returnValue($dom));
         $resultDom = $navTree->getDomXml();
 
@@ -564,7 +407,7 @@ class NavigationTreeTest extends \OxidTestCase
         $dom->formatOutput = true;
         $dom->loadXML($xml);
 
-        $navTree = $this->getMock("oxnavigationtree", array("_getInitialDom"));
+        $navTree = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\NavigationTree::class, array("_getInitialDom"));
         $navTree->expects($this->any())->method('_getInitialDom')->will($this->returnValue($dom));
         $resultDom = $navTree->getDomXml();
 
@@ -600,7 +443,7 @@ class NavigationTreeTest extends \OxidTestCase
         $dom->formatOutput = true;
         $dom->loadXML($xml);
 
-        $navTree = $this->getMock("oxnavigationtree", array("_getInitialDom"));
+        $navTree = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\NavigationTree::class, array("_getInitialDom"));
         $navTree->expects($this->any())->method('_getInitialDom')->will($this->returnValue($dom));
         $resultDom = $navTree->getDomXml();
 
@@ -635,52 +478,11 @@ class NavigationTreeTest extends \OxidTestCase
         $oDom->formatOutput = true;
         $oDom->loadXML($sXml);
 
-        $oNavTree = $this->getMock("oxnavigationtree", array("_hasRights"));
+        $oNavTree = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\NavigationTree::class, array("_hasRights"));
         $oNavTree->expects($this->at(0))->method('_hasRights')->will($this->returnValue(false));
         $oNavTree->expects($this->at(1))->method('_hasRights')->will($this->returnValue(true));
         $oNavTree->UNITcheckRights($oDom);
         $this->assertEquals(str_replace(array("\t", " ", "\n", "\r"), "", $sResXml), str_replace(array("\t", " ", "\n", "\r"), "", $oDom->saveXML()));
-    }
-
-    /**
-     * OxNavigationTree::_checkDynFile() test case
-     * testing new functionality
-     * dyn file must not be created if content is empty
-     *
-     * @return null
-     */
-    public function testCheckDynFileFileDoesNotExist()
-    {
-        $sFilePath = $this->getConfig()->getConfigParam('sCompileDir') . "xxx.file";
-        $oNavTree = oxNew('oxnavigationtree');
-        $this->assertNull($oNavTree->UNITcheckDynFile($sFilePath));
-
-    }
-
-    /**
-     * OxNavigationTree::_checkDynFile() test case
-     * dyn file must not be created if content is not valid
-     *
-     * @return null
-     */
-    public function testCheckDynFileWrongFileContent()
-    {
-        $sFilePath = $this->getConfig()->getConfigParam('sCompileDir') . "{$this->_sWrongDynfile}";
-        $oNavTree = oxNew('oxnavigationtree');
-        $this->assertNull($oNavTree->UNITcheckDynFile($sFilePath));
-    }
-
-    /**
-     * OxNavigationTree::_checkDynFile() test case
-     * wheter content is a valid xml file, same content will return
-     *
-     * @return null
-     */
-    public function testCheckDynFileFileIsValidXml()
-    {
-        $sFilePath = $this->getConfig()->getConfigParam('sCompileDir') . "{$this->_sValidDynfile}";
-        $oNavTree = oxNew('oxnavigationtree');
-        $this->assertEquals($sFilePath, $oNavTree->UNITcheckDynFile($sFilePath));
     }
 
     /**
@@ -737,9 +539,9 @@ class NavigationTreeTest extends \OxidTestCase
         // not changed
         $this->_checkDemoShopDenialsInMenuXml($oDom, 4);
 
-        $oConfig = $this->getMock('oxconfig', array('getConfigParam'));
+        $oConfig = $this->getMock(\OxidEsales\Eshop\Core\Config::class, array('getConfigParam'));
         $oConfig->expects($this->once())->method('getConfigParam')->with($this->equalTo('blDemoShop'))->will($this->returnValue(false));
-        $oNavTree->setConfig($oConfig);
+        Registry::set(Config::class, $oConfig);
         $oNavTree->UNITcheckDemoShopDenials($oDom);
 
         // not changed
@@ -763,9 +565,9 @@ class NavigationTreeTest extends \OxidTestCase
         // not changed
         $this->_checkDemoShopDenialsInMenuXml($oDom, 4, '1');
 
-        $oConfig = $this->getMock('oxconfig', array('getConfigParam'));
+        $oConfig = $this->getMock(\OxidEsales\Eshop\Core\Config::class, array('getConfigParam'));
         $oConfig->expects($this->once())->method('getConfigParam')->with($this->equalTo('blDemoShop'))->will($this->returnValue(true));
-        $oNavTree->setConfig($oConfig);
+        Registry::set(Config::class, $oConfig);
         $oNavTree->UNITcheckDemoShopDenials($oDom);
 
         // removed
@@ -789,9 +591,9 @@ class NavigationTreeTest extends \OxidTestCase
         // not changed
         $this->_checkDemoShopDenialsInMenuXml($oDom, 0);
 
-        $oConfig = $this->getMock('oxconfig', array('getConfigParam'));
+        $oConfig = $this->getMock(\OxidEsales\Eshop\Core\Config::class, array('getConfigParam'));
         $oConfig->expects($this->once())->method('getConfigParam')->with($this->equalTo('blDemoShop'))->will($this->returnValue(false));
-        $oNavTree->setConfig($oConfig);
+        Registry::set(Config::class, $oConfig);
         $oNavTree->UNITcheckDemoShopDenials($oDom);
 
         // removed
@@ -815,9 +617,9 @@ class NavigationTreeTest extends \OxidTestCase
         // not changed
         $this->_checkDemoShopDenialsInMenuXml($oDom, 0);
 
-        $oConfig = $this->getMock('oxconfig', array('getConfigParam'));
+        $oConfig = $this->getMock(\OxidEsales\Eshop\Core\Config::class, array('getConfigParam'));
         $oConfig->expects($this->once())->method('getConfigParam')->with($this->equalTo('blDemoShop'))->will($this->returnValue(true));
-        $oNavTree->setConfig($oConfig);
+        Registry::set(Config::class, $oConfig);
         $oNavTree->UNITcheckDemoShopDenials($oDom);
 
         // not changed
@@ -894,9 +696,9 @@ class NavigationTreeTest extends \OxidTestCase
     {
         $this->getConfig()->setConfigParam("blUseRightsRoles", true);
 
-        $oNavTree = $this->getMock('oxNavigationTree', array("isAdmin"));
+        $oNavTree = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\NavigationTree::class, array("isAdmin"));
         $oNavTree->expects($this->any())->method('isAdmin')->will($this->returnValue(true));
-        $oNavTree->getConfig()->setConfigParam('sAdminDir', 'admin');
+        Registry::getConfig()->setConfigParam('sAdminDir', 'admin');
 
         $this->assertEquals('mxcoresett', $oNavTree->getClassId('shop'));
 
@@ -933,7 +735,7 @@ class NavigationTreeTest extends \OxidTestCase
      */
     public function testGetAdminUrl()
     {
-        $oUU = $this->getMock('oxUtilsUrl', array('processUrl'));
+        $oUU = $this->getMock(\OxidEsales\Eshop\Core\UtilsUrl::class, array('processUrl'));
         $oUU->expects($this->any())->method('processUrl')
             ->with($this->anything(), $this->equalTo(false))
             ->will($this->returnValue('sess:url?'));
@@ -953,7 +755,7 @@ class NavigationTreeTest extends \OxidTestCase
     {
         $sString = 'http://url/lala?stoken=ASDddddd2454&amp;amp;&amp;lala';
 
-        $o = $this->getMock('oxNavigationTree', array('_getAdminUrl'));
+        $o = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\NavigationTree::class, array('_getAdminUrl'));
         $o->expects($this->never())->method('_getAdminUrl');
 
         $this->assertEquals($sString, $o->UNITprocessCachedFile($sString));
@@ -982,7 +784,7 @@ class NavigationTreeTest extends \OxidTestCase
 
 
         $oCDom = clone $oDom;
-        $o = $this->getMock('oxNavigationTree', array('_getAdminUrl'));
+        $o = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\NavigationTree::class, array('_getAdminUrl'));
         $o->expects($this->once())->method('_getAdminUrl')->will($this->returnValue('http://url/lala?stoken=TOKEN111454&'));
         $o->UNITsessionizeLocalUrls($oCDom);
 
@@ -1035,7 +837,7 @@ class NavigationTreeTest extends \OxidTestCase
         $oDomElemFrom = new stdClass();
         $oDomElemFrom->childNodes = array($oNode1, $oNode2);
 
-        $oTree = $this->getMock("oxNavigationTree", array("_copyAttributes"));
+        $oTree = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\NavigationTree::class, array("_copyAttributes"));
         $oTree->expects($this->once())->method('_copyAttributes');
         $oTree->UNITmergeNodes($oDomElemTo, $oDomElemFrom, $oXPathTo, $oDomDocTo, $sQueryStart);
     }

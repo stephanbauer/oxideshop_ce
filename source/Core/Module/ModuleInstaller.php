@@ -1,59 +1,52 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 namespace OxidEsales\EshopCommunity\Core\Module;
 
+use OxidEsales\Eshop\Core\Exception\ModuleValidationException;
+use OxidEsales\Eshop\Core\Exception\StandardException;
+use OxidEsales\Eshop\Core\FileCache;
+use OxidEsales\Eshop\Core\Registry;
+use OxidEsales\Eshop\Core\Routing\Module\ClassProviderStorage;
 use OxidEsales\Eshop\Core\SettingsHandler;
-use oxModuleCache;
-use oxModule;
-use oxDb;
-use oxUtilsObject;
+use OxidEsales\Eshop\Core\ShopIdCalculator;
+use OxidEsales\Eshop\Core\SubShopSpecificFileCache;
+use OxidEsales\Eshop\Core\Module\ModuleSmartyPluginDirectoryRepository as EshopModuleSmartyPluginDirectoryRepository;
+use OxidEsales\Eshop\Core\Module\ModuleVariablesLocator as EshopModuleVariablesLocator;
+use OxidEsales\Eshop\Core\Module\Module as EshopModule;
+use OxidEsales\Eshop\Core\Module\ModuleSmartyPluginDirectoryValidator as EshopModuleSmartyPluginDirectoryValidator;
+use OxidEsales\EshopCommunity\Internal\Application\ContainerFactory;
+use OxidEsales\EshopCommunity\Internal\Module\Setup\Service\ModuleServicesActivationServiceInterface;
 
 /**
  * Modules installer class.
  *
  * @internal Do not make a module extension for this class.
- * @see      http://oxidforge.org/en/core-oxid-eshop-classes-must-not-be-extended.html
+ * @see      https://oxidforge.org/en/core-oxid-eshop-classes-must-not-be-extended.html
  */
-class ModuleInstaller extends \oxSuperCfg
+class ModuleInstaller extends \OxidEsales\Eshop\Core\Base
 {
     /**
-     * @var oxModuleCache
+     * @var \OxidEsales\Eshop\Core\Module\ModuleCache
      */
     protected $_oModuleCache;
 
-    /** @var ModuleExtensionsCleaner */
+    /** @var \OxidEsales\Eshop\Core\Module\ModuleExtensionsCleaner */
     private $moduleCleaner;
 
     /**
      * Sets dependencies.
      *
-     * @param oxModuleCache           $oxModuleCache
-     * @param ModuleExtensionsCleaner $moduleCleaner
+     * @param \OxidEsales\Eshop\Core\Module\ModuleCache             $moduleCache
+     * @param \OxidEsales\Eshop\Core\Module\ModuleExtensionsCleaner $moduleCleaner
      */
-    public function __construct(ModuleCache $oxModuleCache = null, $moduleCleaner = null)
+    public function __construct(\OxidEsales\Eshop\Core\Module\ModuleCache $moduleCache = null, $moduleCleaner = null)
     {
-        $this->setModuleCache($oxModuleCache);
+        $this->setModuleCache($moduleCache);
         if (is_null($moduleCleaner)) {
-            $moduleCleaner = oxNew(ModuleExtensionsCleaner::class);
+            $moduleCleaner = oxNew(\OxidEsales\Eshop\Core\Module\ModuleExtensionsCleaner::class);
         }
         $this->moduleCleaner = $moduleCleaner;
     }
@@ -61,7 +54,7 @@ class ModuleInstaller extends \oxSuperCfg
     /**
      * Sets module cache.
      *
-     * @param oxModuleCache $oModuleCache
+     * @param \OxidEsales\Eshop\Core\Module\ModuleCache $oModuleCache
      */
     public function setModuleCache($oModuleCache)
     {
@@ -71,7 +64,7 @@ class ModuleInstaller extends \oxSuperCfg
     /**
      * Gets module cache.
      *
-     * @return oxModuleCache
+     * @return \OxidEsales\Eshop\Core\Module\ModuleCache
      */
     public function getModuleCache()
     {
@@ -81,64 +74,120 @@ class ModuleInstaller extends \oxSuperCfg
     /**
      * Activate extension by merging module class inheritance information with shop module array
      *
-     * @param oxModule $oModule
+     * @param \OxidEsales\Eshop\Core\Module\Module $module
      *
      * @return bool
      */
-    public function activate(\OxidEsales\EshopCommunity\Core\Module\Module $oModule)
+    public function activate(\OxidEsales\Eshop\Core\Module\Module $module)
     {
-        $blResult = false;
-        if ($sModuleId = $oModule->getId()) {
-            $this->_addExtensions($oModule);
-            $this->_removeFromDisabledList($sModuleId);
+        $result = false;
+        if ($moduleId = $module->getId()) {
+            $this->_addExtensions($module);
+            $this->_removeFromDisabledList($moduleId);
 
-            $this->_addTemplateBlocks($oModule->getInfo("blocks"), $sModuleId);
-            $this->_addModuleFiles($oModule->getInfo("files"), $sModuleId);
-            $this->_addTemplateFiles($oModule->getInfo("templates"), $sModuleId);
+            if (version_compare($module->getMetaDataVersion(), '2.0', '<')) {
+                /** Support for the key 'files' was removed in MetaData version 2.0 */
+                $this->_addModuleFiles($module->getInfo("files"), $moduleId);
+            }
+
+            $this->_addTemplateBlocks($module->getInfo("blocks"), $moduleId);
+            $this->_addTemplateFiles($module->getInfo("templates"), $moduleId);
             $settingsHandler = oxNew(SettingsHandler::class);
-            $settingsHandler->setModuleType('module')->run($oModule);
-            $this->_addModuleVersion($oModule->getInfo("version"), $sModuleId);
-            $this->_addModuleExtensions($oModule->getExtensions(), $sModuleId);
-            $this->_addModuleEvents($oModule->getInfo("events"), $sModuleId);
+            $settingsHandler->setModuleType('module')->run($module);
+            $this->_addModuleVersion($module->getInfo("version"), $moduleId);
+            $this->_addModuleExtensions($module->getExtensions(), $moduleId);
+            $this->_addModuleEvents($module->getInfo("events"), $moduleId);
+
+            if (version_compare($module->getMetaDataVersion(), '2.0', '>=')) {
+                try {
+                    /** Support for the key 'controllers' was added in MetaData version 2.0 */
+                    $this->addModuleControllers($module->getControllers(), $moduleId);
+                } catch (ModuleValidationException $exception) {
+                    $this->deactivate($module);
+                    $lang = Registry::getLang();
+                    $message = sprintf($lang->translateString('ERROR_METADATA_CONTROLLERS_NOT_UNIQUE', null, true), $exception->getMessage());
+
+                    $standardException = oxNew(StandardException::class);
+                    $standardException->setMessage($message);
+
+                    throw $standardException;
+                }
+            }
+
+            if (version_compare($module->getMetaDataVersion(), '2.1', '>=')) {
+                try {
+                    $this->addModuleSmartyPluginDirectories($module);
+                } catch (\Exception $exception) {
+                    $this->deactivate($module);
+
+                    throw oxNew(StandardException::class, $exception->getMessage());
+                }
+            }
+
+            $this->activateShopAwareServices($module);
 
             $this->resetCache();
 
-            $this->_callEvent('onActivate', $sModuleId);
+            $this->_callEvent('onActivate', $moduleId);
 
-            $blResult = true;
+            $result = true;
         }
 
-        return $blResult;
+        return $result;
+    }
+
+    /**
+     * @param EshopModule $module
+     */
+    private function activateShopAwareServices(\OxidEsales\Eshop\Core\Module\Module $module)
+    {
+        /** @var ModuleServicesActivationServiceInterface $shopActivationService */
+        $shopActivationService = ContainerFactory::getInstance()->getContainer()->get(ModuleServicesActivationServiceInterface::class);
+        $shopActivationService->activateModuleServices($module->getId(), Registry::getConfig()->getShopId());
+    }
+
+    /**
+     * @param EshopModule $module
+     */
+    private function deactivateShopAwareServices(\OxidEsales\Eshop\Core\Module\Module $module)
+    {
+        /** @var ModuleServicesActivationServiceInterface $shopActivationService */
+        $shopActivationService = ContainerFactory::getInstance()->getContainer()->get(ModuleServicesActivationServiceInterface::class);
+        $shopActivationService->deactivateModuleServices($module->getId(), Registry::getConfig()->getShopId());
     }
 
     /**
      * Deactivate extension by adding disable module class information to disabled module array
      *
-     * @param oxModule $oModule
+     * @param \OxidEsales\Eshop\Core\Module\Module $module
      *
      * @return bool
      */
-    public function deactivate(\OxidEsales\EshopCommunity\Core\Module\Module $oModule)
+    public function deactivate(\OxidEsales\Eshop\Core\Module\Module $module)
     {
-        $blResult = false;
-        if ($sModuleId = $oModule->getId()) {
-            $this->_callEvent('onDeactivate', $sModuleId);
+        $result = false;
+        if ($moduleId = $module->getId()) {
+            $this->_callEvent('onDeactivate', $moduleId);
 
-            $this->_addToDisabledList($sModuleId);
+            $this->_addToDisabledList($moduleId);
 
             //removing recoverable options
-            $this->_deleteBlock($sModuleId);
-            $this->_deleteTemplateFiles($sModuleId);
-            $this->_deleteModuleFiles($sModuleId);
-            $this->_deleteModuleEvents($sModuleId);
-            $this->_deleteModuleVersions($sModuleId);
+            $this->_deleteBlock($moduleId);
+            $this->_deleteTemplateFiles($moduleId);
+            $this->_deleteModuleFiles($moduleId);
+            $this->_deleteModuleEvents($moduleId);
+            $this->_deleteModuleVersions($moduleId);
+            $this->deleteModuleControllers($moduleId);
+            $this->deleteModuleSmartyPluginDirectories($moduleId);
+
+            $this->deactivateShopAwareServices($module);
 
             $this->resetCache();
 
-            $blResult = true;
+            $result = true;
         }
 
-        return $blResult;
+        return $result;
     }
 
     /**
@@ -148,7 +197,7 @@ class ModuleInstaller extends \oxSuperCfg
      */
     public function getModulesWithExtendedClass()
     {
-        return $this->getConfig()->getModulesWithExtendedClass();
+        return \OxidEsales\Eshop\Core\Registry::getConfig()->getModulesWithExtendedClass();
     }
 
     /**
@@ -160,7 +209,7 @@ class ModuleInstaller extends \oxSuperCfg
      */
     public function buildModuleChains($aModuleArray)
     {
-        $aModules = array();
+        $aModules = [];
         if (is_array($aModuleArray)) {
             foreach ($aModuleArray as $sClass => $aModuleChain) {
                 $aModules[$sClass] = implode('&', $aModuleChain);
@@ -184,13 +233,13 @@ class ModuleInstaller extends \oxSuperCfg
         if (is_array($aAllModuleArray) && is_array($aRemModuleArray)) {
             foreach ($aAllModuleArray as $sClass => $aModuleChain) {
                 if (!is_array($aModuleChain)) {
-                    $aModuleChain = array($aModuleChain);
+                    $aModuleChain = [$aModuleChain];
                 }
                 if (isset($aRemModuleArray[$sClass])) {
                     if (!is_array($aRemModuleArray[$sClass])) {
-                        $aRemModuleArray[$sClass] = array($aRemModuleArray[$sClass]);
+                        $aRemModuleArray[$sClass] = [$aRemModuleArray[$sClass]];
                     }
-                    $aAllModuleArray[$sClass] = array();
+                    $aAllModuleArray[$sClass] = [];
                     foreach ($aModuleChain as $sModule) {
                         if (!in_array($sModule, $aRemModuleArray[$sClass])) {
                             $aAllModuleArray[$sClass][] = $sModule;
@@ -211,7 +260,7 @@ class ModuleInstaller extends \oxSuperCfg
     /**
      * Returns module cleaner object.
      *
-     * @return ModuleExtensionsCleaner
+     * @return \OxidEsales\Eshop\Core\Module\ModuleExtensionsCleaner
      */
     protected function getModuleCleaner()
     {
@@ -225,9 +274,9 @@ class ModuleInstaller extends \oxSuperCfg
      */
     protected function _addToDisabledList($sModuleId)
     {
-        $aDisabledModules = (array) $this->getConfig()->getConfigParam('aDisabledModules');
+        $aDisabledModules = (array) \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('aDisabledModules');
 
-        $aModules = array_merge($aDisabledModules, array($sModuleId));
+        $aModules = array_merge($aDisabledModules, [$sModuleId]);
         $aModules = array_unique($aModules);
 
         $this->_saveToConfig('aDisabledModules', $aModules, 'arr');
@@ -242,12 +291,12 @@ class ModuleInstaller extends \oxSuperCfg
      */
     protected function _deleteModule($sModuleId)
     {
-        $aExt = $this->getConfig()->getModulesWithExtendedClass();
+        $aExt = \OxidEsales\Eshop\Core\Registry::getConfig()->getModulesWithExtendedClass();
 
         $aUpdatedExt = $this->diffModuleArrays($aExt, $sModuleId);
         $aUpdatedExt = $this->buildModuleChains($aUpdatedExt);
 
-        $this->getConfig()->saveShopConfVar('aarr', 'aModules', $aUpdatedExt);
+        \OxidEsales\Eshop\Core\Registry::getConfig()->saveShopConfVar('aarr', 'aModules', $aUpdatedExt);
     }
 
     /**
@@ -259,8 +308,8 @@ class ModuleInstaller extends \oxSuperCfg
      */
     protected function _deleteBlock($sModuleId)
     {
-        $oDb = oxDb::getDb();
-        $sShopId = $this->getConfig()->getShopId();
+        $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
+        $sShopId = \OxidEsales\Eshop\Core\Registry::getConfig()->getShopId();
         $oDb->execute("DELETE FROM `oxtplblocks` WHERE `oxmodule` =" . $oDb->quote($sModuleId) . " AND `oxshopid` = " . $oDb->quote($sShopId));
     }
 
@@ -271,7 +320,7 @@ class ModuleInstaller extends \oxSuperCfg
      */
     protected function _deleteTemplateFiles($sModuleId)
     {
-        $aTemplates = (array) $this->getConfig()->getConfigParam('aModuleTemplates');
+        $aTemplates = (array) \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('aModuleTemplates');
         unset($aTemplates[$sModuleId]);
 
         $this->_saveToConfig('aModuleTemplates', $aTemplates);
@@ -284,7 +333,7 @@ class ModuleInstaller extends \oxSuperCfg
      */
     protected function _deleteModuleFiles($sModuleId)
     {
-        $aFiles = (array) $this->getConfig()->getConfigParam('aModuleFiles');
+        $aFiles = (array) \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('aModuleFiles');
         unset($aFiles[$sModuleId]);
 
         $this->_saveToConfig('aModuleFiles', $aFiles);
@@ -297,7 +346,7 @@ class ModuleInstaller extends \oxSuperCfg
      */
     protected function _deleteModuleEvents($sModuleId)
     {
-        $aEvents = (array) $this->getConfig()->getConfigParam('aModuleEvents');
+        $aEvents = (array) \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('aModuleEvents');
         unset($aEvents[$sModuleId]);
 
         $this->_saveToConfig('aModuleEvents', $aEvents);
@@ -310,7 +359,7 @@ class ModuleInstaller extends \oxSuperCfg
      */
     protected function _deleteModuleVersions($sModuleId)
     {
-        $aVersions = (array) $this->getConfig()->getConfigParam('aModuleVersions');
+        $aVersions = (array) \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('aModuleVersions');
         unset($aVersions[$sModuleId]);
 
         $this->_saveToConfig('aModuleVersions', $aVersions);
@@ -319,20 +368,21 @@ class ModuleInstaller extends \oxSuperCfg
     /**
      * Add extension to module
      *
-     * @param oxModule $oModule
+     * @param \OxidEsales\Eshop\Core\Module\Module $module
      */
-    protected function _addExtensions(\OxidEsales\EshopCommunity\Core\Module\Module $oModule)
+    protected function _addExtensions(\OxidEsales\Eshop\Core\Module\Module $module)
     {
-        $aModules = $this->_removeNotUsedExtensions($this->getModulesWithExtendedClass(), $oModule);
+        $modules = $this->_removeNotUsedExtensions($this->getModulesWithExtendedClass(), $module);
 
-        if ($oModule->hasExtendClass()) {
-            $aAddModules = $oModule->getExtensions();
-            $aModules = $this->_mergeModuleArrays($aModules, $aAddModules);
+        if ($module->hasExtendClass()) {
+            $this->validateMetadataExtendSection($module);
+            $addModules = $module->getExtensions();
+            $modules = $this->_mergeModuleArrays($modules, $addModules);
         }
 
-        $aModules = $this->buildModuleChains($aModules);
+        $modules = $this->buildModuleChains($modules);
 
-        $this->_saveToConfig('aModules', $aModules);
+        $this->_saveToConfig('aModules', $modules);
     }
 
     /**
@@ -349,7 +399,7 @@ class ModuleInstaller extends \oxSuperCfg
         if (is_array($aAllModuleArray) && is_array($aAddModuleArray)) {
             foreach ($aAddModuleArray as $sClass => $aModuleChain) {
                 if (!is_array($aModuleChain)) {
-                    $aModuleChain = array($aModuleChain);
+                    $aModuleChain = [$aModuleChain];
                 }
                 if (isset($aAllModuleArray[$sClass])) {
                     foreach ($aModuleChain as $sModule) {
@@ -373,17 +423,19 @@ class ModuleInstaller extends \oxSuperCfg
      */
     protected function _removeFromDisabledList($sModuleId)
     {
-        $aDisabledModules = (array) $this->getConfig()->getConfigParam('aDisabledModules');
+        $aDisabledModules = (array) \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('aDisabledModules');
 
         if (isset($aDisabledModules) && is_array($aDisabledModules)) {
-            $aDisabledModules = array_diff($aDisabledModules, array($sModuleId));
+            $aDisabledModules = array_diff($aDisabledModules, [$sModuleId]);
             $this->_saveToConfig('aDisabledModules', $aDisabledModules, 'arr');
         }
     }
 
     /**
-     * Add module templates to database.
-     *
+     * Set module templates in the database.
+     * we do not use delete and add combination because
+     * the combination of deleting and adding does unnecessary writes and so it does not scale
+     * also it's more likely to get race conditions (in the moment the blocks are deleted)
      * @todo extract oxtplblocks query to ModuleTemplateBlockRepository
      *
      * @param array  $moduleBlocks Module blocks array
@@ -391,16 +443,17 @@ class ModuleInstaller extends \oxSuperCfg
      */
     protected function _addTemplateBlocks($moduleBlocks, $moduleId)
     {
-        $shopId = $this->getConfig()->getShopId();
-        $db = oxDb::getDb();
-
+        $shopId = \OxidEsales\Eshop\Core\Registry::getConfig()->getShopId();
+        $db = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
         if (is_array($moduleBlocks)) {
+            $knownBlocks = ['dummy'];
             foreach ($moduleBlocks as $moduleBlock) {
-                $id = oxUtilsObject::getInstance()->generateUId();
+                $id = md5($moduleId . json_encode($moduleBlock) . $shopId);
+                $knownBlocks[] = $id;
 
                 $template = $moduleBlock["template"];
                 $position = isset($moduleBlock['position']) && is_numeric($moduleBlock['position']) ?
-                    intval($moduleBlock['position']) : 1;
+                    (int) $moduleBlock['position'] : 1;
 
                 $block = $moduleBlock["block"];
                 $filePath = $moduleBlock["file"];
@@ -408,19 +461,39 @@ class ModuleInstaller extends \oxSuperCfg
                 $theme = isset($moduleBlock['theme']) ? $moduleBlock['theme'] : '';
 
                 $sql = "INSERT INTO `oxtplblocks` (`OXID`, `OXACTIVE`, `OXSHOPID`, `OXTHEME`, `OXTEMPLATE`, `OXBLOCKNAME`, `OXPOS`, `OXFILE`, `OXMODULE`)
-                         VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?)";
+                     VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?)
+                     ON DUPLICATE KEY UPDATE
+                      `OXID` = VALUES(OXID),
+                      `OXACTIVE` = VALUES(OXACTIVE),
+                      `OXSHOPID` = VALUES(OXSHOPID),
+                      `OXTHEME`  = VALUES(OXTHEME),
+                      `OXTEMPLATE` = VALUES(OXTEMPLATE),
+                      `OXBLOCKNAME` = VALUES(OXBLOCKNAME),
+                      `OXPOS` = VALUES(OXPOS),
+                      `OXFILE` = VALUES(OXFILE),
+                      `OXMODULE` = VALUES(OXMODULE)
+                     ";
 
-                $db->execute($sql, array(
-                    $id,
-                    $shopId,
-                    $theme,
-                    $template,
-                    $block,
-                    $position,
-                    $filePath,
-                    $moduleId
-                ));
+                $db->execute(
+                    $sql,
+                    [
+                        $id,
+                        $shopId,
+                        $theme,
+                        $template,
+                        $block,
+                        $position,
+                        $filePath,
+                        $moduleId
+                    ]
+                );
             }
+
+            $commaSeparatedListOfKnownBlocks = join(',', $db->quoteArray($knownBlocks));
+            $db->execute(
+                "DELETE FROM oxtplblocks WHERE OXSHOPID = ? AND OXMODULE = ? AND OXID NOT IN ($commaSeparatedListOfKnownBlocks) ",
+                array($shopId, $moduleId)
+            );
         }
     }
 
@@ -432,7 +505,7 @@ class ModuleInstaller extends \oxSuperCfg
      */
     protected function _addModuleFiles($aModuleFiles, $sModuleId)
     {
-        $aFiles = (array) $this->getConfig()->getConfigParam('aModuleFiles');
+        $aFiles = (array) \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('aModuleFiles');
 
         if (is_array($aModuleFiles)) {
             $aFiles[$sModuleId] = array_change_key_case($aModuleFiles, CASE_LOWER);
@@ -449,7 +522,7 @@ class ModuleInstaller extends \oxSuperCfg
      */
     protected function _addTemplateFiles($aModuleTemplates, $sModuleId)
     {
-        $aTemplates = (array) $this->getConfig()->getConfigParam('aModuleTemplates');
+        $aTemplates = (array) \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('aModuleTemplates');
         if (is_array($aModuleTemplates)) {
             $aTemplates[$sModuleId] = $aModuleTemplates;
         }
@@ -465,7 +538,7 @@ class ModuleInstaller extends \oxSuperCfg
      */
     protected function _addModuleEvents($aModuleEvents, $sModuleId)
     {
-        $aEvents = (array) $this->getConfig()->getConfigParam('aModuleEvents');
+        $aEvents = (array) \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('aModuleEvents');
         if (is_array($aEvents)) {
             $aEvents[$sModuleId] = $aModuleEvents;
         }
@@ -481,7 +554,7 @@ class ModuleInstaller extends \oxSuperCfg
      */
     protected function _addModuleVersion($sModuleVersion, $sModuleId)
     {
-        $aVersions = (array) $this->getConfig()->getConfigParam('aModuleVersions');
+        $aVersions = (array) \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('aModuleVersions');
         if (is_array($aVersions)) {
             $aVersions[$sModuleId] = $sModuleVersion;
         }
@@ -497,12 +570,39 @@ class ModuleInstaller extends \oxSuperCfg
      */
     protected function _addModuleExtensions($moduleExtensions, $moduleId)
     {
-        $extensions = (array) $this->getConfig()->getConfigParam('aModuleExtensions');
+        $extensions = (array) \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('aModuleExtensions');
         if (is_array($extensions)) {
             $extensions[$moduleId] = array_values($moduleExtensions);
         }
 
         $this->_saveToConfig('aModuleExtensions', $extensions);
+    }
+
+    /**
+     * Add controllers map for a given module Id to config
+     *
+     * @param array  $moduleControllers Map of controller ids and class names
+     * @param string $moduleId          The Id of the module
+     */
+    protected function addModuleControllers($moduleControllers, $moduleId)
+    {
+        $this->validateModuleMetadataControllersOnActivation($moduleControllers);
+
+        $classProviderStorage = $this->getClassProviderStorage();
+
+        $classProviderStorage->add($moduleId, $moduleControllers);
+    }
+
+    /**
+     * Remove controllers map for a given module Id from config
+     *
+     * @param string $moduleId The Id of the module
+     */
+    protected function deleteModuleControllers($moduleId)
+    {
+        $moduleControllerProvider = $this->getClassProviderStorage();
+
+        $moduleControllerProvider->remove($moduleId);
     }
 
     /**
@@ -513,7 +613,7 @@ class ModuleInstaller extends \oxSuperCfg
      */
     protected function _callEvent($sEvent, $sModuleId)
     {
-        $aModuleEvents = (array) $this->getConfig()->getConfigParam('aModuleEvents');
+        $aModuleEvents = (array) \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('aModuleEvents');
 
         if (isset($aModuleEvents[$sModuleId], $aModuleEvents[$sModuleId][$sEvent])) {
             $mEvent = $aModuleEvents[$sModuleId][$sEvent];
@@ -527,14 +627,14 @@ class ModuleInstaller extends \oxSuperCfg
     /**
      * Removes garbage ( module not used extensions ) from all installed extensions list
      *
-     * @param array    $installedExtensions Installed extensions
-     * @param oxModule $module              Module
+     * @param array                                $installedExtensions Installed extensions
+     * @param \OxidEsales\Eshop\Core\Module\Module $module              Module
      *
-     * @deprecated on b-dev, ModuleExtensionsCleaner::cleanExtensions() should be used.
+     * @deprecated on b-dev, \OxidEsales\Eshop\Core\Module\ModuleExtensionsCleaner::cleanExtensions() should be used.
      *
      * @return array
      */
-    protected function _removeNotUsedExtensions($installedExtensions, oxModule $module)
+    protected function _removeNotUsedExtensions($installedExtensions, \OxidEsales\Eshop\Core\Module\Module $module)
     {
         return $this->getModuleCleaner()->cleanExtensions($installedExtensions, $module);
     }
@@ -548,8 +648,7 @@ class ModuleInstaller extends \oxSuperCfg
      */
     protected function _saveToConfig($sVariableName, $sVariableValue, $sVariableType = 'aarr')
     {
-        $oConfig = $this->getConfig();
-        $oConfig->setConfigParam($sVariableName, $sVariableValue);
+        $oConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
         $oConfig->saveShopConfVar($sVariableType, $sVariableName, $sVariableValue);
     }
 
@@ -561,5 +660,155 @@ class ModuleInstaller extends \oxSuperCfg
         if ($this->getModuleCache()) {
             $this->getModuleCache()->resetCache();
         }
+    }
+
+    /**
+     * @return \OxidEsales\Eshop\Core\Contract\ControllerMapProviderInterface
+     */
+    protected function getModuleControllerMapProvider()
+    {
+        return oxNew(\OxidEsales\Eshop\Core\Routing\ModuleControllerMapProvider::class);
+    }
+
+    /**
+     * @return \OxidEsales\Eshop\Core\Contract\ControllerMapProviderInterface
+     */
+    protected function getShopControllerMapProvider()
+    {
+        return oxNew(\OxidEsales\Eshop\Core\Routing\ShopControllerMapProvider::class);
+    }
+
+    /**
+     * @return object
+     */
+    protected function getClassProviderStorage()
+    {
+        $classProviderStorage = oxNew(ClassProviderStorage::class);
+
+        return $classProviderStorage;
+    }
+
+    /**
+     * Ensure integrity of the controllerMap before storing it.
+     * Both keys and values must be unique with in the same shop or sub-shop.
+     *
+     * @param array $moduleControllers
+     *
+     * @throws ModuleValidationException
+     */
+    protected function validateModuleMetadataControllersOnActivation($moduleControllers)
+    {
+        $moduleControllerMapProvider = $this->getModuleControllerMapProvider();
+        $shopControllerMapProvider = $this->getShopControllerMapProvider();
+
+        $moduleControllerMap = $moduleControllerMapProvider->getControllerMap();
+        $shopControllerMap = $shopControllerMapProvider->getControllerMap();
+
+        $existingMaps = array_merge($moduleControllerMap, $shopControllerMap);
+
+        /**
+         * Ensure, that controller keys are unique.
+         * As keys are always stored in lower case, we must test against lower case keys here as well
+         */
+        $duplicatedKeys = array_intersect_key(array_change_key_case($moduleControllers, CASE_LOWER), $existingMaps);
+        if (!empty($duplicatedKeys)) {
+            throw new \OxidEsales\Eshop\Core\Exception\ModuleValidationException(implode(',', $duplicatedKeys));
+        }
+
+        /**
+         * Ensure, that controller values are unique.
+         */
+        $duplicatedValues = array_intersect($moduleControllers, $existingMaps);
+        if (!empty($duplicatedValues)) {
+            throw new \OxidEsales\Eshop\Core\Exception\ModuleValidationException(implode(',', $duplicatedValues));
+        }
+    }
+
+    /**
+     * Validate module metadata extend section.
+     * Only Unified Namespace shop classes are free to patch.
+     *
+     * @param \OxidEsales\Eshop\Core\Module\Module $module
+     *
+     * @throws ModuleValidationException
+     */
+    protected function validateMetadataExtendSection(\OxidEsales\Eshop\Core\Module\Module $module)
+    {
+        $validator = $this->getModuleMetadataValidator();
+        $validator->checkModuleExtensionsForIncorrectNamespaceClasses($module);
+    }
+
+    /**
+     * @return \OxidEsales\Eshop\Core\Module\ModuleMetadataValidator
+     */
+    protected function getModuleMetadataValidator()
+    {
+        return oxNew(\OxidEsales\Eshop\Core\Module\ModuleMetadataValidator::class);
+    }
+
+    /**
+     * @param EshopModule $module
+     */
+    private function addModuleSmartyPluginDirectories(EshopModule $module)
+    {
+        $moduleSmartyPluginDirectoryRepository = $this->getModuleSmartyPluginDirectoryRepository();
+
+        $smartyPluginDirectories = $moduleSmartyPluginDirectoryRepository->get();
+        $smartyPluginDirectories->add(
+            $module->getSmartyPluginDirectories(),
+            $module->getId()
+        );
+
+        $validator = oxNew(EshopModuleSmartyPluginDirectoryValidator::class);
+        $validator->validate($smartyPluginDirectories);
+
+        $moduleSmartyPluginDirectoryRepository->save($smartyPluginDirectories);
+    }
+
+    /**
+     * @param string $moduleId
+     */
+    private function deleteModuleSmartyPluginDirectories($moduleId)
+    {
+        $moduleSmartyPluginDirectoryRepository = $this->getModuleSmartyPluginDirectoryRepository();
+
+        $smartyPluginDirectories = $moduleSmartyPluginDirectoryRepository->get();
+        $smartyPluginDirectories->remove($moduleId);
+
+        $moduleSmartyPluginDirectoryRepository->save($smartyPluginDirectories);
+    }
+
+    /**
+     * @return EshopModuleSmartyPluginDirectoryRepository
+     */
+    private function getModuleSmartyPluginDirectoryRepository()
+    {
+        $subShopSpecificCache = oxNew(
+            SubShopSpecificFileCache::class,
+            $this->getShopIdCalculator()
+        );
+
+        $moduleVariablesLocator = oxNew(
+            EshopModuleVariablesLocator::class,
+            $subShopSpecificCache,
+            $this->getShopIdCalculator()
+        );
+
+        return oxNew(
+            EshopModuleSmartyPluginDirectoryRepository::class,
+            \OxidEsales\Eshop\Core\Registry::getConfig(),
+            $moduleVariablesLocator,
+            oxNew(EshopModule::class)
+        );
+    }
+
+    /**
+     * @return ShopIdCalculator
+     */
+    private function getShopIdCalculator()
+    {
+        $moduleVariablesCache = oxNew(FileCache::class);
+
+        return oxNew(ShopIdCalculator::class, $moduleVariablesCache);
     }
 }

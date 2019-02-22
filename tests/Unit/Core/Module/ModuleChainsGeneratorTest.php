@@ -1,35 +1,19 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
-namespace Unit\Core;
+namespace OxidEsales\EshopCommunity\Tests\Unit\Core;
 
-use OxidEsales\EshopCommunity\Core\Module\ModuleVariablesLocator;
+use OxidEsales\Eshop\Core\Exception\SystemComponentException;
 use oxTestModules;
-use PHPUnit_Framework_MockObject_MockObject as MockObject;
+use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * @group module
  * @package Unit\Core
  */
-class ModuleChainsGeneratorTest extends \OxidTestCase
+class ModuleChainsGeneratorTest extends \OxidEsales\TestingLibrary\UnitTestCase
 {
 
     public function testGetActiveModuleChain()
@@ -37,7 +21,7 @@ class ModuleChainsGeneratorTest extends \OxidTestCase
         $aModuleChain = array("oe/moduleName2/myorder");
 
         /** @var ModuleVariablesLocator|MockObject $oUtilsObject */
-        $moduleVariablesLocator = $this->getMock('oxModuleVariablesLocator', array('getModuleVariable'), array(), '', false);
+        $moduleVariablesLocator = $this->getMock(\OxidEsales\Eshop\Core\Module\ModuleVariablesLocator::class, array('getModuleVariable'), array(), '', false);
         $valueMap = array(
             array('aDisabledModules', array('moduleName')),
             array('aModulePaths', array("moduleName2" => "oe/moduleName2", "moduleName" => "oe/moduleName")),
@@ -55,28 +39,11 @@ class ModuleChainsGeneratorTest extends \OxidTestCase
         $aModuleChainResult = array();
 
         /** @var ModuleVariablesLocator|MockObject $oUtilsObject */
-        $moduleVariablesLocator = $this->getMock('oxModuleVariablesLocator', array('getModuleVariable'), array(), '', false);
+        $moduleVariablesLocator = $this->getMock(\OxidEsales\Eshop\Core\Module\ModuleVariablesLocator::class, array('getModuleVariable'), array(), '',
+          false);
         $valueMap = array(
             array('aDisabledModules', array('moduleName')),
-            array('aModulePaths', array("moduleName" => "oe/moduleName")),
-        );
-        $moduleVariablesLocator->expects($this->any())->method('getModuleVariable')->will($this->returnValueMap($valueMap));
-
-        $moduleChainsGenerator = oxNew('oxModuleChainsGenerator', $moduleVariablesLocator);
-
-        $this->assertEquals($aModuleChainResult, $moduleChainsGenerator->filterInactiveExtensions($aModuleChain));
-    }
-
-    public function testGetActiveModuleChainIfDisabledWithoutPath()
-    {
-        $aModuleChain = array("moduleName/myorder");
-        $aModuleChainResult = array();
-
-        /** @var ModuleVariablesLocator|MockObject $oUtilsObject */
-        $moduleVariablesLocator = $this->getMock('oxModuleVariablesLocator', array('getModuleVariable'), array(), '', false);
-        $valueMap = array(
-            array('aDisabledModules', array('moduleName')),
-            array('aModulePaths', array("moduleName2" => "oe/moduleName2")),
+            array('aModuleExtensions', array("moduleName" => array("oe/moduleName/myorder"))),
         );
         $moduleVariablesLocator->expects($this->any())->method('getModuleVariable')->will($this->returnValueMap($valueMap));
 
@@ -93,14 +60,71 @@ class ModuleChainsGeneratorTest extends \OxidTestCase
         $oModule->load($sModuleId);
 
         /** @var ModuleVariablesLocator|MockObject $oUtilsObject */
-        $moduleVariablesLocator = $this->getMock('oxModuleVariablesLocator', array(), array(), '', false);
+        $moduleVariablesLocator = $this->getMock(\OxidEsales\Eshop\Core\Module\ModuleVariablesLocator::class, array(), array(), '', false);
 
         $moduleChainsGenerator = oxNew('oxModuleChainsGenerator', $moduleVariablesLocator);
 
-        $oModuleInstaller = $this->getMock('oxModuleInstaller', array('deactivate'));
+        $oModuleInstaller = $this->getMock(\OxidEsales\Eshop\Core\Module\ModuleInstaller::class, array('deactivate'));
         $oModuleInstaller->expects($this->once())->method('deactivate')->with($oModule);
         oxTestModules::addModuleObject('oxModuleInstaller', $oModuleInstaller);
 
         $moduleChainsGenerator->disableModule($sModuleId);
     }
+
+    /**
+     *
+     * @covers \OxidEsales\EshopCommunity\Core\Module\ModuleChainsGenerator::onModuleExtensionCreationError
+     */
+    public function testOnModuleExtensionCreationError()
+    {
+        $moduleChainsGeneratorMock = $this->generateModuleChainsGeneratorWithNonExistingFileConfiguration();
+
+        $actualClassName = $moduleChainsGeneratorMock->createClassChain('content');
+
+        $this->assertEquals('content', $actualClassName);
+        $this->assertLoggedException(SystemComponentException::class);
+    }
+
+    /**
+     *
+     * @return \OxidEsales\EshopCommunity\Core\Module\ModuleChainsGenerator
+     */
+    private function generateModuleChainsGeneratorWithNonExistingFileConfiguration()
+    {
+        /** @var ModuleVariablesLocator|MockObject $oUtilsObject */
+        $moduleVariablesLocatorMock = $this->getMock(
+            \OxidEsales\Eshop\Core\Module\ModuleVariablesLocator::class,
+            ['getModuleVariable'],
+            [],
+            '',
+            false
+        );
+        $valueMap = [
+            ['aModules', ['content' => 'notExistingClass']],
+            ['aDisabledModules', []]
+        ];
+        $moduleVariablesLocatorMock
+            ->expects($this->any())
+            ->method('getModuleVariable')
+            ->will($this->returnValueMap($valueMap));
+
+        $moduleChainsGeneratorMock = $this->getMock(
+            \OxidEsales\EshopCommunity\Core\Module\ModuleChainsGenerator::class,
+            ['getConfigDebugMode', 'isUnitTest'],
+            [$moduleVariablesLocatorMock]
+        );
+
+        /**
+         * It is fake not to be a unit test in order to execute the error handling, which is not done for the rest of
+         * the tests.
+         */
+        $moduleChainsGeneratorMock
+            ->expects($this->any())
+            ->method('isUnitTest')
+            ->will($this->returnValue(false));
+
+        return $moduleChainsGeneratorMock;
+    }
+
+
 }

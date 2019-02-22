@@ -1,23 +1,7 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 
 namespace OxidEsales\EshopCommunity\Tests\Acceptance\Admin;
@@ -491,7 +475,7 @@ class CreatingItemsAdminTest extends AdminTestCase
         $this->frame("list");
         $this->type("where[oxpayments][oxdesc]", "create_delete");
         $this->clickAndWait("submitit");
-        $this->assertEquals("create_delete payment [EN]_šÄßüл", $this->getText("//tr[@id='row.1']/td[2]"));
+        $this->assertEquals("create_delete payment [EN]_šÄßüл", $this->getText("//tr[@id='row.1']/td[contains(@class, 'payment_name')]"));
         $this->assertElementNotPresent("//tr[@id='row.2']/td[1]");
     }
 
@@ -2237,15 +2221,18 @@ class CreatingItemsAdminTest extends AdminTestCase
     {
         $this->loginAdmin("Customer Info", "News");
         $this->changeAdminListLanguage("Deutsch");
+
         $this->clickAndWait("link=Title");
         $this->openListItem("link=1 [DE] Test news šÄßüл");
-        $this->assertEquals("1 [DE] Test news šÄßüл", $this->getValue("editval[oxnews__oxshortdesc]"));
+        $this->waitForElementText("1 [DE] Test news šÄßüл", "editval[oxnews__oxshortdesc]");
         $this->assertEquals("Deutsch", $this->getSelectedLabel("test_editlanguage"));
+
         $this->frame("list");
         $this->changeAdminListLanguage('English');
         $this->frame("edit");
-        $this->assertEquals("[last] [EN] Test news šÄßüл", $this->getValue("editval[oxnews__oxshortdesc]"));
+        $this->waitForElementText("[last] [EN] Test news šÄßüл", "editval[oxnews__oxshortdesc]");
         $this->assertEquals("English", $this->getSelectedLabel("test_editlanguage"));
+
         $this->clickCreateNewItem();
         $this->assertEquals("off", $this->getValue("editval[oxnews__oxactive]"));
         $this->check("editval[oxnews__oxactive]");
@@ -2275,12 +2262,14 @@ class CreatingItemsAdminTest extends AdminTestCase
         $this->assertEquals("2008-05-01 00:00:00", $this->getValue("editval[oxnews__oxactiveto]"));
         $this->assertEquals("2008-04-22", $this->getValue("editval[oxnews__oxdate]"));
         $this->assertEquals("create_delete news [DE]", $this->getValue("editval[oxnews__oxshortdesc]"));
+
         $this->selectAndWait("test_editlanguage", "label=English");
+        $this->waitForElementText("create_delete news [EN]_šÄßüл", "editval[oxnews__oxshortdesc]");
         $this->assertEquals("on", $this->getValue("editval[oxnews__oxactive]"));
         $this->assertEquals("2008-01-01 00:11:11", $this->getValue("editval[oxnews__oxactivefrom]"));
         $this->assertEquals("2008-05-01 00:00:00", $this->getValue("editval[oxnews__oxactiveto]"));
         $this->assertEquals("2008-04-22", $this->getValue("editval[oxnews__oxdate]"));
-        $this->assertEquals("create_delete news [EN]_šÄßüл", $this->getValue("editval[oxnews__oxshortdesc]"));
+
         $this->openTab("Text");
         $this->assertEquals("English", $this->getSelectedLabel("newslang"));
         $this->assertEquals("", $this->getEditorValue("oxnews__oxlongdesc"));

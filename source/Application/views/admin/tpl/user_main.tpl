@@ -14,9 +14,10 @@ function chkInsert()
 //-->
 </script>
 
-[{assign var="readonly" value=""}]
 [{if $readonly}]
     [{assign var="readonly" value="readonly disabled"}]
+[{else}]
+    [{assign var="readonly" value=""}]
 [{/if}]
 
 <form name="transfer" id="transfer" action="[{$oViewConf->getSelfLink()}]" method="post">
@@ -235,7 +236,7 @@ function chkInsert()
         </tr>
         </table>
     </td>
-    <!-- Anfang rechte Seite -->
+    <!-- Starting right column -->
     <td valign="top" class="edittext vr" align="left" width="50%">
         [{block name="admin_user_main_assign_groups"}]
             [{if $oxid != "-1"}]

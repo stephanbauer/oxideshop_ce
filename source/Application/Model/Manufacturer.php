@@ -1,23 +1,7 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 
 namespace OxidEsales\EshopCommunity\Application\Model;
@@ -29,10 +13,9 @@ use oxField;
  * Manufacturer manager
  *
  */
-class Manufacturer extends \oxI18n implements \oxIUrl
+class Manufacturer extends \OxidEsales\Eshop\Core\Model\MultiLanguageModel implements \OxidEsales\Eshop\Core\Contract\IUrl
 {
-
-    protected static $_aRootManufacturer = array();
+    protected static $_aRootManufacturer = [];
 
     /**
      * @var string Name of current class
@@ -79,14 +62,14 @@ class Manufacturer extends \oxI18n implements \oxIUrl
      *
      * @var array
      */
-    protected $_aSeoUrls = array();
+    protected $_aSeoUrls = [];
 
     /**
      * Class constructor, initiates parent constructor (parent::oxI18n()).
      */
     public function __construct()
     {
-        $this->setShowArticleCnt($this->getConfig()->getConfigParam('bl_perfShowActionCatArticleCnt'));
+        $this->setShowArticleCnt(\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('bl_perfShowActionCatArticleCnt'));
         parent::__construct();
         $this->init('oxmanufacturers');
     }
@@ -144,10 +127,10 @@ class Manufacturer extends \oxI18n implements \oxIUrl
 
         // manufacturer article count is stored in cache
         if ($this->_blShowArticleCnt && !$this->isAdmin()) {
-            $this->_iNrOfArticles = oxRegistry::get("oxUtilsCount")->getManufacturerArticleCount($this->getId());
+            $this->_iNrOfArticles = \OxidEsales\Eshop\Core\Registry::getUtilsCount()->getManufacturerArticleCount($this->getId());
         }
 
-        $this->oxmanufacturers__oxnrofarticles = new oxField($this->_iNrOfArticles, oxField::T_RAW);
+        $this->oxmanufacturers__oxnrofarticles = new \OxidEsales\Eshop\Core\Field($this->_iNrOfArticles, \OxidEsales\Eshop\Core\Field::T_RAW);
     }
 
     /**
@@ -175,9 +158,9 @@ class Manufacturer extends \oxI18n implements \oxIUrl
     protected function _setRootObjectData()
     {
         $this->setId('root');
-        $this->oxmanufacturers__oxicon = new oxField('', oxField::T_RAW);
-        $this->oxmanufacturers__oxtitle = new oxField(oxRegistry::getLang()->translateString('BY_MANUFACTURER', $this->getLanguage(), false), oxField::T_RAW);
-        $this->oxmanufacturers__oxshortdesc = new oxField('', oxField::T_RAW);
+        $this->oxmanufacturers__oxicon = new \OxidEsales\Eshop\Core\Field('', \OxidEsales\Eshop\Core\Field::T_RAW);
+        $this->oxmanufacturers__oxtitle = new \OxidEsales\Eshop\Core\Field(\OxidEsales\Eshop\Core\Registry::getLang()->translateString('BY_MANUFACTURER', $this->getLanguage(), false), \OxidEsales\Eshop\Core\Field::T_RAW);
+        $this->oxmanufacturers__oxshortdesc = new \OxidEsales\Eshop\Core\Field('', \OxidEsales\Eshop\Core\Field::T_RAW);
 
         return true;
     }
@@ -192,7 +175,7 @@ class Manufacturer extends \oxI18n implements \oxIUrl
      */
     public function getBaseSeoLink($iLang, $iPage = 0)
     {
-        $oEncoder = oxRegistry::get("oxSeoEncoderManufacturer");
+        $oEncoder = \OxidEsales\Eshop\Core\Registry::get(\OxidEsales\Eshop\Application\Model\SeoEncoderManufacturer::class);
         if (!$iPage) {
             return $oEncoder->getManufacturerUrl($this, $iLang);
         }
@@ -209,7 +192,7 @@ class Manufacturer extends \oxI18n implements \oxIUrl
      */
     public function getLink($iLang = null)
     {
-        if (!oxRegistry::getUtils()->seoIsActive()) {
+        if (!\OxidEsales\Eshop\Core\Registry::getUtils()->seoIsActive()) {
             return $this->getStdLink($iLang);
         }
 
@@ -238,7 +221,7 @@ class Manufacturer extends \oxI18n implements \oxIUrl
         $sUrl = '';
         if ($blFull) {
             //always returns shop url, not admin
-            $sUrl = $this->getConfig()->getShopUrl($iLang, false);
+            $sUrl = \OxidEsales\Eshop\Core\Registry::getConfig()->getShopUrl($iLang, false);
         }
 
         return $sUrl . "index.php?cl=manufacturerlist" . ($blAddId ? "&amp;mnid=" . $this->getId() : "");
@@ -252,13 +235,13 @@ class Manufacturer extends \oxI18n implements \oxIUrl
      *
      * @return string
      */
-    public function getStdLink($iLang = null, $aParams = array())
+    public function getStdLink($iLang = null, $aParams = [])
     {
         if ($iLang === null) {
             $iLang = $this->getLanguage();
         }
 
-        return oxRegistry::get("oxUtilsUrl")->processUrl($this->getBaseStdLink($iLang), true, $aParams, $iLang);
+        return \OxidEsales\Eshop\Core\Registry::getUtilsUrl()->processUrl($this->getBaseStdLink($iLang), true, $aParams, $iLang);
     }
 
     /**
@@ -343,7 +326,7 @@ class Manufacturer extends \oxI18n implements \oxIUrl
     public function delete($sOXID = null)
     {
         if (parent::delete($sOXID)) {
-            oxRegistry::get("oxSeoEncoderManufacturer")->onDeleteManufacturer($this);
+            \OxidEsales\Eshop\Core\Registry::get(\OxidEsales\Eshop\Application\Model\SeoEncoderManufacturer::class)->onDeleteManufacturer($this);
 
             return true;
         }
@@ -359,13 +342,13 @@ class Manufacturer extends \oxI18n implements \oxIUrl
     public function getIconUrl()
     {
         if (($sIcon = $this->oxmanufacturers__oxicon->value)) {
-            $oConfig = $this->getConfig();
+            $oConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
             $sSize = $oConfig->getConfigParam('sManufacturerIconsize');
             if (!$sSize) {
                 $sSize = $oConfig->getConfigParam('sIconsize');
             }
 
-            return oxRegistry::get("oxPictureHandler")->getPicUrl("manufacturer/icon/", $sIcon, $sSize);
+            return \OxidEsales\Eshop\Core\Registry::getPictureHandler()->getPicUrl("manufacturer/icon/", $sIcon, $sSize);
         }
     }
 

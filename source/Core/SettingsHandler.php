@@ -1,33 +1,14 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 namespace OxidEsales\EshopCommunity\Core;
-
-use oxDb;
-use oxUtilsObject;
 
 /**
  * Settings handler class.
  */
-class SettingsHandler extends \oxSuperCfg
+class SettingsHandler extends \OxidEsales\Eshop\Core\Base
 {
     /**
      * Module type.
@@ -78,14 +59,14 @@ class SettingsHandler extends \oxSuperCfg
     protected function addModuleSettings($moduleSettings, $moduleId)
     {
         $this->removeNotUsedSettings($moduleSettings, $moduleId);
-        $config = $this->getConfig();
+        $config = \OxidEsales\Eshop\Core\Registry::getConfig();
         $shopId = $config->getShopId();
         $moduleConfigs = $this->getModuleConfigs($moduleId);
-        $db = oxDb::getDb();
+        $db = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
 
         if (is_array($moduleSettings)) {
             foreach ($moduleSettings as $setting) {
-                $oxid = oxUtilsObject::getInstance()->generateUId();
+                $oxid = \OxidEsales\Eshop\Core\Registry::getUtilsObject()->generateUId();
 
                 $module = $this->getModuleConfigId($moduleId);
                 $name = $setting["name"];
@@ -100,15 +81,17 @@ class SettingsHandler extends \oxSuperCfg
                 $group = $setting["group"];
 
                 $constraints = "";
-                if ($setting["constraints"]) {
+                if (isset($setting["constraints"]) && $setting["constraints"]) {
                     $constraints = $setting["constraints"];
-                } elseif ($setting["constrains"]) {
+                } elseif (isset($setting["constrains"]) && $setting["constrains"]) {
                     $constraints = $setting["constrains"];
                 }
 
-                $position = $setting["position"] ? $setting["position"] : 1;
+                $position = 1;
+                if (isset($setting["position"])) {
+                    $position = $setting["position"];
+                }
 
-                $config->setConfigParam($name, $value);
                 $config->saveShopConfVar($type, $name, $value, $shopId, $module);
 
                 $deleteSql = "DELETE FROM `oxconfigdisplay` WHERE OXCFGMODULE=" . $db->quote($module) . " AND OXCFGVARNAME=" . $db->quote($name);
@@ -160,8 +143,8 @@ class SettingsHandler extends \oxSuperCfg
      */
     protected function getModuleConfigs($moduleId)
     {
-        $db = oxDb::getDb(oxDb::FETCH_MODE_ASSOC);
-        $config = $this->getConfig();
+        $db = \OxidEsales\Eshop\Core\DatabaseProvider::getDb(\OxidEsales\Eshop\Core\DatabaseProvider::FETCH_MODE_ASSOC);
+        $config = \OxidEsales\Eshop\Core\Registry::getConfig();
         $shopId = $config->getShopId();
         $module = $this->getModuleConfigId($moduleId);
 
@@ -186,7 +169,7 @@ class SettingsHandler extends \oxSuperCfg
      */
     protected function parseModuleSettings($moduleSettings)
     {
-        $settings = array();
+        $settings = [];
 
         if (is_array($moduleSettings)) {
             foreach ($moduleSettings as $setting) {
@@ -205,11 +188,11 @@ class SettingsHandler extends \oxSuperCfg
      */
     protected function removeModuleConfigs($moduleId, $configsToRemove)
     {
-        $db = oxDb::getDb();
-        $quotedShopId = $db->quote($this->getConfig()->getShopId());
+        $db = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
+        $quotedShopId = $db->quote(\OxidEsales\Eshop\Core\Registry::getConfig()->getShopId());
         $quotedModuleId = $db->quote($this->getModuleConfigId($moduleId));
 
-        $quotedConfigsToRemove = array_map(array($db, 'quote'), $configsToRemove);
+        $quotedConfigsToRemove = array_map([$db, 'quote'], $configsToRemove);
         $deleteSql = "DELETE
                        FROM `oxconfig`
                        WHERE oxmodule = $quotedModuleId AND

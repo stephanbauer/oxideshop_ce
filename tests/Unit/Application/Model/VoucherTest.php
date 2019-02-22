@@ -1,28 +1,13 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
-namespace Unit\Application\Model;
+namespace OxidEsales\EshopCommunity\Tests\Unit\Application\Model;
 
 use \oxField;
-use oxUtilsObject;
+use OxidEsales\Eshop\Core\Config;
+use OxidEsales\Eshop\Core\Registry;
 use oxVoucherException;
 use \stdclass;
 use \oxDb;
@@ -338,7 +323,7 @@ class VoucherTest extends \OxidTestCase
         $oNewVoucher = oxNew('oxvoucher');
         $oNewVoucher->getVoucherByNr($sVoucherNr);
 
-        $oNewVoucher->oxvouchers__oxorderid = new oxField(oxUtilsObject::getInstance()->generateUID());
+        $oNewVoucher->oxvouchers__oxorderid = new oxField(oxRegistry::getUtilsObject()->generateUID());
         $oNewVoucher->save();
 
         $oNewVoucher = oxNew('oxvoucher');
@@ -630,7 +615,7 @@ class VoucherTest extends \OxidTestCase
     public function testIsAvailablePriceWhenPriceIsBelowMinVal()
     {
         $sOXID = $this->_aVoucherOxid[$this->_aSerieOxid[0]][$this->getRandLTAmnt()];
-        $oConfig = $this->getMock('oxconfig', array('getActShopCurrencyObject'), array(), '', false);
+        $oConfig = $this->getMock(\OxidEsales\Eshop\Core\Config::class, array('getActShopCurrencyObject'), array(), '', false);
         $myCurr = new stdclass();
         $myCurr->rate = 1000;
         $oConfig->expects($this->once())->method('getActShopCurrencyObject')->will($this->returnValue($myCurr));
@@ -646,7 +631,7 @@ class VoucherTest extends \OxidTestCase
         $dPrice = 9;
 
         try {
-            $oNewVoucher->setConfig($oConfig);
+            Registry::set(Config::class, $oConfig);
             $aErrors = $oNewVoucher->UNITisAvailablePrice($dPrice);
         } catch (\OxidEsales\EshopCommunity\Core\Exception\VoucherException $oEx) {
             $sErrorMsg = $oEx->getMessage();
@@ -820,7 +805,7 @@ class VoucherTest extends \OxidTestCase
 
     public function testIsValidDate_WhenDateIsInFuture()
     {
-        $this->setExpectedException('oxVoucherException', 'ERROR_MESSAGE_VOUCHER_NOVOUCHER');
+        $this->expectException('oxVoucherException'); $this->expectExceptionMessage( 'ERROR_MESSAGE_VOUCHER_NOVOUCHER');
         $oSerie = oxNew('oxvoucherserie');
         $oSerie->load($this->_aSerieOxid[0]);
         $oSerie->oxvoucherseries__oxbegindate = new oxField(date('Y-m-d H:i:s', time() + 3600), oxField::T_RAW);
@@ -840,7 +825,7 @@ class VoucherTest extends \OxidTestCase
 
     public function testIsValidDate_WhenEndDateIsAutoSetInFuture()
     {
-        $this->setExpectedException('oxVoucherException', 'ERROR_MESSAGE_VOUCHER_NOVOUCHER');
+        $this->expectException('oxVoucherException'); $this->expectExceptionMessage( 'ERROR_MESSAGE_VOUCHER_NOVOUCHER');
         $oSerie = oxNew('oxvoucherserie');
         $oSerie->load($this->_aSerieOxid[0]);
         $oSerie->oxvoucherseries__oxbegindate = new oxField(date('Y-m-d H:i:s', time() + 3600), oxField::T_RAW);
@@ -1327,7 +1312,7 @@ class VoucherTest extends \OxidTestCase
     public function testMarkAsUsedExistingMarking()
     {
         oxAddClassModule('modOxUtilsDate', 'oxUtilsDate');
-        oxRegistry::get("oxUtilsDate")->UNITSetTime(0);
+        \OxidEsales\Eshop\Core\Registry::getUtilsDate()->UNITSetTime(0);
 
         $sVoucherSerie = current($this->_aSerieOxid);
         $oSerie = oxNew('oxvoucherserie');
@@ -1368,7 +1353,7 @@ class VoucherTest extends \OxidTestCase
         }
         $oNewVoucher->oxvouchers__oxvoucherserieid = new oxField('aaa');
         $oNewVoucher->save();
-        $this->setExpectedException('oxObjectException');
+        $this->expectException('oxObjectException');
         $oNewVoucher->getSerie();
     }
 
@@ -1400,7 +1385,7 @@ class VoucherTest extends \OxidTestCase
         $oDiscount->oxdiscount__oxitmamount = new oxField();
         $oDiscount->oxdiscount__oxitmmultiple = new oxField();
 
-        $oVoucher = $this->getMock("oxvoucher", array("_getSerieDiscount", "_getBasketItems", "isAdmin"));
+        $oVoucher = $this->getMock(\OxidEsales\Eshop\Application\Model\Voucher::class, array("_getSerieDiscount", "_getBasketItems", "isAdmin"));
         $oVoucher->expects($this->once())->method('_getSerieDiscount')->will($this->returnValue($oDiscount));
         $oVoucher->expects($this->once())->method('_getBasketItems')->will($this->returnValue(array($oBasketItem1)));
         $oVoucher->expects($this->any())->method('isAdmin')->will($this->returnValue(false));

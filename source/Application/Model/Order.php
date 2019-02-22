@@ -1,43 +1,28 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 
 namespace OxidEsales\EshopCommunity\Application\Model;
 
 use Exception;
 use oxArticleInputException;
+use OxidEsales\Eshop\Core\DatabaseProvider;
+use OxidEsales\Eshop\Core\Registry;
 use oxNoArticleException;
 use oxOutOfStockException;
 use oxField;
-use oxRegistry;
-use oxDb;
+use OxidEsales\Eshop\Core\Price as ShopPrice;
+use OxidEsales\Eshop\Application\Model\Payment as EshopPayment;
 
 /**
  * Order manager.
  * Performs creation assigning, updating, deleting and other order functions.
  *
  */
-class Order extends \oxBase
+class Order extends \OxidEsales\Eshop\Core\Model\BaseModel
 {
-
     // defining order state constants
     /**
      * Error while sending order notification mail to customer
@@ -86,7 +71,7 @@ class Order extends \oxBase
      *
      * @var int
      */
-    const ORDER_STATE_INVALIDDElADDRESSCHANGED = 7;
+    const ORDER_STATE_INVALIDDELADDRESSCHANGED = 7;
 
     /**
      * Basket price < minimum order price
@@ -100,40 +85,40 @@ class Order extends \oxBase
      *
      * @var array
      */
-    protected $_aSkipSaveFields = array('oxtimestamp');
+    protected $_aSkipSaveFields = ['oxtimestamp'];
 
     /**
      * oxList of oxarticle objects
      *
-     * @var oxList
+     * @var \oxlist
      */
     protected $_oArticles = null;
 
     /**
      * Oxdeliveryset object
      *
-     * @var oxDeliverySet
+     * @var \oxdeliveryset
      */
     protected $_oDelSet = null;
 
     /**
      * Gift card
      *
-     * @var oxWrapping
+     * @var \oxWrapping
      */
     protected $_oGiftCard = null;
 
     /**
      * Payment type
      *
-     * @var oxPayment
+     * @var \oxpayment
      */
     protected $_oPaymentType = null;
 
     /**
      * User payment
      *
-     * @var oxUserPayment
+     * @var \OxidEsales\Eshop\Application\Model\UserPayment
      */
     protected $_oPayment = null;
 
@@ -147,42 +132,42 @@ class Order extends \oxBase
     /**
      * Order delivery costs price object
      *
-     * @var oxprice
+     * @var ShopPrice
      */
     protected $_oDelPrice = null;
 
     /**
      * Order user
      *
-     * @var oxUser
+     * @var \OxidEsales\Eshop\Application\Model\User
      */
     protected $_oUser = null;
 
     /**
      * Order basket
      *
-     * @var oxBasket
+     * @var \OxidEsales\Eshop\Application\Model\Basket
      */
     protected $_oBasket = null;
 
     /**
      * Order wrapping costs price object
      *
-     * @var oxprice
+     * @var ShopPrice
      */
     protected $_oWrappingPrice = null;
 
     /**
      * Order gift card price object
      *
-     * @var oxprice
+     * @var ShopPrice
      */
     protected $_oGiftCardPrice = null;
 
     /**
      * Order payment costs price object
      *
-     * @var oxprice
+     * @var ShopPrice
      */
     protected $_oPaymentPrice = null;
 
@@ -243,7 +228,7 @@ class Order extends \oxBase
     protected $_sShipTrackUrl = null;
 
     /**
-     * @var oxBasket
+     * @var \OxidEsales\Eshop\Application\Model\Basket
      */
     protected $_oOrderBasket = null;
 
@@ -256,7 +241,7 @@ class Order extends \oxBase
         $this->init('oxorder');
 
         // set usage of separate orders numbering for different shops
-        $this->setSeparateNumbering($this->getConfig()->getConfigParam('blSeparateNumbering'));
+        $this->setSeparateNumbering(\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('blSeparateNumbering'));
     }
 
     /**
@@ -290,11 +275,11 @@ class Order extends \oxBase
     {
         parent::assign($dbRecord);
 
-        $oUtilsDate = oxRegistry::get("oxUtilsDate");
+        $oUtilsDate = \OxidEsales\Eshop\Core\Registry::getUtilsDate();
 
         // convert date's to international format
-        $this->oxorder__oxorderdate = new oxField($oUtilsDate->formatDBDate($this->oxorder__oxorderdate->value));
-        $this->oxorder__oxsenddate = new oxField($oUtilsDate->formatDBDate($this->oxorder__oxsenddate->value));
+        $this->oxorder__oxorderdate = new \OxidEsales\Eshop\Core\Field($oUtilsDate->formatDBDate($this->oxorder__oxorderdate->value));
+        $this->oxorder__oxsenddate = new \OxidEsales\Eshop\Core\Field($oUtilsDate->formatDBDate($this->oxorder__oxsenddate->value));
     }
 
     /**
@@ -308,7 +293,7 @@ class Order extends \oxBase
     {
         $sTitle = null;
         if ($sCountryId && $sCountryId != '-1') {
-            $oCountry = oxNew('oxcountry');
+            $oCountry = oxNew(\OxidEsales\Eshop\Application\Model\Country::class);
             $oCountry->loadInLang($this->getOrderLanguage(), $sCountryId);
             $sTitle = $oCountry->oxcountry__oxtitle->value;
         }
@@ -321,7 +306,7 @@ class Order extends \oxBase
      *
      * @param bool $blExcludeCanceled excludes canceled items from list
      *
-     * @return oxList
+     * @return \oxlist
      */
     protected function _getArticles($blExcludeCanceled = false)
     {
@@ -331,7 +316,7 @@ class Order extends \oxBase
                         ORDER BY `oxorderarticles`.`oxartid`, `oxorderarticles`.`oxselvariant`, `oxorderarticles`.`oxpersparam` ";
 
         // order articles
-        $oArticles = oxNew('oxlist');
+        $oArticles = oxNew(\OxidEsales\Eshop\Core\Model\ListModel::class);
         $oArticles->init('oxorderarticle');
         $oArticles->selectString($sSelect);
 
@@ -343,7 +328,7 @@ class Order extends \oxBase
      *
      * @param bool $blExcludeCanceled excludes canceled items from list
      *
-     * @return oxList
+     * @return \oxlist
      */
     public function getOrderArticles($blExcludeCanceled = false)
     {
@@ -360,7 +345,7 @@ class Order extends \oxBase
     /**
      * Order article list setter
      *
-     * @param oxOrderArticleList $oOrderArticleList
+     * @param \OxidEsales\Eshop\Application\Model\OrderArticleList $oOrderArticleList
      */
     public function setOrderArticleList($oOrderArticleList)
     {
@@ -370,7 +355,7 @@ class Order extends \oxBase
     /**
      * Returns order delivery expenses price object
      *
-     * @return oxprice
+     * @return ShopPrice
      */
     public function getOrderDeliveryPrice()
     {
@@ -378,7 +363,7 @@ class Order extends \oxBase
             return $this->_oDelPrice;
         }
 
-        $this->_oDelPrice = oxNew('oxprice');
+        $this->_oDelPrice = oxNew(\OxidEsales\Eshop\Core\Price::class);
         $this->_oDelPrice->setBruttoPriceMode();
         $this->_oDelPrice->setPrice($this->oxorder__oxdelcost->value, $this->oxorder__oxdelvat->value);
 
@@ -388,7 +373,7 @@ class Order extends \oxBase
     /**
      * Returns order wrapping expenses price object
      *
-     * @return oxprice
+     * @return ShopPrice
      */
     public function getOrderWrappingPrice()
     {
@@ -396,7 +381,7 @@ class Order extends \oxBase
             return $this->_oWrappingPrice;
         }
 
-        $this->_oWrappingPrice = oxNew('oxprice');
+        $this->_oWrappingPrice = oxNew(\OxidEsales\Eshop\Core\Price::class);
         $this->_oWrappingPrice->setBruttoPriceMode();
         $this->_oWrappingPrice->setPrice($this->oxorder__oxwrapcost->value, $this->oxorder__oxwrapvat->value);
 
@@ -406,7 +391,7 @@ class Order extends \oxBase
     /**
      * Returns order wrapping expenses price object
      *
-     * @return oxprice
+     * @return ShopPrice
      */
     public function getOrderGiftCardPrice()
     {
@@ -414,7 +399,7 @@ class Order extends \oxBase
             return $this->_oGidtCardPrice;
         }
 
-        $this->_oGidtCardPrice = oxNew('oxprice');
+        $this->_oGidtCardPrice = oxNew(\OxidEsales\Eshop\Core\Price::class);
         $this->_oGidtCardPrice->setBruttoPriceMode();
         $this->_oGidtCardPrice->setPrice($this->oxorder__oxgiftcardcost->value, $this->oxorder__oxgiftcardvat->value);
 
@@ -425,7 +410,7 @@ class Order extends \oxBase
     /**
      * Returns order payment expenses price object
      *
-     * @return oxprice
+     * @return ShopPrice
      */
     public function getOrderPaymentPrice()
     {
@@ -433,7 +418,7 @@ class Order extends \oxBase
             return $this->_oPaymentPrice;
         }
 
-        $this->_oPaymentPrice = oxNew('oxprice');
+        $this->_oPaymentPrice = oxNew(\OxidEsales\Eshop\Core\Price::class);
         $this->_oPaymentPrice->setBruttoPriceMode();
         $this->_oPaymentPrice->setPrice($this->oxorder__oxpaycost->value, $this->oxorder__oxpayvat->value);
 
@@ -461,123 +446,111 @@ class Order extends \oxBase
      * Order checking, processing and saving method.
      * Before saving performed checking if order is still not executed (checks in
      * database oxorder table for order with know ID), if yes - returns error code 3,
-     * if not - loads payment data, assigns all info from basket to new oxorder object
+     * if not - loads payment data, assigns all info from basket to new Order object
      * and saves full order with error status. Then executes payment. On failure -
-     * deletes order and returns error code 2. On success - saves order (oxorder::save()),
-     * removes article from wishlist (oxorder::_updateWishlist()), updates voucher data
-     * (oxorder::_markVouchers()). Finally sends order confirmation email to customer
-     * (oxemail::SendOrderEMailToUser()) and shop owner (oxemail::SendOrderEMailToOwner()).
+     * deletes order and returns error code 2. On success - saves order (\OxidEsales\Eshop\Application\Model\Order::save()),
+     * removes article from wishlist (\OxidEsales\Eshop\Application\Model\Order::_updateWishlist()), updates voucher data
+     * (\OxidEsales\Eshop\Application\Model\Order::_markVouchers()). Finally sends order confirmation email to customer
+     * (\OxidEsales\Eshop\Core\Email::SendOrderEMailToUser()) and shop owner (\OxidEsales\Eshop\Core\Email::SendOrderEMailToOwner()).
      * If this is order recalculation, skipping payment execution, marking vouchers as used
      * and sending order by email to shop owner and user
      * Mailing status (1 if OK, 0 on error) is returned.
      *
-     * @param Basket $oBasket              Shopping basket object
-     * @param object $oUser                Current user object
-     * @param bool   $blRecalculatingOrder Order recalculation
-     *
-     * @throws Exception
+     * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket              Basket object
+     * @param object                                     $oUser                Current User object
+     * @param bool                                       $blRecalculatingOrder Order recalculation
      *
      * @return integer
      */
-    public function finalizeOrder(Basket $oBasket, $oUser, $blRecalculatingOrder = false)
+    public function finalizeOrder(\OxidEsales\Eshop\Application\Model\Basket $oBasket, $oUser, $blRecalculatingOrder = false)
     {
-        oxDb::getDb()->startTransaction();
-        try {
-            // check if this order is already stored
-            $sGetChallenge = oxRegistry::getSession()->getVariable('sess_challenge');
-            if ($this->_checkOrderExist($sGetChallenge)) {
-                oxRegistry::getUtils()->logger('BLOCKER');
+        // check if this order is already stored
+        $orderId = \OxidEsales\Eshop\Core\Registry::getSession()->getVariable('sess_challenge');
+        if ($this->_checkOrderExist($orderId)) {
+            \OxidEsales\Eshop\Core\Registry::getLogger()->debug('finalizeOrder: Order already exists: ' . $orderId, [$oBasket, $oUser]);
+            // we might use this later, this means that somebody clicked like mad on order button
+            return self::ORDER_STATE_ORDEREXISTS;
+        }
 
-                // we might use this later, this means that somebody clicked like mad on order button
-                return self::ORDER_STATE_ORDEREXISTS;
+        // if not recalculating order, use sess_challenge id, else leave old order id
+        if (!$blRecalculatingOrder) {
+            // use this ID
+            $this->setId($orderId);
+
+            // validating various order/basket parameters before finalizing
+            if ($iOrderState = $this->validateOrder($oBasket, $oUser)) {
+                return $iOrderState;
             }
+        }
 
-            // if not recalculating order, use sess_challenge id, else leave old order id
-            if (!$blRecalculatingOrder) {
-                // use this ID
-                $this->setId($sGetChallenge);
+        // copies user info
+        $this->_setUser($oUser);
 
-                // validating various order/basket parameters before finalizing
-                if ($iOrderState = $this->validateOrder($oBasket, $oUser)) {
-                    return $iOrderState;
-                }
+        // copies basket info
+        $this->_loadFromBasket($oBasket);
+
+        // payment information
+        $oUserPayment = $this->_setPayment($oBasket->getPaymentId());
+
+        // set folder information, if order is new
+        // #M575 in recalculating order case folder must be the same as it was
+        if (!$blRecalculatingOrder) {
+            $this->_setFolder();
+        }
+
+        // marking as not finished
+        $this->_setOrderStatus('NOT_FINISHED');
+
+        //saving all order data to DB
+        $this->save();
+
+        // executing payment (on failure deletes order and returns error code)
+        // in case when recalculating order, payment execution is skipped
+        if (!$blRecalculatingOrder) {
+            $blRet = $this->_executePayment($oBasket, $oUserPayment);
+            if ($blRet !== true) {
+                return $blRet;
             }
+        }
 
-            // copies user info
-            $this->_setUser($oUser);
+        if (!$this->oxorder__oxordernr->value) {
+            $this->_setNumber();
+        } else {
+            oxNew(\OxidEsales\Eshop\Core\Counter::class)->update($this->_getCounterIdent(), $this->oxorder__oxordernr->value);
+        }
 
-            // copies basket info
-            $this->_loadFromBasket($oBasket);
+        // deleting remark info only when order is finished
+        \OxidEsales\Eshop\Core\Registry::getSession()->deleteVariable('ordrem');
 
-            // payment information
-            $oUserPayment = $this->_setPayment($oBasket->getPaymentId());
+        //#4005: Order creation time is not updated when order processing is complete
+        if (!$blRecalculatingOrder) {
+            $this->_updateOrderDate();
+        }
 
-            // set folder information, if order is new
-            // #M575 in recalculating order case folder must be the same as it was
-            if (!$blRecalculatingOrder) {
-                $this->_setFolder();
-            }
+        // updating order trans status (success status)
+        $this->_setOrderStatus('OK');
 
-            // marking as not finished
-            $this->_setOrderStatus('NOT_FINISHED');
+        // store orderid
+        $oBasket->setOrderId($this->getId());
 
-            //saving all order data to DB
-            $this->save();
+        // updating wish lists
+        $this->_updateWishlist($oBasket->getContents(), $oUser);
 
-            // executing payment (on failure deletes order and returns error code)
-            // in case when recalculating order, payment execution is skipped
-            if (!$blRecalculatingOrder) {
-                $blRet = $this->_executePayment($oBasket, $oUserPayment);
-                if ($blRet !== true) {
-                    return $blRet;
-                }
-            }
+        // updating users notice list
+        $this->_updateNoticeList($oBasket->getContents(), $oUser);
 
-            if (!$this->oxorder__oxordernr->value) {
-                $this->_setNumber();
-            } else {
-                oxNew('oxCounter')->update($this->_getCounterIdent(), $this->oxorder__oxordernr->value);
-            }
+        // marking vouchers as used and sets them to $this->_aVoucherList (will be used in order email)
+        // skipping this action in case of order recalculation
+        if (!$blRecalculatingOrder) {
+            $this->_markVouchers($oBasket, $oUser);
+        }
 
-            // deleting remark info only when order is finished
-            oxRegistry::getSession()->deleteVariable('ordrem');
-
-            //#4005: Order creation time is not updated when order processing is complete
-            if (!$blRecalculatingOrder) {
-                $this->_updateOrderDate();
-            }
-
-            // updating order trans status (success status)
-            $this->_setOrderStatus('OK');
-
-            // store orderid
-            $oBasket->setOrderId($this->getId());
-
-            // updating wish lists
-            $this->_updateWishlist($oBasket->getContents(), $oUser);
-
-            // updating users notice list
-            $this->_updateNoticeList($oBasket->getContents(), $oUser);
-
-            // marking vouchers as used and sets them to $this->_aVoucherList (will be used in order email)
-            // skipping this action in case of order recalculation
-            if (!$blRecalculatingOrder) {
-                $this->_markVouchers($oBasket, $oUser);
-            }
-
-            // send order by email to shop owner and current user
-            // skipping this action in case of order recalculation
-            if (!$blRecalculatingOrder) {
-                $iRet = $this->_sendOrderByEmail($oUser, $oBasket, $oUserPayment);
-            } else {
-                $iRet = self::ORDER_STATE_OK;
-            }
-
-            oxDb::getDb()->commitTransaction();
-        } catch (Exception $exception) {
-            oxDb::getDb()->rollbackTransaction();
-
-            throw $exception;
+        // send order by email to shop owner and current user
+        // skipping this action in case of order recalculation
+        if (!$blRecalculatingOrder) {
+            $iRet = $this->_sendOrderByEmail($oUser, $oBasket, $oUserPayment);
+        } else {
+            $iRet = self::ORDER_STATE_OK;
         }
 
         return $iRet;
@@ -601,12 +574,12 @@ class Order extends \oxBase
      */
     protected function _setOrderStatus($sStatus)
     {
-        $oDb = oxDb::getDb();
+        $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
         $sQ = 'update oxorder set oxtransstatus=' . $oDb->quote($sStatus) . ' where oxid=' . $oDb->quote($this->getId());
         $oDb->execute($sQ);
 
         //updating order object
-        $this->oxorder__oxtransstatus = new oxField($sStatus, oxField::T_RAW);
+        $this->oxorder__oxtransstatus = new \OxidEsales\Eshop\Core\Field($sStatus, \OxidEsales\Eshop\Core\Field::T_RAW);
     }
 
     /**
@@ -619,7 +592,7 @@ class Order extends \oxBase
     protected function _convertVat($sVat)
     {
         if (strpos($sVat, '.') < strpos($sVat, ',')) {
-            $sVat = str_replace(array('.', ','), array('', '.'), $sVat);
+            $sVat = str_replace(['.', ','], ['', '.'], $sVat);
         } else {
             $sVat = str_replace(',', '', $sVat);
         }
@@ -632,10 +605,10 @@ class Order extends \oxBase
      */
     protected function _resetVats()
     {
-        $this->oxorder__oxartvat1 = new oxField(null);
-        $this->oxorder__oxartvatprice1 = new oxField(null);
-        $this->oxorder__oxartvat2 = new oxField(null);
-        $this->oxorder__oxartvatprice2 = new oxField(null);
+        $this->oxorder__oxartvat1 = new \OxidEsales\Eshop\Core\Field(null);
+        $this->oxorder__oxartvatprice1 = new \OxidEsales\Eshop\Core\Field(null);
+        $this->oxorder__oxartvat2 = new \OxidEsales\Eshop\Core\Field(null);
+        $this->oxorder__oxartvatprice2 = new \OxidEsales\Eshop\Core\Field(null);
     }
 
     /**
@@ -644,61 +617,61 @@ class Order extends \oxBase
      * Additionally stores general discount and wrapping. Sets order status to "error"
      * and creates oxOrderArticle objects and assigns to them basket articles.
      *
-     * @param Basket $oBasket Shopping basket object
+     * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket Shopping basket object
      */
-    protected function _loadFromBasket(Basket $oBasket)
+    protected function _loadFromBasket(\OxidEsales\Eshop\Application\Model\Basket $oBasket)
     {
-        $myConfig = $this->getConfig();
+        $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
 
         // store IP Address - default must be FALSE as it is illegal to store
         if ($myConfig->getConfigParam('blStoreIPs') && $this->oxorder__oxip->value === null) {
-            $this->oxorder__oxip = new oxField(oxRegistry::get("oxUtilsServer")->getRemoteAddress(), oxField::T_RAW);
+            $this->oxorder__oxip = new \OxidEsales\Eshop\Core\Field(\OxidEsales\Eshop\Core\Registry::getUtilsServer()->getRemoteAddress(), \OxidEsales\Eshop\Core\Field::T_RAW);
         }
 
         //setting view mode
-        $this->oxorder__oxisnettomode = new oxField($oBasket->isCalculationModeNetto());
+        $this->oxorder__oxisnettomode = new \OxidEsales\Eshop\Core\Field($oBasket->isCalculationModeNetto());
 
         // copying main price info
-        $this->oxorder__oxtotalnetsum = new oxField($oBasket->getNettoSum());
-        $this->oxorder__oxtotalbrutsum = new oxField($oBasket->getBruttoSum());
-        $this->oxorder__oxtotalordersum = new oxField($oBasket->getPrice()->getBruttoPrice(), oxField::T_RAW);
+        $this->oxorder__oxtotalnetsum = new \OxidEsales\Eshop\Core\Field($oBasket->getNettoSum());
+        $this->oxorder__oxtotalbrutsum = new \OxidEsales\Eshop\Core\Field($oBasket->getBruttoSum());
+        $this->oxorder__oxtotalordersum = new \OxidEsales\Eshop\Core\Field($oBasket->getPrice()->getBruttoPrice(), \OxidEsales\Eshop\Core\Field::T_RAW);
 
         // copying discounted VAT info
         $this->_resetVats();
         $iVatIndex = 1;
         foreach ($oBasket->getProductVats(false) as $iVat => $dPrice) {
-            $this->{"oxorder__oxartvat$iVatIndex"} = new oxField($this->_convertVat($iVat), oxField::T_RAW);
-            $this->{"oxorder__oxartvatprice$iVatIndex"} = new oxField($dPrice, oxField::T_RAW);
+            $this->{"oxorder__oxartvat$iVatIndex"} = new \OxidEsales\Eshop\Core\Field($this->_convertVat($iVat), \OxidEsales\Eshop\Core\Field::T_RAW);
+            $this->{"oxorder__oxartvatprice$iVatIndex"} = new \OxidEsales\Eshop\Core\Field($dPrice, \OxidEsales\Eshop\Core\Field::T_RAW);
             $iVatIndex++;
         }
 
         // payment costs if available
         if (($oPaymentCost = $oBasket->getCosts('oxpayment'))) {
-            $this->oxorder__oxpaycost = new oxField($oPaymentCost->getBruttoPrice(), oxField::T_RAW);
-            $this->oxorder__oxpayvat = new oxField($oPaymentCost->getVAT(), oxField::T_RAW);
+            $this->oxorder__oxpaycost = new \OxidEsales\Eshop\Core\Field($oPaymentCost->getBruttoPrice(), \OxidEsales\Eshop\Core\Field::T_RAW);
+            $this->oxorder__oxpayvat = new \OxidEsales\Eshop\Core\Field($oPaymentCost->getVAT(), \OxidEsales\Eshop\Core\Field::T_RAW);
         }
 
         // delivery info
         if (($oDeliveryCost = $oBasket->getCosts('oxdelivery'))) {
-            $this->oxorder__oxdelcost = new oxField($oDeliveryCost->getBruttoPrice(), oxField::T_RAW);
+            $this->oxorder__oxdelcost = new \OxidEsales\Eshop\Core\Field($oDeliveryCost->getBruttoPrice(), \OxidEsales\Eshop\Core\Field::T_RAW);
             //V #M382: Save VAT, not VAT value for delivery costs
-            $this->oxorder__oxdelvat = new oxField($oDeliveryCost->getVAT(), oxField::T_RAW); //V #M382
-            $this->oxorder__oxdeltype = new oxField($oBasket->getShippingId(), oxField::T_RAW);
+            $this->oxorder__oxdelvat = new \OxidEsales\Eshop\Core\Field($oDeliveryCost->getVAT(), \OxidEsales\Eshop\Core\Field::T_RAW); //V #M382
+            $this->oxorder__oxdeltype = new \OxidEsales\Eshop\Core\Field($oBasket->getShippingId(), \OxidEsales\Eshop\Core\Field::T_RAW);
         }
 
         // user remark
         if (!isset($this->oxorder__oxremark) || $this->oxorder__oxremark->value === null) {
-            $this->oxorder__oxremark = new oxField(oxRegistry::getSession()->getVariable('ordrem'), oxField::T_RAW);
+            $this->oxorder__oxremark = new \OxidEsales\Eshop\Core\Field(\OxidEsales\Eshop\Core\Registry::getSession()->getVariable('ordrem'), \OxidEsales\Eshop\Core\Field::T_RAW);
         }
 
         // currency
         $oCur = $myConfig->getActShopCurrencyObject();
-        $this->oxorder__oxcurrency = new oxField($oCur->name);
-        $this->oxorder__oxcurrate = new oxField($oCur->rate, oxField::T_RAW);
+        $this->oxorder__oxcurrency = new \OxidEsales\Eshop\Core\Field($oCur->name);
+        $this->oxorder__oxcurrate = new \OxidEsales\Eshop\Core\Field($oCur->rate, \OxidEsales\Eshop\Core\Field::T_RAW);
 
         // store voucher discount
         if (($oVoucherDiscount = $oBasket->getVoucherDiscount())) {
-            $this->oxorder__oxvoucherdiscount = new oxField($oVoucherDiscount->getBruttoPrice(), oxField::T_RAW);
+            $this->oxorder__oxvoucherdiscount = new \OxidEsales\Eshop\Core\Field($oVoucherDiscount->getBruttoPrice(), \OxidEsales\Eshop\Core\Field::T_RAW);
         }
 
         // general discount
@@ -710,15 +683,15 @@ class Order extends \oxBase
                     $dDiscount += $oDiscount->dDiscount;
                 }
             }
-            $this->oxorder__oxdiscount = new oxField($dDiscount, oxField::T_RAW);
+            $this->oxorder__oxdiscount = new \OxidEsales\Eshop\Core\Field($dDiscount, \OxidEsales\Eshop\Core\Field::T_RAW);
         }
 
         //order language
-        $this->oxorder__oxlang = new oxField($this->getOrderLanguage());
+        $this->oxorder__oxlang = new \OxidEsales\Eshop\Core\Field($this->getOrderLanguage());
 
 
         // initial status - 'ERROR'
-        $this->oxorder__oxtransstatus = new oxField('ERROR', oxField::T_RAW);
+        $this->oxorder__oxtransstatus = new \OxidEsales\Eshop\Core\Field('ERROR', \OxidEsales\Eshop\Core\Field::T_RAW);
 
         // copies basket product info ...
         $this->_setOrderArticles($oBasket->getContents());
@@ -737,9 +710,9 @@ class Order extends \oxBase
     {
         if ($this->_iOrderLang === null) {
             if (isset($this->oxorder__oxlang->value)) {
-                $this->_iOrderLang = oxRegistry::getLang()->validateLanguage($this->oxorder__oxlang->value);
+                $this->_iOrderLang = \OxidEsales\Eshop\Core\Registry::getLang()->validateLanguage($this->oxorder__oxlang->value);
             } else {
-                $this->_iOrderLang = oxRegistry::getLang()->getBaseLanguage();
+                $this->_iOrderLang = \OxidEsales\Eshop\Core\Registry::getLang()->getBaseLanguage();
             }
         }
 
@@ -754,7 +727,7 @@ class Order extends \oxBase
     protected function _setUser($oUser)
     {
 
-        $this->oxorder__oxuserid = new oxField($oUser->getId());
+        $this->oxorder__oxuserid = new \OxidEsales\Eshop\Core\Field($oUser->getId());
 
         // bill address
         $this->oxorder__oxbillcompany = clone $oUser->oxuser__oxcompany;
@@ -796,41 +769,39 @@ class Order extends \oxBase
     /**
      * Assigns wrapping VAT and card price + card message info
      *
-     * @param Basket $oBasket basket object
+     * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket basket object
      */
-    protected function _setWrapping(Basket $oBasket)
+    protected function _setWrapping(\OxidEsales\Eshop\Application\Model\Basket $oBasket)
     {
-        $myConfig = $this->getConfig();
-
         // wrapping price
         if (($oWrappingCost = $oBasket->getCosts('oxwrapping'))) {
-            $this->oxorder__oxwrapcost = new oxField($oWrappingCost->getBruttoPrice(), oxField::T_RAW);
+            $this->oxorder__oxwrapcost = new \OxidEsales\Eshop\Core\Field($oWrappingCost->getBruttoPrice(), \OxidEsales\Eshop\Core\Field::T_RAW);
             // wrapping VAT will be always calculated (#3757)
-            $this->oxorder__oxwrapvat = new oxField($oWrappingCost->getVAT(), oxField::T_RAW);
+            $this->oxorder__oxwrapvat = new \OxidEsales\Eshop\Core\Field($oWrappingCost->getVAT(), \OxidEsales\Eshop\Core\Field::T_RAW);
         }
 
         if (($oGiftCardCost = $oBasket->getCosts('oxgiftcard'))) {
-            $this->oxorder__oxgiftcardcost = new oxField($oGiftCardCost->getBruttoPrice(), oxField::T_RAW);
-            $this->oxorder__oxgiftcardvat = new oxField($oGiftCardCost->getVAT(), oxField::T_RAW);
+            $this->oxorder__oxgiftcardcost = new \OxidEsales\Eshop\Core\Field($oGiftCardCost->getBruttoPrice(), \OxidEsales\Eshop\Core\Field::T_RAW);
+            $this->oxorder__oxgiftcardvat = new \OxidEsales\Eshop\Core\Field($oGiftCardCost->getVAT(), \OxidEsales\Eshop\Core\Field::T_RAW);
         }
 
         // greetings card
-        $this->oxorder__oxcardid = new oxField($oBasket->getCardId(), oxField::T_RAW);
+        $this->oxorder__oxcardid = new \OxidEsales\Eshop\Core\Field($oBasket->getCardId(), \OxidEsales\Eshop\Core\Field::T_RAW);
 
         // card text will be stored in database
-        $this->oxorder__oxcardtext = new oxField($oBasket->getCardMessage(), oxField::T_RAW);
+        $this->oxorder__oxcardtext = new \OxidEsales\Eshop\Core\Field($oBasket->getCardMessage(), \OxidEsales\Eshop\Core\Field::T_RAW);
     }
 
     /**
-     * Creates oxorderarticle objects and assigns to them basket articles.
-     * Updates quantity of sold articles (oxarticle::updateSoldAmount()).
+     * Creates OrderArticle objects and assigns to them basket articles.
+     * Updates quantity of sold articles (\OxidEsales\Eshop\Application\Model\Article::updateSoldAmount()).
      *
      * @param array $aArticleList article list
      */
     protected function _setOrderArticles($aArticleList)
     {
         // reset articles list
-        $this->_oArticles = oxNew('oxlist');
+        $this->_oArticles = oxNew(\OxidEsales\Eshop\Core\Model\ListModel::class);
         $iCurrLang = $this->getOrderLanguage();
 
         // add all the products we have on basket to the order
@@ -857,52 +828,55 @@ class Order extends \oxBase
                         }
                         $sSelList .= "{$oItem->name} : {$oItem->value}";
                     }
+                    if ($sSelList !== '' && $oContent->getVarSelect() !== '') {
+                        $sSelList .= ' ||';
+                    }
                 }
 
-                $oOrderArticle = oxNew('oxorderarticle');
+                $oOrderArticle = oxNew(\OxidEsales\Eshop\Application\Model\OrderArticle::class);
                 $oOrderArticle->setIsNewOrderItem(true);
                 $oOrderArticle->copyThis($oProduct);
                 $oOrderArticle->setId();
 
                 $oOrderArticle->oxorderarticles__oxartnum = clone $oProduct->oxarticles__oxartnum;
-                $oOrderArticle->oxorderarticles__oxselvariant = new oxField(trim($sSelList . ' ' . $oProduct->oxarticles__oxvarselect->getRawValue()), oxField::T_RAW);
-                $oOrderArticle->oxorderarticles__oxshortdesc = new oxField($oProduct->oxarticles__oxshortdesc->getRawValue(), oxField::T_RAW);
+                $oOrderArticle->oxorderarticles__oxselvariant = new \OxidEsales\Eshop\Core\Field(trim($sSelList . ' ' . $oContent->getVarSelect()), \OxidEsales\Eshop\Core\Field::T_RAW);
+                $oOrderArticle->oxorderarticles__oxshortdesc = new \OxidEsales\Eshop\Core\Field($oProduct->oxarticles__oxshortdesc->getRawValue(), \OxidEsales\Eshop\Core\Field::T_RAW);
                 // #M974: duplicated entries for the name of variants in orders
-                $oOrderArticle->oxorderarticles__oxtitle = new oxField(trim($oProduct->oxarticles__oxtitle->getRawValue()), oxField::T_RAW);
+                $oOrderArticle->oxorderarticles__oxtitle = new \OxidEsales\Eshop\Core\Field(trim($oProduct->oxarticles__oxtitle->getRawValue()), \OxidEsales\Eshop\Core\Field::T_RAW);
 
                 // copying persistent parameters ...
                 if (!is_array($aPersParams = $oProduct->getPersParams())) {
                     $aPersParams = $oContent->getPersParams();
                 }
                 if (is_array($aPersParams) && count($aPersParams)) {
-                    $oOrderArticle->oxorderarticles__oxpersparam = new oxField(serialize($aPersParams), oxField::T_RAW);
+                    $oOrderArticle->oxorderarticles__oxpersparam = new \OxidEsales\Eshop\Core\Field(serialize($aPersParams), \OxidEsales\Eshop\Core\Field::T_RAW);
                 }
             }
 
             // ids, titles, numbers ...
-            $oOrderArticle->oxorderarticles__oxorderid = new oxField($this->getId());
-            $oOrderArticle->oxorderarticles__oxartid = new oxField($oContent->getProductId());
-            $oOrderArticle->oxorderarticles__oxamount = new oxField($oContent->getAmount());
+            $oOrderArticle->oxorderarticles__oxorderid = new \OxidEsales\Eshop\Core\Field($this->getId());
+            $oOrderArticle->oxorderarticles__oxartid = new \OxidEsales\Eshop\Core\Field($oContent->getProductId());
+            $oOrderArticle->oxorderarticles__oxamount = new \OxidEsales\Eshop\Core\Field($oContent->getAmount());
 
             // prices
             $oPrice = $oContent->getPrice();
-            $oOrderArticle->oxorderarticles__oxnetprice = new oxField($oPrice->getNettoPrice(), oxField::T_RAW);
-            $oOrderArticle->oxorderarticles__oxvatprice = new oxField($oPrice->getVatValue(), oxField::T_RAW);
-            $oOrderArticle->oxorderarticles__oxbrutprice = new oxField($oPrice->getBruttoPrice(), oxField::T_RAW);
-            $oOrderArticle->oxorderarticles__oxvat = new oxField($oPrice->getVat(), oxField::T_RAW);
+            $oOrderArticle->oxorderarticles__oxnetprice = new \OxidEsales\Eshop\Core\Field($oPrice->getNettoPrice(), \OxidEsales\Eshop\Core\Field::T_RAW);
+            $oOrderArticle->oxorderarticles__oxvatprice = new \OxidEsales\Eshop\Core\Field($oPrice->getVatValue(), \OxidEsales\Eshop\Core\Field::T_RAW);
+            $oOrderArticle->oxorderarticles__oxbrutprice = new \OxidEsales\Eshop\Core\Field($oPrice->getBruttoPrice(), \OxidEsales\Eshop\Core\Field::T_RAW);
+            $oOrderArticle->oxorderarticles__oxvat = new \OxidEsales\Eshop\Core\Field($oPrice->getVat(), \OxidEsales\Eshop\Core\Field::T_RAW);
 
             $oUnitPrice = $oContent->getUnitPrice();
-            $oOrderArticle->oxorderarticles__oxnprice = new oxField($oUnitPrice->getNettoPrice(), oxField::T_RAW);
-            $oOrderArticle->oxorderarticles__oxbprice = new oxField($oUnitPrice->getBruttoPrice(), oxField::T_RAW);
+            $oOrderArticle->oxorderarticles__oxnprice = new \OxidEsales\Eshop\Core\Field($oUnitPrice->getNettoPrice(), \OxidEsales\Eshop\Core\Field::T_RAW);
+            $oOrderArticle->oxorderarticles__oxbprice = new \OxidEsales\Eshop\Core\Field($oUnitPrice->getBruttoPrice(), \OxidEsales\Eshop\Core\Field::T_RAW);
 
             // wrap id
-            $oOrderArticle->oxorderarticles__oxwrapid = new oxField($oContent->getWrappingId(), oxField::T_RAW);
+            $oOrderArticle->oxorderarticles__oxwrapid = new \OxidEsales\Eshop\Core\Field($oContent->getWrappingId(), \OxidEsales\Eshop\Core\Field::T_RAW);
 
             // items shop id
-            $oOrderArticle->oxorderarticles__oxordershopid = new oxField($oContent->getShopId(), oxField::T_RAW);
+            $oOrderArticle->oxorderarticles__oxordershopid = new \OxidEsales\Eshop\Core\Field($oContent->getShopId(), \OxidEsales\Eshop\Core\Field::T_RAW);
 
             // bundle?
-            $oOrderArticle->oxorderarticles__oxisbundle = new oxField($oContent->isBundle());
+            $oOrderArticle->oxorderarticles__oxisbundle = new \OxidEsales\Eshop\Core\Field($oContent->isBundle());
 
             // add information for eMail
             //P
@@ -922,12 +896,12 @@ class Order extends \oxBase
      * and finally executes it (oxPaymentGateway::executePayment()). On failure -
      * deletes order and returns * error code 2.
      *
-     * @param Basket $oBasket      basket object
-     * @param object $oUserpayment user payment object
+     * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket      basket object
+     * @param object                                     $oUserpayment user payment object
      *
      * @return  integer 2 or an error code
      */
-    protected function _executePayment(Basket $oBasket, $oUserpayment)
+    protected function _executePayment(\OxidEsales\Eshop\Application\Model\Basket $oBasket, $oUserpayment)
     {
         $oPayTransaction = $this->_getGateway();
         $oPayTransaction->setPaymentParams($oUserpayment);
@@ -963,7 +937,7 @@ class Order extends \oxBase
      */
     protected function _getGateway()
     {
-        return oxNew('oxPaymentGateway');
+        return oxNew(\OxidEsales\Eshop\Application\Model\PaymentGateway::class);
     }
 
     /**
@@ -971,34 +945,22 @@ class Order extends \oxBase
      *
      * @param string $sPaymentid used payment id
      *
-     * @return oxUserPayment
+     * @return \OxidEsales\Eshop\Application\Model\UserPayment
      */
     protected function _setPayment($sPaymentid)
     {
-        // copying payment info fields
-        $aDynvalue = oxRegistry::getSession()->getVariable('dynvalue');
-        $aDynvalue = $aDynvalue ? $aDynvalue : oxRegistry::getConfig()->getRequestParameter('dynvalue');
-
-        // loading payment object
-        $oPayment = oxNew('oxpayment');
+        $oPayment = oxNew(\OxidEsales\Eshop\Application\Model\Payment::class);
 
         if (!$oPayment->load($sPaymentid)) {
             return null;
         }
 
-        // #756M Preserve already stored payment information
-        if (!$aDynvalue && ($oUserpayment = $this->getPaymentType())) {
-            if (is_array($aStoredDynvalue = $oUserpayment->getDynValues())) {
-                foreach ($aStoredDynvalue as $oVal) {
-                    $aDynvalue[$oVal->name] = $oVal->value;
-                }
-            }
-        }
+        $aDynvalue = $this->getDynamicValues();
 
-        $oPayment->setDynValues(oxRegistry::getUtils()->assignValuesFromText($oPayment->oxpayments__oxvaldesc->value));
+        $oPayment->setDynValues(\OxidEsales\Eshop\Core\Registry::getUtils()->assignValuesFromText($oPayment->oxpayments__oxvaldesc->value));
 
         // collecting dynamic values
-        $aDynVal = array();
+        $aDynVal = [];
 
         if (is_array($aPaymentDynValues = $oPayment->getDynValues())) {
             foreach ($aPaymentDynValues as $key => $oVal) {
@@ -1015,17 +977,17 @@ class Order extends \oxBase
         // Store this payment information, we might allow users later to
         // reactivate already give payment information
 
-        $oUserpayment = oxNew('oxuserpayment');
+        $oUserpayment = oxNew(\OxidEsales\Eshop\Application\Model\UserPayment::class);
         $oUserpayment->oxuserpayments__oxuserid = clone $this->oxorder__oxuserid;
-        $oUserpayment->oxuserpayments__oxpaymentsid = new oxField($sPaymentid, oxField::T_RAW);
-        $oUserpayment->oxuserpayments__oxvalue = new oxField(oxRegistry::getUtils()->assignValuesToText($aDynVal), oxField::T_RAW);
+        $oUserpayment->oxuserpayments__oxpaymentsid = new \OxidEsales\Eshop\Core\Field($sPaymentid, \OxidEsales\Eshop\Core\Field::T_RAW);
+        $oUserpayment->oxuserpayments__oxvalue = new \OxidEsales\Eshop\Core\Field(\OxidEsales\Eshop\Core\Registry::getUtils()->assignValuesToText($aDynVal), \OxidEsales\Eshop\Core\Field::T_RAW);
         $oUserpayment->oxpayments__oxdesc = clone $oPayment->oxpayments__oxdesc;
         $oUserpayment->oxpayments__oxlongdesc = clone $oPayment->oxpayments__oxlongdesc;
         $oUserpayment->setDynValues($aPaymentDynValues);
         $oUserpayment->save();
 
         // storing payment information to order
-        $this->oxorder__oxpaymentid = new oxField($oUserpayment->getId(), oxField::T_RAW);
+        $this->oxorder__oxpaymentid = new \OxidEsales\Eshop\Core\Field($oUserpayment->getId(), \OxidEsales\Eshop\Core\Field::T_RAW);
         $this->oxorder__oxpaymenttype = clone $oUserpayment->oxuserpayments__oxpaymentsid;
 
         // returning user payment object which will be used later in code ...
@@ -1037,8 +999,8 @@ class Order extends \oxBase
      */
     protected function _setFolder()
     {
-        $myConfig = $this->getConfig();
-        $this->oxorder__oxfolder = new oxField(key($myConfig->getShopConfVar('aOrderfolder', $myConfig->getShopId())), oxField::T_RAW);
+        $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
+        $this->oxorder__oxfolder = new \OxidEsales\Eshop\Core\Field(key($myConfig->getShopConfVar('aOrderfolder', $myConfig->getShopId())), \OxidEsales\Eshop\Core\Field::T_RAW);
     }
 
     /**
@@ -1057,8 +1019,8 @@ class Order extends \oxBase
                 if ($sWishId == $oUser->getId()) {
                     $oUserBasket = $oUser->getBasket('wishlist');
                 } else {
-                    $aWhere = array('oxuserbaskets.oxuserid' => $sWishId, 'oxuserbaskets.oxtitle' => 'wishlist');
-                    $oUserBasket = oxNew('oxuserbasket');
+                    $aWhere = ['oxuserbaskets.oxuserid' => $sWishId, 'oxuserbaskets.oxtitle' => 'wishlist'];
+                    $oUserBasket = oxNew(\OxidEsales\Eshop\Application\Model\UserBasket::class);
                     $oUserBasket->assignRecord($oUserBasket->buildSelectString($aWhere));
                 }
 
@@ -1082,11 +1044,25 @@ class Order extends \oxBase
      * After order is finished this method cleans up users notice list, by
      * removing bought items from users notice list
      *
-     * @param array  $aArticleList array of basket products
-     * @param oxuser $oUser        basket user object
+     * @param array                                    $aArticleList array of basket products
+     * @param \OxidEsales\Eshop\Application\Model\User $oUser        basket user object
+     *
+     * @return null
      */
     protected function _updateNoticeList($aArticleList, $oUser)
     {
+        /*
+         * #6141
+         * If there is no noticelist, don't create an empty one.
+         * Because loading the list via $user->getBasket('noticelist') will create it if there isn't one, but it will
+         * only exists in the session for now. So it is possible to check if it has an oxid. If yes then we had a list.
+         * If no then it was just created and will cause a new row in oxuserbaskets without content in oxuserbasketitems.
+         * Also it will prevent creating a row for guests.
+         */
+        if ($oUser->getBasket('noticelist')->oxuserbaskets__oxid->value === null) {
+            return;
+        }
+
         // loading users notice list ..
         if ($oUserBasket = $oUser->getBasket('noticelist')) {
             // only if wishlist is enabled
@@ -1109,10 +1085,10 @@ class Order extends \oxBase
      */
     protected function _updateOrderDate()
     {
-        $oDb = oxDb::getDb();
-        $sDate = date('Y-m-d H:i:s', oxRegistry::get("oxUtilsDate")->getTime());
+        $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
+        $sDate = date('Y-m-d H:i:s', \OxidEsales\Eshop\Core\Registry::getUtilsDate()->getTime());
         $sQ = 'update oxorder set oxorderdate=' . $oDb->quote($sDate) . ' where oxid=' . $oDb->quote($this->getId());
-        $this->oxorder__oxorderdate = new oxField($sDate, oxField::T_RAW);
+        $this->oxorder__oxorderdate = new \OxidEsales\Eshop\Core\Field($sDate, \OxidEsales\Eshop\Core\Field::T_RAW);
         $oDb->execute($sQ);
     }
 
@@ -1120,8 +1096,8 @@ class Order extends \oxBase
      * Marks voucher as used (oxvoucher::markAsUsed())
      * and sets them to $this->_aVoucherList.
      *
-     * @param oxBasket $oBasket basket object
-     * @param oxUser   $oUser   user object
+     * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket basket object
+     * @param \OxidEsales\Eshop\Application\Model\User   $oUser   user object
      */
     protected function _markVouchers($oBasket, $oUser)
     {
@@ -1129,7 +1105,7 @@ class Order extends \oxBase
 
         if (is_array($this->_aVoucherList)) {
             foreach ($this->_aVoucherList as $sVoucherId => $oSimpleVoucher) {
-                $oVoucher = oxNew('oxvoucher');
+                $oVoucher = oxNew(\OxidEsales\Eshop\Application\Model\Voucher::class);
                 $oVoucher->load($sVoucherId);
                 $oVoucher->markAsUsed($this->oxorder__oxid->value, $oUser->oxuser__oxid->value, $oSimpleVoucher->dVoucherdiscount);
 
@@ -1162,21 +1138,21 @@ class Order extends \oxBase
      * Loads and returns delivery address object or null
      * if deladrid is not configured, or object was not loaded
      *
-     * @return oxAddress|null
+     * @return \OxidEsales\Eshop\Application\Model\Address|null
      */
     public function getDelAddressInfo()
     {
         $oDelAdress = null;
-        if (!($soxAddressId = oxRegistry::getConfig()->getRequestParameter('deladrid'))) {
-            $soxAddressId = oxRegistry::getSession()->getVariable('deladrid');
+        if (!($soxAddressId = \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('deladrid'))) {
+            $soxAddressId = \OxidEsales\Eshop\Core\Registry::getSession()->getVariable('deladrid');
         }
         if ($soxAddressId) {
-            $oDelAdress = oxNew('oxAddress');
+            $oDelAdress = oxNew(\OxidEsales\Eshop\Application\Model\Address::class);
             $oDelAdress->load($soxAddressId);
 
             //get delivery country name from delivery country id
             if ($oDelAdress->oxaddress__oxcountryid->value && $oDelAdress->oxaddress__oxcountryid->value != -1) {
-                $oCountry = oxNew('oxCountry');
+                $oCountry = oxNew(\OxidEsales\Eshop\Application\Model\Country::class);
                 $oCountry->load($oDelAdress->oxaddress__oxcountryid->value);
                 $oDelAdress->oxaddress__oxcountry = clone $oCountry->oxcountry__oxtitle;
             }
@@ -1191,19 +1167,19 @@ class Order extends \oxBase
      *
      * @param object $oBasket basket object
      *
-     * @throws oxNoArticleException
-     * @throws oxArticleInputException
-     * @throws oxOutOfStockException
+     * @throws \OxidEsales\Eshop\Core\Exception\NoArticleException
+     * @throws \OxidEsales\Eshop\Core\Exception\ArticleInputException
+     * @throws \OxidEsales\Eshop\Core\Exception\OutOfStockException
      */
     public function validateStock($oBasket)
     {
         foreach ($oBasket->getContents() as $key => $oContent) {
             try {
                 $oProd = $oContent->getArticle(true, null, true);
-            } catch (\OxidEsales\EshopCommunity\Core\Exception\NoArticleException $oEx) {
+            } catch (\OxidEsales\Eshop\Core\Exception\NoArticleException $oEx) {
                 $oBasket->removeItem($key);
                 throw $oEx;
-            } catch (\OxidEsales\EshopCommunity\Core\Exception\ArticleInputException $oEx) {
+            } catch (\OxidEsales\Eshop\Core\Exception\ArticleInputException $oEx) {
                 $oBasket->removeItem($key);
                 throw $oEx;
             }
@@ -1212,8 +1188,8 @@ class Order extends \oxBase
             $dArtStockAmount = $oBasket->getArtStockInBasket($oProd->getId(), $key);
             $iOnStock = $oProd->checkForStock($oContent->getAmount(), $dArtStockAmount);
             if ($iOnStock !== true) {
-                /** @var oxOutOfStockException $oEx */
-                $oEx = oxNew('oxOutOfStockException');
+                /** @var \OxidEsales\Eshop\Core\Exception\OutOfStockException $oEx */
+                $oEx = oxNew(\OxidEsales\Eshop\Core\Exception\OutOfStockException::class);
                 $oEx->setMessage('ERROR_MESSAGE_OUTOFSTOCK_OUTOFSTOCK');
                 $oEx->setArticleNr($oProd->oxarticles__oxartnum->value);
                 $oEx->setProductId($oProd->getId());
@@ -1235,18 +1211,28 @@ class Order extends \oxBase
      */
     protected function _insert()
     {
-        $myConfig = $this->getConfig();
-        $oUtilsDate = oxRegistry::get("oxUtilsDate");
+        $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
+        $oUtilsDate = \OxidEsales\Eshop\Core\Registry::getUtilsDate();
 
         //V #M525 orderdate must be the same as it was
-        if (!$this->oxorder__oxorderdate->value) {
-            $this->oxorder__oxorderdate = new oxField(date('Y-m-d H:i:s', $oUtilsDate->getTime()), oxField::T_RAW);
+        if (!$this->oxorder__oxorderdate || !$this->oxorder__oxorderdate->value) {
+            $this->oxorder__oxorderdate = new \OxidEsales\Eshop\Core\Field(date('Y-m-d H:i:s', $oUtilsDate->getTime()), \OxidEsales\Eshop\Core\Field::T_RAW);
         } else {
-            $this->oxorder__oxorderdate = new oxField($oUtilsDate->formatDBDate($this->oxorder__oxorderdate->value, true));
+            $this->oxorder__oxorderdate = new \OxidEsales\Eshop\Core\Field(
+                $oUtilsDate->formatDBDate(
+                    $this->oxorder__oxorderdate ? $this->oxorder__oxorderdate->value : null,
+                    true
+                )
+            );
         }
 
-        $this->oxorder__oxshopid = new oxField($myConfig->getShopId(), oxField::T_RAW);
-        $this->oxorder__oxsenddate = new oxField($oUtilsDate->formatDBDate($this->oxorder__oxsenddate->value, true));
+        $this->oxorder__oxshopid = new \OxidEsales\Eshop\Core\Field($myConfig->getShopId(), \OxidEsales\Eshop\Core\Field::T_RAW);
+        $this->oxorder__oxsenddate = new \OxidEsales\Eshop\Core\Field(
+            $oUtilsDate->formatDBDate(
+                $this->oxorder__oxsenddate ? $this->oxorder__oxsenddate->value : null,
+                true
+            )
+        );
 
         $blInsert = parent::_insert();
 
@@ -1260,7 +1246,7 @@ class Order extends \oxBase
      */
     protected function _getCounterIdent()
     {
-        $sCounterIdent = ($this->_blSeparateNumbering) ? 'oxOrder_' . $this->getConfig()->getShopId() : 'oxOrder';
+        $sCounterIdent = ($this->_blSeparateNumbering) ? 'oxOrder_' . \OxidEsales\Eshop\Core\Registry::getConfig()->getShopId() : 'oxOrder';
 
         return $sCounterIdent;
     }
@@ -1273,14 +1259,14 @@ class Order extends \oxBase
      */
     protected function _setNumber()
     {
-        $oDb = oxDb::getDb();
+        $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
 
-        $iCnt = oxNew('oxCounter')->getNext($this->_getCounterIdent());
+        $iCnt = oxNew(\OxidEsales\Eshop\Core\Counter::class)->getNext($this->_getCounterIdent());
         $sQ = "update oxorder set oxordernr = ? where oxid = ?";
-        $blUpdate = ( bool ) $oDb->execute($sQ, array($iCnt, $this->getId()));
+        $blUpdate = ( bool ) $oDb->execute($sQ, [$iCnt, $this->getId()]);
 
         if ($blUpdate) {
-            $this->oxorder__oxordernr = new oxField($iCnt);
+            $this->oxorder__oxordernr = new \OxidEsales\Eshop\Core\Field($iCnt);
         }
 
         return $blUpdate;
@@ -1293,8 +1279,8 @@ class Order extends \oxBase
      */
     protected function _update()
     {
-        $this->_aSkipSaveFields = array('oxtimestamp', 'oxorderdate');
-        $this->oxorder__oxsenddate = new oxField(oxRegistry::get("oxUtilsDate")->formatDBDate($this->oxorder__oxsenddate->value, true));
+        $this->_aSkipSaveFields = ['oxtimestamp', 'oxorderdate'];
+        $this->oxorder__oxsenddate = new \OxidEsales\Eshop\Core\Field(\OxidEsales\Eshop\Core\Registry::getUtilsDate()->formatDBDate($this->oxorder__oxsenddate->value, true));
 
         return parent::_update();
     }
@@ -1339,16 +1325,16 @@ class Order extends \oxBase
 
     /**
      * Recalculates order. Starts transactions, deletes current order and order articles from DB,
-     * adds current order articles to virtual basket and finally recalculates order by calling oxorder::finalizeOrder()
+     * adds current order articles to virtual basket and finally recalculates order by calling \OxidEsales\Eshop\Application\Model\Order::finalizeOrder()
      * If no errors, finishing transaction.
      *
      * @param array $aNewArticles article list of new order
      *
      * @throws Exception
      */
-    public function recalculateOrder($aNewArticles = array())
+    public function recalculateOrder($aNewArticles = [])
     {
-        oxDb::getDb()->startTransaction();
+        \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->startTransaction();
         try {
             $oBasket = $this->_getOrderBasket();
 
@@ -1366,12 +1352,12 @@ class Order extends \oxBase
 
             //if finalizing order failed, rollback transaction
             if ($iRet !== 1) {
-                oxDb::getDb()->rollbackTransaction();
+                \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->rollbackTransaction();
             } else {
-                oxDb::getDb()->commitTransaction();
+                \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->commitTransaction();
             }
         } catch (Exception $exception) {
-            oxDb::getDb()->rollbackTransaction();
+            \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->rollbackTransaction();
 
             throw $exception;
         }
@@ -1382,11 +1368,11 @@ class Order extends \oxBase
      *
      * @param bool $blStockCheck perform stock check or not (default true)
      *
-     * @return oxBasket
+     * @return \OxidEsales\Eshop\Application\Model\Basket
      */
     protected function _getOrderBasket($blStockCheck = true)
     {
-        $this->_oOrderBasket = oxNew("oxBasket");
+        $this->_oOrderBasket = oxNew(\OxidEsales\Eshop\Application\Model\Basket::class);
         $this->_oOrderBasket->enableSaveToDataBase(false);
 
         //setting recalculation mode
@@ -1402,7 +1388,7 @@ class Order extends \oxBase
         $this->_oOrderBasket->setOrderId($this->getId());
 
         // setting basket currency order uses
-        $aCurrencies = $this->getConfig()->getCurrencyArray();
+        $aCurrencies = \OxidEsales\Eshop\Core\Registry::getConfig()->getCurrencyArray();
         foreach ($aCurrencies as $oCur) {
             if ($oCur->name == $this->oxorder__oxcurrency->value) {
                 $oBasketCur = $oCur;
@@ -1418,7 +1404,7 @@ class Order extends \oxBase
         $this->_oOrderBasket->setCardMessage($this->oxorder__oxcardtext->value);
 
         if ($this->_blReloadDiscount) {
-            $oDb = oxDb::getDb(oxDb::FETCH_MODE_ASSOC);
+            $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb(\OxidEsales\Eshop\Core\DatabaseProvider::FETCH_MODE_ASSOC);
             // disabling availability check
             $this->_oOrderBasket->setSkipVouchersChecking(true);
 
@@ -1451,25 +1437,25 @@ class Order extends \oxBase
 
     /**
      * Sets new delivery id for order and forces order to recalculate using new delivery type.
-     * Order is not recalculated automatically, to do this oxOrder::recalculateOrder() must be called ;
+     * Order is not recalculated automatically, to do this \OxidEsales\Eshop\Application\Model\Order::recalculateOrder() must be called ;
      *
      * @param string $sDeliveryId new delivery id
      */
     public function setDelivery($sDeliveryId)
     {
         $this->reloadDelivery(true);
-        $this->oxorder__oxdeltype = new oxField($sDeliveryId);
+        $this->oxorder__oxdeltype = new \OxidEsales\Eshop\Core\Field($sDeliveryId);
     }
 
     /**
      * Returns current order user object
      *
-     * @return oxuser
+     * @return \OxidEsales\Eshop\Application\Model\User
      */
     public function getOrderUser()
     {
         if ($this->_oUser === null) {
-            $this->_oUser = oxNew("oxuser");
+            $this->_oUser = oxNew(\OxidEsales\Eshop\Application\Model\User::class);
             $this->_oUser->load($this->oxorder__oxuserid->value);
 
             // if object is loaded then reusing its order info
@@ -1541,9 +1527,9 @@ class Order extends \oxBase
      */
     public function getInvoiceNum()
     {
-        $sQ = 'select max(oxorder.oxinvoicenr) from oxorder where oxorder.oxshopid = "' . $this->getConfig()->getShopId() . '" ';
+        $sQ = 'select max(oxorder.oxinvoicenr) from oxorder where oxorder.oxshopid = "' . \OxidEsales\Eshop\Core\Registry::getConfig()->getShopId() . '" ';
 
-        return (( int ) oxDb::getDb()->getOne($sQ, false) + 1);
+        return (( int ) \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->getOne($sQ, false) + 1);
     }
 
     /**
@@ -1553,9 +1539,9 @@ class Order extends \oxBase
      */
     public function getNextBillNum()
     {
-        $sQ = 'select max(cast(oxorder.oxbillnr as unsigned)) from oxorder where oxorder.oxshopid = "' . $this->getConfig()->getShopId() . '" ';
+        $sQ = 'select max(cast(oxorder.oxbillnr as unsigned)) from oxorder where oxorder.oxshopid = "' . \OxidEsales\Eshop\Core\Registry::getConfig()->getShopId() . '" ';
 
-        return (( int ) oxDb::getDb()->getOne($sQ, false) + 1);
+        return (( int ) \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->getOne($sQ, false) + 1);
     }
 
     /**
@@ -1587,7 +1573,7 @@ class Order extends \oxBase
         $oBasket->calculateBasket(true);
 
         // load fitting deliveries list
-        $oDeliveryList = oxNew("oxDeliveryList", "core");
+        $oDeliveryList = oxNew(\OxidEsales\Eshop\Application\Model\DeliveryList::class, "core");
         $oDeliveryList->setCollectFittingDeliveriesSets(true);
 
         return $oDeliveryList->getDeliveryList($oBasket, $this->getOrderUser(), $sShipId);
@@ -1600,8 +1586,8 @@ class Order extends \oxBase
      */
     public function getVoucherNrList()
     {
-        $oDb = oxDb::getDb(oxDb::FETCH_MODE_ASSOC);
-        $aVouchers = array();
+        $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb(\OxidEsales\Eshop\Core\DatabaseProvider::FETCH_MODE_ASSOC);
+        $aVouchers = [];
         $sSelect = "select oxvouchernr from oxvouchers where oxorderid = " . $oDb->quote($this->oxorder__oxid->value);
         $rs = $oDb->select($sSelect);
         if ($rs != false && $rs->count() > 0) {
@@ -1624,14 +1610,14 @@ class Order extends \oxBase
     public function getOrderSum($blToday = false)
     {
         $sSelect = 'select sum(oxtotalordersum / oxcurrate) from oxorder where ';
-        $sSelect .= 'oxshopid = "' . $this->getConfig()->getShopId() . '" and oxorder.oxstorno != "1" ';
+        $sSelect .= 'oxshopid = "' . \OxidEsales\Eshop\Core\Registry::getConfig()->getShopId() . '" and oxorder.oxstorno != "1" ';
 
         if ($blToday) {
             $sSelect .= 'and oxorderdate like "' . date('Y-m-d') . '%" ';
         }
 
         // We force reading from master to prevent issues with slow replications or open transactions (see ESDEV-3804).
-        return ( double ) oxDb::getMaster()->getOne($sSelect);
+        return ( double ) \OxidEsales\Eshop\Core\DatabaseProvider::getMaster()->getOne($sSelect);
     }
 
     /**
@@ -1644,14 +1630,14 @@ class Order extends \oxBase
     public function getOrderCnt($blToday = false)
     {
         $sSelect = 'select count(*) from oxorder where ';
-        $sSelect .= 'oxshopid = "' . $this->getConfig()->getShopId() . '"  and oxorder.oxstorno != "1" ';
+        $sSelect .= 'oxshopid = "' . \OxidEsales\Eshop\Core\Registry::getConfig()->getShopId() . '"  and oxorder.oxstorno != "1" ';
 
         if ($blToday) {
             $sSelect .= 'and oxorderdate like "' . date('Y-m-d') . '%" ';
         }
 
         // We force reading from master to prevent issues with slow replications or open transactions (see ESDEV-3804).
-        return ( int ) oxDb::getMaster()->getOne($sSelect);
+        return ( int ) \OxidEsales\Eshop\Core\DatabaseProvider::getMaster()->getOne($sSelect);
     }
 
 
@@ -1669,7 +1655,7 @@ class Order extends \oxBase
         }
 
         // We force reading from master to prevent issues with slow replications or open transactions (see ESDEV-3804).
-        $masterDb = oxDb::getMaster();
+        $masterDb = \OxidEsales\Eshop\Core\DatabaseProvider::getMaster();
         if ($masterDb->getOne('select oxid from oxorder where oxid = ' . $masterDb->quote($sOxId))) {
             return true;
         }
@@ -1680,9 +1666,9 @@ class Order extends \oxBase
     /**
      * Send order to shop owner and user
      *
-     * @param oxUser        $oUser    order user
-     * @param oxBasket      $oBasket  current order basket
-     * @param oxUserPayment $oPayment order payment
+     * @param \OxidEsales\Eshop\Application\Model\User        $oUser    order user
+     * @param \OxidEsales\Eshop\Application\Model\Basket      $oBasket  current order basket
+     * @param \OxidEsales\Eshop\Application\Model\UserPayment $oPayment order payment
      *
      * @return bool
      */
@@ -1695,7 +1681,7 @@ class Order extends \oxBase
         $this->_oBasket = $oBasket;
         $this->_oPayment = $oPayment;
 
-        $oxEmail = oxNew('oxemail');
+        $oxEmail = oxNew(\OxidEsales\Eshop\Core\Email::class);
 
         // send order email to user
         if ($oxEmail->sendOrderEMailToUser($this)) {
@@ -1712,7 +1698,7 @@ class Order extends \oxBase
     /**
      * Returns order basket
      *
-     * @return oxBasket
+     * @return \OxidEsales\Eshop\Application\Model\Basket
      */
     public function getBasket()
     {
@@ -1722,7 +1708,7 @@ class Order extends \oxBase
     /**
      * Returns order payment
      *
-     * @return oxUserPayment
+     * @return \OxidEsales\Eshop\Application\Model\UserPayment
      */
     public function getPayment()
     {
@@ -1748,7 +1734,7 @@ class Order extends \oxBase
     {
         if ($this->_oDelSet == null) {
             // load deliveryset info
-            $this->_oDelSet = oxNew('oxdeliveryset');
+            $this->_oDelSet = oxNew(\OxidEsales\Eshop\Application\Model\DeliverySet::class);
             $this->_oDelSet->load($this->oxorder__oxdeltype->value);
         }
 
@@ -1758,13 +1744,13 @@ class Order extends \oxBase
     /**
      * Get payment type
      *
-     * @return oxUserPayment
+     * @return \OxidEsales\Eshop\Application\Model\UserPayment
      */
     public function getPaymentType()
     {
         if ($this->oxorder__oxpaymentid->value && $this->_oPaymentType === null) {
             $this->_oPaymentType = false;
-            $oPaymentType = oxNew('oxuserpayment');
+            $oPaymentType = oxNew(\OxidEsales\Eshop\Application\Model\UserPayment::class);
             if ($oPaymentType->load($this->oxorder__oxpaymentid->value)) {
                 $this->_oPaymentType = $oPaymentType;
             }
@@ -1781,7 +1767,7 @@ class Order extends \oxBase
     public function getGiftCard()
     {
         if ($this->oxorder__oxcardid->value && $this->_oGiftCard == null) {
-            $this->_oGiftCard = oxNew('oxwrapping');
+            $this->_oGiftCard = oxNew(\OxidEsales\Eshop\Application\Model\Wrapping::class);
             $this->_oGiftCard->load($this->oxorder__oxcardid->value);
         }
 
@@ -1808,8 +1794,8 @@ class Order extends \oxBase
     public function getLastUserPaymentType($sUserId)
     {
         // We force reading from master to prevent issues with slow replications or open transactions (see ESDEV-3804).
-        $masterDb = oxDb::getMaster();
-        $sQ = 'select oxorder.oxpaymenttype from oxorder where oxorder.oxshopid="' . $this->getConfig()->getShopId() . '" and oxorder.oxuserid=' . $masterDb->quote($sUserId) . ' order by oxorder.oxorderdate desc ';
+        $masterDb = \OxidEsales\Eshop\Core\DatabaseProvider::getMaster();
+        $sQ = 'select oxorder.oxpaymenttype from oxorder where oxorder.oxshopid="' . \OxidEsales\Eshop\Core\Registry::getConfig()->getShopId() . '" and oxorder.oxuserid=' . $masterDb->quote($sUserId) . ' order by oxorder.oxorderdate desc ';
         $sLastPaymentId = $masterDb->getOne($sQ);
 
         return $sLastPaymentId;
@@ -1818,8 +1804,8 @@ class Order extends \oxBase
     /**
      * Adds order articles back to virtual basket. Needed for recalculating order.
      *
-     * @param oxBasket $oBasket        basket object
-     * @param array    $aOrderArticles order articles
+     * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket        basket object
+     * @param array                                      $aOrderArticles order articles
      */
     protected function _addOrderArticlesToBasket($oBasket, $aOrderArticles)
     {
@@ -1835,8 +1821,8 @@ class Order extends \oxBase
     /**
      * Adds new products to basket/order
      *
-     * @param oxbasket $oBasket   basket to add articles
-     * @param array    $aArticles article array
+     * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket   basket to add articles
+     * @param array                                      $aArticles article array
      */
     protected function _addArticlesToBasket($oBasket, $aArticles)
     {
@@ -1863,7 +1849,7 @@ class Order extends \oxBase
      */
     public function getTotalOrderSum()
     {
-        $oCur = $this->getConfig()->getActShopCurrencyObject();
+        $oCur = \OxidEsales\Eshop\Core\Registry::getConfig()->getActShopCurrencyObject();
 
         return number_format((double) $this->oxorder__oxtotalordersum->value, $oCur->decimal, '.', '');
     }
@@ -1877,7 +1863,7 @@ class Order extends \oxBase
      */
     public function getProductVats($blFormatCurrency = true)
     {
-        $aVats = array();
+        $aVats = [];
         if ($this->oxorder__oxartvat1->value) {
             $aVats[$this->oxorder__oxartvat1->value] = $this->oxorder__oxartvatprice1->value;
         }
@@ -1886,8 +1872,8 @@ class Order extends \oxBase
         }
 
         if ($blFormatCurrency) {
-            $oLang = oxRegistry::getLang();
-            $oCur = $this->getConfig()->getActShopCurrencyObject();
+            $oLang = \OxidEsales\Eshop\Core\Registry::getLang();
+            $oCur = \OxidEsales\Eshop\Core\Registry::getConfig()->getActShopCurrencyObject();
             foreach ($aVats as $sKey => $dVat) {
                 $aVats[$sKey] = $oLang->formatCurrency($dVat, $oCur);
             }
@@ -1904,7 +1890,7 @@ class Order extends \oxBase
     public function getBillCountry()
     {
         if (!$this->oxorder__oxbillcountry->value) {
-            $this->oxorder__oxbillcountry = new oxField($this->_getCountryTitle($this->oxorder__oxbillcountryid->value));
+            $this->oxorder__oxbillcountry = new \OxidEsales\Eshop\Core\Field($this->_getCountryTitle($this->oxorder__oxbillcountryid->value));
         }
 
         return $this->oxorder__oxbillcountry;
@@ -1918,7 +1904,7 @@ class Order extends \oxBase
     public function getDelCountry()
     {
         if (!$this->oxorder__oxdelcountry->value) {
-            $this->oxorder__oxdelcountry = new oxField($this->_getCountryTitle($this->oxorder__oxdelcountryid->value));
+            $this->oxorder__oxdelcountry = new \OxidEsales\Eshop\Core\Field($this->_getCountryTitle($this->oxorder__oxdelcountryid->value));
         }
 
         return $this->oxorder__oxdelcountry;
@@ -1949,7 +1935,7 @@ class Order extends \oxBase
      */
     public function cancelOrder()
     {
-        $this->oxorder__oxstorno = new oxField(1);
+        $this->oxorder__oxstorno = new \OxidEsales\Eshop\Core\Field(1);
         if ($this->save()) {
             // canceling ordered products
             foreach ($this->getOrderArticles() as $oOrderArticle) {
@@ -1968,7 +1954,7 @@ class Order extends \oxBase
     {
         if ($this->_oOrderCurrency === null) {
             // setting default in case unrecognized currency was set during order
-            $aCurrencies = $this->getConfig()->getCurrencyArray();
+            $aCurrencies = \OxidEsales\Eshop\Core\Registry::getConfig()->getCurrencyArray();
             $this->_oOrderCurrency = current($aCurrencies);
 
             foreach ($aCurrencies as $oCurr) {
@@ -1986,8 +1972,8 @@ class Order extends \oxBase
      * Validates order parameters like stock, delivery and payment
      * parameters
      *
-     * @param oxbasket $oBasket basket object
-     * @param oxuser   $oUser   order user
+     * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket basket object
+     * @param \OxidEsales\Eshop\Application\Model\User   $oUser   order user
      *
      * @return null
      */
@@ -2022,7 +2008,7 @@ class Order extends \oxBase
     /**
      * Validates basket. Currently checks if minimum order price > basket price
      *
-     * @param oxBasket $oBasket basket object
+     * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket basket object
      *
      * @return bool
      */
@@ -2035,25 +2021,25 @@ class Order extends \oxBase
      * Checks if delivery address (billing or shipping) was not changed during checkout
      * Throws exception if not available
      *
-     * @param oxUser $oUser user object
+     * @param \OxidEsales\Eshop\Application\Model\User $oUser user object
      *
      * @return int
      */
     public function validateDeliveryAddress($oUser)
     {
-        $sDelAddressMD5 = $this->getConfig()->getRequestParameter('sDeliveryAddressMD5');
+        $sDelAddressMD5 = \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('sDeliveryAddressMD5');
 
         $sDeliveryAddress = $oUser->getEncodedDeliveryAddress();
 
-        /** @var oxRequiredAddressFields $oRequiredAddressFields */
-        $oRequiredAddressFields = oxNew('oxRequiredAddressFields');
+        /** @var \OxidEsales\Eshop\Application\Model\RequiredAddressFields $oRequiredAddressFields */
+        $oRequiredAddressFields = oxNew(\OxidEsales\Eshop\Application\Model\RequiredAddressFields::class);
 
-        /** @var oxRequiredFieldsValidator $oFieldsValidator */
-        $oFieldsValidator = oxNew('oxRequiredFieldsValidator');
+        /** @var \OxidEsales\Eshop\Application\Model\RequiredFieldsValidator $oFieldsValidator */
+        $oFieldsValidator = oxNew(\OxidEsales\Eshop\Application\Model\RequiredFieldsValidator::class);
         $oFieldsValidator->setRequiredFields($oRequiredAddressFields->getBillingFields());
         $blFieldsValid = $oFieldsValidator->validateFields($oUser);
 
-        /** @var oxAddress $oDeliveryAddress */
+        /** @var \OxidEsales\Eshop\Application\Model\Address $oDeliveryAddress */
         $oDeliveryAddress = $this->getDelAddressInfo();
         if ($blFieldsValid && $oDeliveryAddress) {
             $sDeliveryAddress .= $oDeliveryAddress->getEncodedDeliveryAddress();
@@ -2064,7 +2050,7 @@ class Order extends \oxBase
 
         $iState = 0;
         if ($sDelAddressMD5 != $sDeliveryAddress || !$blFieldsValid) {
-            $iState = self::ORDER_STATE_INVALIDDElADDRESSCHANGED;
+            $iState = self::ORDER_STATE_INVALIDDELADDRESSCHANGED;
         }
 
         return $iState;
@@ -2075,7 +2061,7 @@ class Order extends \oxBase
      * Checks if delivery set used for current order is available and active.
      * Throws exception if not available
      *
-     * @param oxbasket $oBasket basket object
+     * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket basket object
      *
      * @return null
      */
@@ -2087,9 +2073,9 @@ class Order extends \oxBase
             return;
         }
         // We force reading from master to prevent issues with slow replications or open transactions (see ESDEV-3804).
-        $masterDb = oxDb::getMaster();
+        $masterDb = \OxidEsales\Eshop\Core\DatabaseProvider::getMaster();
 
-        $oDelSet = oxNew("oxdeliveryset");
+        $oDelSet = oxNew(\OxidEsales\Eshop\Application\Model\DeliverySet::class);
         $sTable = $oDelSet->getViewName();
 
         $sQ = "select 1 from {$sTable} where {$sTable}.oxid=" .
@@ -2106,22 +2092,15 @@ class Order extends \oxBase
      * Checks if payment used for current order is available and active.
      * Throws exception if not available
      *
-     * @param oxbasket $oBasket basket object
+     * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket basket object
      *
      * @return null
      */
     public function validatePayment($oBasket)
     {
-        // We force reading from master to prevent issues with slow replications or open transactions (see ESDEV-3804).
-        $masterDb = oxDb::getMaster();
+        $paymentId = $oBasket->getPaymentId();
 
-        $oPayment = oxNew("oxpayment");
-        $sTable = $oPayment->getViewName();
-
-        $sQ = "select 1 from {$sTable} where {$sTable}.oxid=" .
-              $masterDb->quote($oBasket->getPaymentId()) . " and " . $oPayment->getSqlActiveSnippet();
-
-        if (!$masterDb->getOne($sQ)) {
+        if (!$this->isValidPaymentId($paymentId) || !$this->isValidPayment($oBasket)) {
             return self::ORDER_STATE_INVALIDPAYMENT;
         }
     }
@@ -2133,7 +2112,7 @@ class Order extends \oxBase
      */
     public function getFormattedTotalNetSum()
     {
-        return oxRegistry::getLang()->formatCurrency($this->oxorder__oxtotalnetsum->value, $this->getOrderCurrency());
+        return \OxidEsales\Eshop\Core\Registry::getLang()->formatCurrency($this->oxorder__oxtotalnetsum->value, $this->getOrderCurrency());
     }
 
     /**
@@ -2143,7 +2122,7 @@ class Order extends \oxBase
      */
     public function getFormattedTotalBrutSum()
     {
-        return oxRegistry::getLang()->formatCurrency($this->oxorder__oxtotalbrutsum->value, $this->getOrderCurrency());
+        return \OxidEsales\Eshop\Core\Registry::getLang()->formatCurrency($this->oxorder__oxtotalbrutsum->value, $this->getOrderCurrency());
     }
 
     /**
@@ -2153,13 +2132,13 @@ class Order extends \oxBase
      */
     public function getFormattedDeliveryCost()
     {
-        return oxRegistry::getLang()->formatCurrency($this->oxorder__oxdelcost->value, $this->getOrderCurrency());
+        return \OxidEsales\Eshop\Core\Registry::getLang()->formatCurrency($this->oxorder__oxdelcost->value, $this->getOrderCurrency());
     }
 
     /**
      * Get Delivery cost sum formatted
      *
-     * @deprecated in v5.2.0 on 2014-04-12; Typo use oxOrder::getFormattedPayCost()
+     * @deprecated in v5.2.0 on 2014-04-12; Typo use \OxidEsales\Eshop\Application\Model\Order::getFormattedPayCost()
      *
      * @return string
      */
@@ -2175,7 +2154,7 @@ class Order extends \oxBase
      */
     public function getFormattedPayCost()
     {
-        return oxRegistry::getLang()->formatCurrency($this->oxorder__oxpaycost->value, $this->getOrderCurrency());
+        return \OxidEsales\Eshop\Core\Registry::getLang()->formatCurrency($this->oxorder__oxpaycost->value, $this->getOrderCurrency());
     }
 
     /**
@@ -2185,7 +2164,7 @@ class Order extends \oxBase
      */
     public function getFormattedWrapCost()
     {
-        return oxRegistry::getLang()->formatCurrency($this->oxorder__oxwrapcost->value, $this->getOrderCurrency());
+        return \OxidEsales\Eshop\Core\Registry::getLang()->formatCurrency($this->oxorder__oxwrapcost->value, $this->getOrderCurrency());
     }
 
     /**
@@ -2195,7 +2174,7 @@ class Order extends \oxBase
      */
     public function getFormattedGiftCardCost()
     {
-        return oxRegistry::getLang()->formatCurrency($this->oxorder__oxgiftcardcost->value, $this->getOrderCurrency());
+        return \OxidEsales\Eshop\Core\Registry::getLang()->formatCurrency($this->oxorder__oxgiftcardcost->value, $this->getOrderCurrency());
     }
 
     /**
@@ -2205,7 +2184,7 @@ class Order extends \oxBase
      */
     public function getFormattedTotalVouchers()
     {
-        return oxRegistry::getLang()->formatCurrency($this->oxorder__oxvoucherdiscount->value, $this->getOrderCurrency());
+        return \OxidEsales\Eshop\Core\Registry::getLang()->formatCurrency($this->oxorder__oxvoucherdiscount->value, $this->getOrderCurrency());
     }
 
     /**
@@ -2215,7 +2194,7 @@ class Order extends \oxBase
      */
     public function getFormattedDiscount()
     {
-        return oxRegistry::getLang()->formatCurrency($this->oxorder__oxdiscount->value, $this->getOrderCurrency());
+        return \OxidEsales\Eshop\Core\Registry::getLang()->formatCurrency($this->oxorder__oxdiscount->value, $this->getOrderCurrency());
     }
 
     /**
@@ -2225,7 +2204,7 @@ class Order extends \oxBase
      */
     public function getFormattedTotalOrderSum()
     {
-        return oxRegistry::getLang()->formatCurrency($this->oxorder__oxtotalordersum->value, $this->getOrderCurrency());
+        return \OxidEsales\Eshop\Core\Registry::getLang()->formatCurrency($this->oxorder__oxtotalordersum->value, $this->getOrderCurrency());
     }
 
     /**
@@ -2245,7 +2224,7 @@ class Order extends \oxBase
      */
     public function getShipmentTrackingUrl()
     {
-        $oConfig = oxRegistry::getConfig();
+        $oConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
         if ($this->_sShipTrackUrl === null) {
             $sParcelService = $oConfig->getConfigParam('sParcelService');
             $sTrackingCode = $this->getTrackCode();
@@ -2255,5 +2234,93 @@ class Order extends \oxBase
         }
 
         return $this->_sShipTrackUrl;
+    }
+
+    /**
+     * Returns true if paymentId is valid.
+     *
+     * @param int $paymentId
+     *
+     * @return bool
+     */
+    private function isValidPaymentId($paymentId)
+    {
+        // We force reading from master to prevent issues with slow replications or open transactions (see ESDEV-3804).
+        $masterDb = DatabaseProvider::getMaster();
+
+        $paymentModel = oxNew(EshopPayment::class);
+        $tableName = $paymentModel->getViewName();
+
+        $sql = "
+            select
+                1 
+            from 
+                {$tableName}
+            where 
+                {$tableName}.oxid = {$masterDb->quote($paymentId)}
+                and {$paymentModel->getSqlActiveSnippet()}
+        ";
+
+        return (bool) $masterDb->getOne($sql);
+    }
+
+    /**
+     * Returns true if payment is valid.
+     *
+     * @param \OxidEsales\Eshop\Application\Model\Basket $basket
+     *
+     * @return bool
+     */
+    private function isValidPayment($basket)
+    {
+        $paymentId = $basket->getPaymentId();
+        $paymentModel = oxNew(EshopPayment::class);
+        $paymentModel->load($paymentId);
+
+        $dynamicValues = $this->getDynamicValues();
+        $shopId = \OxidEsales\Eshop\Core\Registry::getConfig()->getShopId();
+
+        return $paymentModel->isValidPayment(
+            $dynamicValues,
+            $shopId,
+            $this->getUser(),
+            $basket->getPriceForPayment(),
+            $basket->getShippingId()
+        );
+    }
+
+    /**
+     * @return mixed
+     */
+    private function getDynamicValues()
+    {
+        $dynamicValues = $this->getSession()->getVariable('dynvalue');
+
+        if (!$dynamicValues) {
+            $dynamicValues = Registry::getRequest()->getRequestParameter('dynvalue');
+        }
+
+        if (!$dynamicValues && $this->getPaymentType()) {
+            $dynamicValues = $this->getDynamicValuesFromPaymentType();
+        }
+
+        return $dynamicValues;
+    }
+
+    /**
+     * @return mixed
+     */
+    private function getDynamicValuesFromPaymentType()
+    {
+        $dynamicValues = null;
+        $dynamicValuesList = $this->getPaymentType()->getDynValues();
+
+        if (is_array($dynamicValuesList)) {
+            foreach ($dynamicValuesList as $value) {
+                $dynamicValues[$value->name] = $value->value;
+            }
+        }
+
+        return $dynamicValues;
     }
 }

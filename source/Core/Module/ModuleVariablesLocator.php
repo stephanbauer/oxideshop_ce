@@ -1,43 +1,25 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 
 namespace OxidEsales\EshopCommunity\Core\Module;
 
 use OxidEsales\Eshop\Core\Config;
-use OxidEsales\Eshop\Core\ConfigFile;
 use OxidEsales\Eshop\Core\FileCache;
 use OxidEsales\Eshop\Core\Registry;
-use OxidEsales\Eshop\Core\DatabaseProvider;
 
 /**
  * Selects module variables from database or cache.
  *
  * @internal Do not make a module extension for this class.
- * @see      http://oxidforge.org/en/core-oxid-eshop-classes-must-not-be-extended.html
+ * @see      https://oxidforge.org/en/core-oxid-eshop-classes-must-not-be-extended.html
  */
 class ModuleVariablesLocator
 {
     /** @var array Static cache for module information variables. */
-    protected static $moduleVariables = array();
+    protected static $moduleVariables = [];
 
     /** @var FileCache */
     private $fileCache;
@@ -108,7 +90,7 @@ class ModuleVariablesLocator
      */
     public static function resetModuleVariables()
     {
-        self::$moduleVariables = array();
+        self::$moduleVariables = [];
         FileCache::clearCache();
     }
 
@@ -119,11 +101,11 @@ class ModuleVariablesLocator
      */
     protected function getConfigurationKey()
     {
-        if (Registry::instanceExists('oxConfigFile')) {
-            $config = Registry::get('oxConfigFile');
+        if (Registry::instanceExists(\OxidEsales\Eshop\Core\ConfigFile::class)) {
+            $config = Registry::get(\OxidEsales\Eshop\Core\ConfigFile::class);
         } else {
-            $config = new ConfigFile(getShopBasePath() . '/config.inc.php');
-            Registry::set('oxConfigFile', $config);
+            $config = new \OxidEsales\Eshop\Core\ConfigFile(getShopBasePath() . '/config.inc.php');
+            Registry::set(\OxidEsales\Eshop\Core\ConfigFile::class, $config);
         }
         return $config->getVar('sConfigKey') ?: Config::DEFAULT_CONFIG_KEY;
     }
@@ -138,14 +120,14 @@ class ModuleVariablesLocator
     protected function getModuleVarFromDB($name)
     {
         // We force reading from master to prevent issues with slow replications or open transactions (see ESDEV-3804).
-        $masterDb = DatabaseProvider::getMaster();
+        $masterDb = \OxidEsales\Eshop\Core\DatabaseProvider::getMaster();
 
         $shopId = $this->getShopIdCalculator()->getShopId();
         $configKey = $this->getConfigurationKey();
 
         $query = "SELECT DECODE( oxvarvalue , ? ) FROM oxconfig WHERE oxvarname = ? AND oxshopid = ?";
 
-        $value = $masterDb->getOne($query, array($configKey, $name, $shopId));
+        $value = $masterDb->getOne($query, [$configKey, $name, $shopId]);
 
         return unserialize($value);
     }

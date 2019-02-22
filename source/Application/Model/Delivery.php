@@ -1,23 +1,7 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 
 namespace OxidEsales\EshopCommunity\Application\Model;
@@ -29,9 +13,8 @@ use oxDb;
  * Currently calculates price/costs.
  *
  */
-class Delivery extends \oxI18n
+class Delivery extends \OxidEsales\Eshop\Core\Model\MultiLanguageModel
 {
-
     /**
      * Calculation rule
      */
@@ -81,7 +64,7 @@ class Delivery extends \oxI18n
     /**
      * Current delivery price object which keeps price info
      *
-     * @var oxPrice
+     * @var \OxidEsales\Eshop\Core\Price
      */
     protected $_oPrice = null;
 
@@ -111,7 +94,7 @@ class Delivery extends \oxI18n
      *
      * @var array
      */
-    protected static $_aProductList = array();
+    protected static $_aProductList = [];
 
     /**
      * Delivery VAT config
@@ -141,7 +124,7 @@ class Delivery extends \oxI18n
     {
         parent::__construct();
         $this->init('oxdelivery');
-        $this->setDelVatOnTop($this->getConfig()->getConfigParam('blDeliveryVatOnTop'));
+        $this->setDelVatOnTop(\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('blDeliveryVatOnTop'));
     }
 
     /**
@@ -162,7 +145,7 @@ class Delivery extends \oxI18n
     public function getArticles()
     {
         if (is_null($this->_aArtIds)) {
-            $oDb = oxDb::getDb();
+            $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
             $sQ = "select oxobjectid from oxobject2delivery where oxdeliveryid=" . $oDb->quote($this->getId()) . " and oxtype = 'oxarticles'";
             $aArtIds = $oDb->getCol($sQ);
             $this->_aArtIds = $aArtIds;
@@ -179,7 +162,7 @@ class Delivery extends \oxI18n
     public function getCategories()
     {
         if (is_null($this->_aCatIds)) {
-            $oDb = oxDb::getDb();
+            $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
             $sQ = "select oxobjectid from oxobject2delivery where oxdeliveryid=" . $oDb->quote($this->getId()) . " and oxtype = 'oxcategories'";
             $aCatIds = $oDb->getCol($sQ);
             $this->_aCatIds = $aCatIds;
@@ -211,7 +194,7 @@ class Delivery extends \oxI18n
     /**
      * Returns amount (total net price/weight/volume/Amount) on which delivery price is applied
      *
-     * @param oxBasketItem $oBasketItem basket item object
+     * @param \OxidEsales\Eshop\Application\Model\BasketItem $oBasketItem basket item object
      *
      * @return double
      */
@@ -224,7 +207,7 @@ class Delivery extends \oxI18n
             $oProduct = $oProduct->getArticle();
         }
 
-        $blExclNonMaterial = $this->getConfig()->getConfigParam('blExclNonMaterialFromDelivery');
+        $blExclNonMaterial = \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('blExclNonMaterialFromDelivery');
 
         // mark free shipping products
         if ($oProduct->oxarticles__oxfreeshipping->value || ($oProduct->oxarticles__oxnonmaterial->value && $blExclNonMaterial)) {
@@ -271,7 +254,7 @@ class Delivery extends \oxI18n
     /**
      * Delivery price setter
      *
-     * @param oxPrice $oPrice delivery price to set
+     * @param \OxidEsales\Eshop\Core\Price $oPrice delivery price to set
      */
     public function setDeliveryPrice($oPrice)
     {
@@ -283,13 +266,13 @@ class Delivery extends \oxI18n
      *
      * @param double $dVat delivery vat
      *
-     * @return oxPrice
+     * @return \OxidEsales\Eshop\Core\Price
      */
     public function getDeliveryPrice($dVat = null)
     {
         if ($this->_oPrice === null) {
             // loading oxPrice object for final price calculation
-            $oPrice = oxNew('oxPrice');
+            $oPrice = oxNew(\OxidEsales\Eshop\Core\Price::class);
             $oPrice->setNettoMode($this->_blDelVatOnTop);
             $oPrice->setVat($dVat);
 
@@ -319,7 +302,7 @@ class Delivery extends \oxI18n
             return false;
         }
 
-        $oDb = oxDb::getDb();
+        $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
         $sQ = "delete from `oxobject2delivery` where `oxobject2delivery`.`oxdeliveryid` = " . $oDb->quote($sOxId);
         $oDb->execute($sQ);
 
@@ -329,7 +312,7 @@ class Delivery extends \oxI18n
     /**
      * Checks if delivery fits for current basket
      *
-     * @param oxBasket $oBasket shop basket
+     * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket shop basket
      *
      * @return bool
      */
@@ -370,7 +353,7 @@ class Delivery extends \oxI18n
                     if (isset(self::$_aProductList[$sProductId])) {
                         $oProduct = self::$_aProductList[$sProductId];
                     } else {
-                        $oProduct = oxNew('oxArticle');
+                        $oProduct = oxNew(\OxidEsales\Eshop\Application\Model\Article::class);
                         $oProduct->setSkipAssign(true);
 
                         if (!$oProduct->load($sProductId)) {
@@ -441,7 +424,7 @@ class Delivery extends \oxI18n
     /**
      * Update total count of product items are covered by current delivery.
      *
-     * @param oxBasketItem $content
+     * @param \OxidEsales\Eshop\Application\Model\BasketItem $content
      */
     protected function updateItemCount($content)
     {
@@ -468,7 +451,7 @@ class Delivery extends \oxI18n
         $blResult = false;
 
         if ($this->getConditionType() == self::CONDITION_TYPE_PRICE) {
-            $oCur = $this->getConfig()->getActShopCurrencyObject();
+            $oCur = \OxidEsales\Eshop\Core\Registry::getConfig()->getActShopCurrencyObject();
             $iAmount /= $oCur->rate;
         }
 
@@ -488,7 +471,7 @@ class Delivery extends \oxI18n
      */
     public function getIdByName($sTitle)
     {
-        $oDb = oxDb::getDb();
+        $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
         $sQ = "SELECT `oxid` FROM `" . getViewName('oxdelivery') . "` WHERE `oxtitle` = " . $oDb->quote($sTitle);
         $sId = $oDb->getOne($sQ);
 
@@ -503,8 +486,8 @@ class Delivery extends \oxI18n
     public function getCountriesISO()
     {
         if ($this->_aCountriesISO === null) {
-            $oDb = oxDb::getDb();
-            $this->_aCountriesISO = array();
+            $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
+            $this->_aCountriesISO = [];
 
             $sSelect = "
                 SELECT
@@ -609,7 +592,7 @@ class Delivery extends \oxI18n
     protected function _getCostSum()
     {
         if ($this->getAddSumType() == 'abs') {
-            $oCur = $this->getConfig()->getActShopCurrencyObject();
+            $oCur = \OxidEsales\Eshop\Core\Registry::getConfig()->getActShopCurrencyObject();
             $dPrice = $this->getAddSum() * $oCur->rate * $this->_getMultiplier();
         } else {
             $dPrice = $this->_dPrice / 100 * $this->getAddSum();

@@ -1,23 +1,7 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 
 namespace OxidEsales\EshopCommunity\Application\Component;
@@ -31,9 +15,8 @@ use oxRegistry;
  *
  * @subpackage oxcmp
  */
-class UtilsComponent extends \oxView
+class UtilsComponent extends \OxidEsales\Eshop\Core\Controller\BaseController
 {
-
     /**
      * Marking object as component
      *
@@ -58,14 +41,14 @@ class UtilsComponent extends \oxView
         $blBundle = false
     ) {
         // only if enabled and not search engine..
-        if ($this->getViewConfig()->getShowCompareList() && !oxRegistry::getUtils()->isSearchEngine()) {
+        if ($this->getViewConfig()->getShowCompareList() && !\OxidEsales\Eshop\Core\Registry::getUtils()->isSearchEngine()) {
             // #657 special treatment if we want to put on comparelist
-            $blAddCompare = oxRegistry::getConfig()->getRequestParameter('addcompare');
-            $blRemoveCompare = oxRegistry::getConfig()->getRequestParameter('removecompare');
-            $sProductId = $sProductId ? $sProductId : oxRegistry::getConfig()->getRequestParameter('aid');
+            $blAddCompare = \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('addcompare');
+            $blRemoveCompare = \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('removecompare');
+            $sProductId = $sProductId ? $sProductId : \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('aid');
             if (($blAddCompare || $blRemoveCompare) && $sProductId) {
                 // toggle state in session array
-                $aItems = oxRegistry::getSession()->getVariable('aFiltcompproducts');
+                $aItems = \OxidEsales\Eshop\Core\Registry::getSession()->getVariable('aFiltcompproducts');
                 if ($blAddCompare && !isset($aItems[$sProductId])) {
                     $aItems[$sProductId] = true;
                 }
@@ -74,7 +57,7 @@ class UtilsComponent extends \oxView
                     unset($aItems[$sProductId]);
                 }
 
-                oxRegistry::getSession()->setVariable('aFiltcompproducts', $aItems);
+                \OxidEsales\Eshop\Core\Registry::getSession()->setVariable('aFiltcompproducts', $aItems);
                 $oParentView = $this->getParent();
 
                 // #843C there was problem then field "blIsOnComparisonList" was not set to article object
@@ -101,7 +84,7 @@ class UtilsComponent extends \oxView
     }
 
     /**
-     * If session user is set loads user noticelist (oxuser::GetBasket())
+     * If session user is set loads user noticelist (\OxidEsales\Eshop\Application\Model\User::GetBasket())
      * and adds article to it.
      *
      * @param string $sProductId Product/article ID (default null)
@@ -112,7 +95,7 @@ class UtilsComponent extends \oxView
      */
     public function toNoticeList($sProductId = null, $dAmount = null, $aSel = null)
     {
-        if (!oxRegistry::getSession()->checkSessionChallenge()) {
+        if (!\OxidEsales\Eshop\Core\Registry::getSession()->checkSessionChallenge()) {
             return;
         }
 
@@ -120,7 +103,7 @@ class UtilsComponent extends \oxView
     }
 
     /**
-     * If session user is set loads user wishlist (oxuser::GetBasket()) and
+     * If session user is set loads user wishlist (\OxidEsales\Eshop\Application\Model\User::GetBasket()) and
      * adds article to it.
      *
      * @param string $sProductId Product/article ID (default null)
@@ -131,7 +114,7 @@ class UtilsComponent extends \oxView
      */
     public function toWishList($sProductId = null, $dAmount = null, $aSel = null)
     {
-        if (!oxRegistry::getSession()->checkSessionChallenge()) {
+        if (!\OxidEsales\Eshop\Core\Registry::getSession()->checkSessionChallenge()) {
             return;
         }
 
@@ -153,14 +136,14 @@ class UtilsComponent extends \oxView
     {
         // only if user is logged in
         if ($oUser = $this->getUser()) {
-            $sProductId = ($sProductId) ? $sProductId : oxRegistry::getConfig()->getRequestParameter('itmid');
-            $sProductId = ($sProductId) ? $sProductId : oxRegistry::getConfig()->getRequestParameter('aid');
-            $dAmount = isset($dAmount) ? $dAmount : oxRegistry::getConfig()->getRequestParameter('am');
-            $aSel = $aSel ? $aSel : oxRegistry::getConfig()->getRequestParameter('sel');
+            $sProductId = ($sProductId) ? $sProductId : \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('itmid');
+            $sProductId = ($sProductId) ? $sProductId : \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('aid');
+            $dAmount = isset($dAmount) ? $dAmount : \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('am');
+            $aSel = $aSel ? $aSel : \OxidEsales\Eshop\Core\Registry::getConfig()->getRequestParameter('sel');
 
             // processing amounts
             $dAmount = str_replace(',', '.', $dAmount);
-            if (!$this->getConfig()->getConfigParam('blAllowUnevenAmounts')) {
+            if (!\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('blAllowUnevenAmounts')) {
                 $dAmount = round(( string ) $dAmount);
             }
 
@@ -181,11 +164,10 @@ class UtilsComponent extends \oxView
     {
         parent::render();
 
-        $myConfig = $this->getConfig();
         $oParentView = $this->getParent();
 
         // add content for main menu
-        $oContentList = oxNew('oxcontentlist');
+        $oContentList = oxNew(\OxidEsales\Eshop\Application\Model\ContentList::class);
         $oContentList->loadMainMenulist();
         $oParentView->setMenueList($oContentList);
 

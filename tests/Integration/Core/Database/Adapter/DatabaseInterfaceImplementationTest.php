@@ -1,29 +1,13 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 
 namespace OxidEsales\EshopCommunity\Tests\Integration\Core\Database\Adapter;
 
 use oxDb;
-use OxidEsales\EshopCommunity\Core\ConfigFile;
+use OxidEsales\Eshop\Core\ConfigFile;
 use OxidEsales\EshopCommunity\Core\DatabaseProvider;
 use OxidEsales\EshopCommunity\Core\Database\Adapter\DatabaseInterface;
 use OxidEsales\EshopCommunity\Core\Registry;
@@ -301,7 +285,7 @@ abstract class DatabaseInterfaceImplementationTest extends DatabaseInterfaceImpl
     {
         $expectedExceptionClass = $this->getDatabaseExceptionClassName();
 
-        $this->setExpectedException($expectedExceptionClass);
+        $this->expectException($expectedExceptionClass);
 
         $this->database->select('INSERT INTO ' . self::TABLE_NAME . ' VALUES (\'a\',\'b\')');
     }
@@ -369,7 +353,7 @@ abstract class DatabaseInterfaceImplementationTest extends DatabaseInterfaceImpl
                 [
                     [self::FIXTURE_OXID_2], [self::FIXTURE_OXID_3] // expected result
                 ]
-            ),
+            )
         );
     }
 
@@ -396,6 +380,31 @@ abstract class DatabaseInterfaceImplementationTest extends DatabaseInterfaceImpl
                ')';
 
         $resultSet = $this->database->selectLimit($sql, $rowCount, $offset);
+        $actualResult = $resultSet->fetchAll();
+
+        $this->assertSame($expectedResult, $actualResult, $assertionMessage);
+    }
+
+    /**
+     * Test, that the method 'selectLimit' returns the expected rows if offset is not set.
+     *
+     * This test assumes that there are at least 3 entries in the table.
+     */
+    public function testSelectLimitReturnsExpectedResultForMissingOffsetParameter()
+    {
+        $rowCount = 2;
+        $expectedResult = [[self::FIXTURE_OXID_1], [self::FIXTURE_OXID_2]];
+        $assertionMessage = 'If parameter offet is not set, selectLimit will return the number of records 
+        given in the parameter $rowcount starting from the first record in the result set';
+
+        $this->loadFixtureToTestTable();
+        $sql = 'SELECT OXID FROM ' . self::TABLE_NAME . ' WHERE OXID IN (' .
+               '"' . self::FIXTURE_OXID_1 . '",' .
+               '"' . self::FIXTURE_OXID_2 . '",' .
+               '"' . self::FIXTURE_OXID_3 . '"' .
+               ')';
+
+        $resultSet = $this->database->selectLimit($sql, $rowCount);
         $actualResult = $resultSet->fetchAll();
 
         $this->assertSame($expectedResult, $actualResult, $assertionMessage);
@@ -455,7 +464,7 @@ abstract class DatabaseInterfaceImplementationTest extends DatabaseInterfaceImpl
     {
         $expectedExceptionClass = $this->getDatabaseExceptionClassName();
 
-        $this->setExpectedException($expectedExceptionClass);
+        $this->expectException($expectedExceptionClass);
 
         $this->database->execute('SOME INVALID QUERY');
     }
@@ -467,7 +476,7 @@ abstract class DatabaseInterfaceImplementationTest extends DatabaseInterfaceImpl
     {
         $expectedExceptionClass = $this->getDatabaseExceptionClassName();
 
-        $this->setExpectedException($expectedExceptionClass);
+        $this->expectException($expectedExceptionClass);
 
         $masterDb = oxDb::getMaster();
         $masterDb->select(
@@ -578,7 +587,7 @@ abstract class DatabaseInterfaceImplementationTest extends DatabaseInterfaceImpl
     {
         $expectedExceptionClass = $this->getDatabaseExceptionClassName();
 
-        $this->setExpectedException($expectedExceptionClass);
+        $this->expectException($expectedExceptionClass);
 
         $this->database->getCol("INSERT INTO " . self::TABLE_NAME . " VALUES ('a', 'b')");
     }
@@ -773,7 +782,7 @@ abstract class DatabaseInterfaceImplementationTest extends DatabaseInterfaceImpl
     {
         $expectedExceptionClass = $this->getDatabaseExceptionClassName();
 
-        $this->setExpectedException($expectedExceptionClass);
+        $this->expectException($expectedExceptionClass);
 
         $this->database->getAll(
             "SOME INVALID QUERY",
@@ -1001,12 +1010,19 @@ abstract class DatabaseInterfaceImplementationTest extends DatabaseInterfaceImpl
      */
     public function testGetRowIncorrectSqlStatement()
     {
-        $this->loadFixtureToTestTable();
+        $this->truncateTestTable();
 
+        /**
+         * An exception will be logged as part of the BC layer, when calling the getRow with a wrong SQL statement
+         * The exception log will be cleared at the end of this test
+         */
         $result = $this->database->getRow('INSERT INTO ' . self::TABLE_NAME . " (oxid) VALUES ('" . self::FIXTURE_OXID_1 . "')");
 
         $this->assertInternalType('array', $result);
         $this->assertEmpty($result);
+
+        $expectedExceptionClass = \OxidEsales\Eshop\Core\Exception\DatabaseErrorException::class;
+        $this->assertLoggedException($expectedExceptionClass);
     }
 
     /**
@@ -1373,20 +1389,6 @@ abstract class DatabaseInterfaceImplementationTest extends DatabaseInterfaceImpl
     }
 
     /**
-     * Fetch all the rows of the oxdoctrinetest table.
-     *
-     * @return array All rows of the oxdoctrinetest table.
-     */
-    protected function fetchAllTestTableRows()
-    {
-        $masterDb = oxDb::getMaster();
-
-        return $masterDb
-            ->select('SELECT * FROM ' . self::TABLE_NAME, array())
-            ->fetchAll();
-    }
-
-    /**
      * Fetch the oxId of the first oxdoctrinetest table row.
      *
      * @return array|false The oxId of the first oxdoctrinetest table row.
@@ -1409,17 +1411,6 @@ abstract class DatabaseInterfaceImplementationTest extends DatabaseInterfaceImpl
     protected function isEmptyTestTable()
     {
         return empty($this->fetchAllTestTableRows());
-    }
-
-    /**
-     * Helper methods to be used in all tests extending this class
-     */
-    /**
-     * Assure, that the table oxdoctrinetest is empty. If it is not empty, the test will fail.
-     */
-    protected function assureTestTableIsEmpty()
-    {
-        $this->assertEmpty($this->fetchAllTestTableRows(), "Table '" . self::TABLE_NAME . "' is empty");
     }
 
     /**

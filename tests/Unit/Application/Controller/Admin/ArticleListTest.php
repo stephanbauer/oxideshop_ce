@@ -1,25 +1,9 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
-namespace Unit\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Tests\Unit\Application\Controller\Admin;
 
 use OxidEsales\EshopCommunity\Application\Model\CategoryList;
 use \oxField;
@@ -46,7 +30,7 @@ class ArticleListTest extends \OxidTestCase
 
         $this->setRequestParameter('folder', $sObjects . 'TestFolderName');
 
-        $oAdminList = $this->getMock('article_list', array("getItemList"));
+        $oAdminList = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\ArticleList::class, array("getItemList"));
         $oAdminList->expects($this->once())->method('getItemList')->will($this->returnValue(null));
         $aBuildWhere = $oAdminList->buildWhere();
         $this->assertEquals('oxArticleTestFolderName', $aBuildWhere[getViewName('oxarticles') . '.oxfolder']);
@@ -89,7 +73,7 @@ class ArticleListTest extends \OxidTestCase
         $this->setRequestParameter("art_category", "mnf@@" . $sManId);
 
         // testing..
-        $oView = $this->getMock("Article_List", array("getItemList"));
+        $oView = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\ArticleList::class, array("getItemList"));
         $oView->expects($this->any())->method('getItemList')->will($this->returnValue(oxNew('oxarticlelist')));
         $this->assertEquals('article_list.tpl', $oView->render());
 
@@ -131,7 +115,7 @@ class ArticleListTest extends \OxidTestCase
         $oList->offsetSet("3", $oArticle3);
 
         // testing..
-        $oView = $this->getMock("Article_List", array("getItemList"));
+        $oView = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\ArticleList::class, array("getItemList"));
         $oView->expects($this->any())->method('getItemList')->will($this->returnValue($oList));
         $this->assertEquals('article_list.tpl', $oView->render());
 
@@ -239,10 +223,10 @@ class ArticleListTest extends \OxidTestCase
 
         $this->setRequestParameter("oxid", "testId");
 
-        $oSess = $this->getMock('oxsession', array('checkSessionChallenge'));
+        $oSess = $this->getMock(\OxidEsales\Eshop\Core\Session::class, array('checkSessionChallenge'));
         $oSess->expects($this->any())->method('checkSessionChallenge')->will($this->returnValue(true));
 
-        $oView = $this->getMock("Article_List", array("_authorize", 'getSession'));
+        $oView = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\ArticleList::class, array("_authorize", 'getSession'));
         $oView->expects($this->any())->method('_authorize')->will($this->returnValue(true));
         $oView->expects($this->any())->method('getSession')->will($this->returnValue($oSess));
         $oView->deleteEntry();

@@ -1,40 +1,24 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2017
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 
 namespace OxidEsales\EshopCommunity\Setup;
 
 use Exception;
-use OxidEsales\Eshop\Core\Edition\EditionSelector;
-use OxidEsales\Eshop\Core\SystemRequirements;
-use OxidEsales\EshopCommunity\Setup\Controller\ModuleStateMapGenerator;
-use OxidEsales\EshopCommunity\Setup\Exception\CommandExecutionFailedException;
-use OxidEsales\EshopCommunity\Setup\Exception\SetupControllerExitException;
+use \OxidEsales\Facts\Edition\EditionSelector;
+use \OxidEsales\Eshop\Core\SystemRequirements;
+use \OxidEsales\EshopCommunity\Setup\Controller\ModuleStateMapGenerator;
+use \OxidEsales\EshopCommunity\Setup\Exception\CommandExecutionFailedException;
+use \OxidEsales\EshopCommunity\Setup\Exception\SetupControllerExitException;
 
 /**
  * Class holds scripts (controllers) needed to perform shop setup steps
  */
 class Controller extends Core
 {
-    /** @var View */
+    /** @var \OxidEsales\EshopCommunity\Setup\View */
     private $view = null;
 
     /**
@@ -95,7 +79,6 @@ class Controller extends Core
                 "aLanguages" => getLanguages(),
                 "sShopLang" => $session->getSessionParam('sShopLang'),
                 "sLanguage" => $this->getLanguageInstance()->getLanguage(),
-                "sLocationLang" => $session->getSessionParam('location_lang'),
                 "sCountryLang" => $session->getSessionParam('country_lang')
             ]
         );
@@ -129,8 +112,9 @@ class Controller extends Core
         $view = $this->getView();
         $session = $this->getSessionInstance();
         $systemRequirements = getSystemReqCheck();
+        $utilities = $this->getUtilitiesInstance();
 
-        $eulaOptionValue = $this->getUtilitiesInstance()->getRequestVar("iEula", "post");
+        $eulaOptionValue = $utilities->getRequestVar("iEula", "post");
         $eulaOptionValue = (int)($eulaOptionValue ? $eulaOptionValue : $session->getSessionParam("eula"));
         if (!$eulaOptionValue) {
             $setup = $this->getSetupInstance();
@@ -141,6 +125,8 @@ class Controller extends Core
         }
 
         $databaseConfigValues = $session->getSessionParam('aDB');
+        $demodataPackageExists = $utilities->isDemodataPrepared();
+
         if (!isset($databaseConfigValues)) {
             // default values
             $databaseConfigValues['dbHost'] = "localhost";
@@ -148,7 +134,7 @@ class Controller extends Core
             $databaseConfigValues['dbUser'] = "";
             $databaseConfigValues['dbPwd'] = "";
             $databaseConfigValues['dbName'] = "";
-            $databaseConfigValues['dbiDemoData'] = 1;
+            $databaseConfigValues['dbiDemoData'] = $demodataPackageExists ? 1 : 0;
         }
 
         $this->setViewOptions(
@@ -157,7 +143,8 @@ class Controller extends Core
             [
                 "aDB" => $databaseConfigValues,
                 "blMbStringOn" => $systemRequirements->getModuleInfo('mb_string'),
-                "blUnicodeSupport" => $systemRequirements->getModuleInfo('unicode_support')
+                "blUnicodeSupport" => $systemRequirements->getModuleInfo('unicode_support'),
+                "demodataPackageExists" => $demodataPackageExists
             ]
         );
     }
@@ -172,6 +159,9 @@ class Controller extends Core
 
         if ($this->userDecidedOverwriteDB()) {
             $session->setSessionParam('blOverwrite', true);
+        }
+        if ($this->userDecidedIgnoreDBWarning()) {
+            $session->setSessionParam('blIgnoreDbRecommendations', true);
         }
 
         $this->setViewOptions(
@@ -229,27 +219,20 @@ class Controller extends Core
                 $view->setMessage($exception->getMessage());
 
                 throw new SetupControllerExitException();
-            } elseif ($exception->getCode() === Database::ERROR_MYSQL_VERSION_DOES_NOT_FIT_RECOMMENDATIONS) {
+            } elseif (($exception->getCode() === Database::ERROR_MYSQL_VERSION_DOES_NOT_FIT_RECOMMENDATIONS)) {
                 $setup->setNextStep(null);
                 $this->formMessageIfMySqyVersionIsNotRecommended($view, $language);
+                $databaseExists = false;
                 // check if DB is already UP and running
-                if (!$this->databaseCanBeOverwritten($databaseConfigValues)) {
+                if (!$this->databaseCanBeOverwritten($database)) {
                     $this->formMessageIfDBCanBeOverwritten($databaseConfigValues['dbName'], $view, $language);
+                    $databaseExists = true;
                 }
-                $this->formMessageInstallAnyway($view, $language, $session->getSid(), $setup->getStep('STEP_DIRS_INFO'));
+                $this->formMessageIgnoreDbVersionNotRecommended($view, $language, $session->getSid(), $setup->getStep('STEP_DIRS_INFO'), $databaseExists);
 
                 throw new SetupControllerExitException();
             } else {
-                try {
-                    // if database is not there, try to create it
-                    $database->createDb($databaseConfigValues['dbName']);
-                } catch (Exception $exception) {
-                    $setup->setNextStep($setup->getStep('STEP_DB_INFO'));
-                    $view->setMessage($exception->getMessage());
-
-                    throw new SetupControllerExitException();
-                }
-                $view->setViewParam("blCreated", 1);
+                $this->ensureDatabasePresent($database, $databaseConfigValues['dbName']);
             }
         }
 
@@ -296,14 +279,19 @@ class Controller extends Core
             $database = $this->getDatabaseInstance();
             $database->openDatabase($databaseConfigValues);
         } catch (Exception $exception) {
-            if ($exception->getCode() === Database::ERROR_MYSQL_VERSION_DOES_NOT_FIT_RECOMMENDATIONS) {
+            if (($exception->getCode() === Database::ERROR_COULD_NOT_CREATE_DB) && $this->userDecidedIgnoreDBWarning()) {
+                //User agreed to ignore SystemRequirements warning, database does not exist yet, create database.
+                $this->ensureDatabasePresent($database, $databaseConfigValues['dbName']);
+            } elseif (($exception->getCode() === Database::ERROR_MYSQL_VERSION_DOES_NOT_FIT_RECOMMENDATIONS)) {
                 $setup->setNextStep(null);
                 $this->formMessageIfMySqyVersionIsNotRecommended($view, $language);
+                $databaseExists = false;
                 // check if DB is already UP and running
                 if (!$this->databaseCanBeOverwritten($database)) {
                     $this->formMessageIfDBCanBeOverwritten($databaseConfigValues['dbName'], $view, $language);
+                    $databaseExists = true;
                 }
-                $this->formMessageInstallAnyway($view, $language, $session->getSid(), $setup->getStep('STEP_DB_CREATE'));
+                $this->formMessageIgnoreDbVersionNotRecommended($view, $language, $session->getSid(), $setup->getStep('STEP_DB_CREATE'), $databaseExists);
 
                 throw new SetupControllerExitException();
             } else {
@@ -336,24 +324,23 @@ class Controller extends Core
         try {
             $baseSqlDir = $this->getUtilitiesInstance()->getSqlDirectory(EditionSelector::COMMUNITY);
             $database->queryFile("$baseSqlDir/database_schema.sql");
+            $utilities = $this->getUtilitiesInstance();
+            $demodataInstallationRequired = $databaseConfigValues['dbiDemoData'];
+
+            if ($demodataInstallationRequired && !$utilities->isDemodataPrepared()) {
+                throw new SetupControllerExitException($language->getText('ERROR_NO_DEMODATA_INSTALLED'));
+            }
 
             // install demo/initial data
             try {
-                $this->installShopData($database, $databaseConfigValues['dbiDemoData']);
+                $this->installShopData($database, $demodataInstallationRequired);
             } catch (CommandExecutionFailedException $exception) {
                 $this->handleCommandExecutionFailedException($exception);
+
                 throw new SetupControllerExitException();
             } catch (Exception $exception) {
                 // there where problems with queries
                 $view->setMessage($language->getText('ERROR_BAD_DEMODATA') . "<br><br>" . $exception->getMessage());
-
-                throw new SetupControllerExitException();
-            }
-
-            try {
-                $this->getUtilitiesInstance()->executeExternalRegenerateViewsCommand();
-            } catch (CommandExecutionFailedException $exception) {
-                $this->handleCommandExecutionFailedException($exception);
 
                 throw new SetupControllerExitException();
             }
@@ -363,8 +350,11 @@ class Controller extends Core
             throw new SetupControllerExitException();
         }
 
-        //update dyn pages / shop country config options (from first step)
-        $database->saveShopSettings(array());
+        //update if send information to OXID / shop country config options (from first step)
+        $database->saveShopSettings([]);
+
+        // This value will not change, as it's deprecated and will be removed in next major version.
+        $database->execSql("update `oxshops` set `oxversion` = '6.0.0'");
 
         try {
             $adminData = $session->getSessionParam('aAdminData');
@@ -490,13 +480,29 @@ class Controller extends Core
     {
         $session = $this->getSessionInstance();
         $pathCollection = $session->getSessionParam("aPath");
+        $aSetupConfig = $session->getSessionParam("aSetupConfig");
+        $aDB = $session->getSessionParam("aDB");
+
+        try {
+            $this->getUtilitiesInstance()->executeExternalRegenerateViewsCommand(); // move to last step possible?
+        } catch (CommandExecutionFailedException $exception) {
+            $this->handleCommandExecutionFailedException($exception);
+
+            throw new SetupControllerExitException();
+        } catch (Exception $exception) {
+            $view = $this->getView();
+            $view->setMessage($exception->getMessage());
+
+            throw new SetupControllerExitException();
+        }
 
         $this->setViewOptions(
             'finish.php',
             'STEP_6_TITLE',
             [
                 "aPath" => $pathCollection,
-                "aSetupConfig" => $session->getSessionParam("aSetupConfig"),
+                "aSetupConfig" => $aSetupConfig,
+                "aDB" => $aDB,
                 "blWritableConfig" => is_writable($pathCollection['sShopDir'] . "/config.inc.php")
             ]
         );
@@ -505,7 +511,7 @@ class Controller extends Core
     /**
      * Returns View object
      *
-     * @return View
+     * @return \OxidEsales\EshopCommunity\Setup\View
      */
     public function getView()
     {
@@ -513,7 +519,7 @@ class Controller extends Core
     }
 
     /**
-     * @param Setup $setup
+     * @param \OxidEsales\EshopCommunity\Setup\Setup $setup
      */
     protected function onDirsWriteSetStep($setup)
     {
@@ -523,7 +529,7 @@ class Controller extends Core
     /**
      * Check if database can be safely overwritten.
      *
-     * @param Database $database database instance used to connect to DB
+     * @param \OxidEsales\EshopCommunity\Setup\Database $database database instance used to connect to DB
      *
      * @return bool
      */
@@ -539,30 +545,11 @@ class Controller extends Core
     }
 
     /**
-     * Return if user already decided to overwrite database.
-     *
-     * @return bool
-     */
-    private function userDecidedOverwriteDB()
-    {
-        $userDecidedOverwriteDatabase = false;
-
-        $overwriteCheck = $this->getUtilitiesInstance()->getRequestVar("ow", "get");
-        $session = $this->getSessionInstance();
-
-        if (isset($overwriteCheck) || $session->getSessionParam('blOverwrite')) {
-            $userDecidedOverwriteDatabase = true;
-        }
-
-        return $userDecidedOverwriteDatabase;
-    }
-
-    /**
      * Show warning-question if database with same name already exists.
      *
-     * @param string   $databaseName name of database to check if exist
-     * @param View     $view         to set parameters for template
-     * @param Language $language     to translate text
+     * @param string                                    $databaseName name of database to check if exist
+     * @param \OxidEsales\EshopCommunity\Setup\View     $view         to set parameters for template
+     * @param \OxidEsales\EshopCommunity\Setup\Language $language     to translate text
      */
     private function formMessageIfDBCanBeOverwritten($databaseName, $view, $language)
     {
@@ -572,8 +559,8 @@ class Controller extends Core
     /**
      * Show warning-question if MySQL version does meet minimal requirements, but is neither recommended nor supported.
      *
-     * @param View     $view     to set parameters for template
-     * @param Language $language to translate text
+     * @param \OxidEsales\EshopCommunity\Setup\View     $view     to set parameters for template
+     * @param \OxidEsales\EshopCommunity\Setup\Language $language to translate text
      */
     private function formMessageIfMySqyVersionIsNotRecommended($view, $language)
     {
@@ -583,43 +570,65 @@ class Controller extends Core
     /**
      * Show a message and a link to continue installation process, not regarding errors and warnings
      *
-     * @param View     $view      to set parameters for template
-     * @param Language $language  to translate text
-     * @param string   $sessionId
-     * @param string   $setupStep where to redirect if chose to rewrite database
+     * @param \OxidEsales\EshopCommunity\Setup\View     $view      to set parameters for template
+     * @param \OxidEsales\EshopCommunity\Setup\Language $language  to translate text
+     * @param string                                    $sessionId
+     * @param string                                    $setupStep where to redirect if chose to rewrite database
      */
     private function formMessageInstallAnyway($view, $language, $sessionId, $setupStep)
     {
-        $view->setMessage("<br><br>" . $language->getText('STEP_4_2_NOT_RECOMMENDED_MYSQL_VERSION') . " <a href=\"index.php?sid=" . $sessionId . "&istep=" . $setupStep . "&ow=1\" id=\"step3Continue\" style=\"text-decoration: underline;\">" . $language->getText('HERE') . "</a>");
+        $view->setMessage("<br><br>" . $language->getText('STEP_4_2_OVERWRITE_DB') . " <a href=\"index.php?sid=" . $sessionId . "&istep=" . $setupStep . "&ow=1\" id=\"step3Continue\" style=\"text-decoration: underline;\">" . $language->getText('HERE') . "</a>");
     }
 
     /**
-     * Installs demodata or initial, dependent on parameter
+     * Show a message and a link to continue installation process, not regarding errors and warnings
      *
-     * @param Database $database
-     * @param int      $demodata
+     * @param \OxidEsales\EshopCommunity\Setup\View     $view           to set parameters for template
+     * @param \OxidEsales\EshopCommunity\Setup\Language $language       to translate text
+     * @param string                                    $sessionId
+     * @param string                                    $setupStep      where to redirect if chose to rewrite database
+     * @param bool                                      $databaseExists Database already exists
      */
-    private function installShopData($database, $demodata = 0)
+    private function formMessageIgnoreDbVersionNotRecommended($view, $language, $sessionId, $setupStep, $databaseExists)
     {
-        $editionSqlDir = $this->getUtilitiesInstance()->getSqlDirectory();
+        $ignoreParam = $databaseExists ? '&ow=1&owrec=1' : '&owrec=1';
+        $info = $databaseExists ? 'STEP_4_2_OVERWRITE_DB' : 'STEP_4_2_NOT_RECOMMENDED_MYSQL_VERSION';
+        $view->setMessage("<br><br>" . $language->getText($info) . " <a href=\"index.php?sid=" . $sessionId . "&istep=" . $setupStep . $ignoreParam . "id=\"step3Continue\" style=\"text-decoration: underline;\">" . $language->getText('HERE') . "</a>");
+    }
+
+    /**
+     * Installs demo data or initial, dependent on parameter
+     *
+     * @param \OxidEsales\EshopCommunity\Setup\Database $database
+     * @param int                                       $demoDataRequired
+     *
+     * @throws SetupControllerExitException
+     */
+    private function installShopData($database, $demoDataRequired = 0)
+    {
         $baseSqlDir = $this->getUtilitiesInstance()->getSqlDirectory(EditionSelector::COMMUNITY);
 
-        // If demodata files are provided.
-        if ($this->getUtilitiesInstance()->checkIfDemodataPrepared($demodata)) {
-            $this->getUtilitiesInstance()->executeExternalDatabaseMigrationCommand();
+        try {
+            // If demo data files are provided.
+            if ($demoDataRequired && $this->getUtilitiesInstance()->isDemodataPrepared()) {
+                $this->getUtilitiesInstance()->executeExternalDatabaseMigrationCommand();
 
-            // Install demo data.
-            $database->queryFile($this->getUtilitiesInstance()->getActiveEditionDemodataPackageSqlFilePath());
-            // Copy demodata files.
-            $this->getUtilitiesInstance()->executeExternalDemodataAssetsInstallCommand();
-        } else {
-            $database->queryFile("$baseSqlDir/initial_data.sql");
+                // Install demo data.
+                $database->queryFile($this->getUtilitiesInstance()->getActiveEditionDemodataPackageSqlFilePath());
+                // Copy demo data files.
+                $this->getUtilitiesInstance()->executeExternalDemodataAssetsInstallCommand();
+            } else {
+                $database->queryFile("$baseSqlDir/initial_data.sql");
 
-            $this->getUtilitiesInstance()->executeExternalDatabaseMigrationCommand();
-
-            if ($demodata) {
-                $database->queryFile("$editionSqlDir/demodata.sql");
+                $this->getUtilitiesInstance()->executeExternalDatabaseMigrationCommand();
             }
+        } catch (Exception $exception) {
+            $commandException = new CommandExecutionFailedException('Migration', $exception->getCode(), $exception);
+            $commandException->setCommandOutput([$exception->getMessage()]);
+
+            $this->handleCommandExecutionFailedException($commandException);
+
+            throw new SetupControllerExitException();
         }
     }
 
@@ -760,6 +769,7 @@ class Controller extends Core
 
     /**
      * @param string $commandOutput
+     *
      * @return string
      */
     private function convertCommandOutputToHtmlOutput($commandOutput)
@@ -770,5 +780,30 @@ class Controller extends Core
         $commandOutput = "<span style=\"font-family: courier,serif\">$commandOutput</span>";
 
         return $commandOutput;
+    }
+
+    /**
+     * Ensure the database is available
+     *
+     * @throws \OxidEsales\EshopCommunity\Setup\Exception\SetupControllerExitException
+     *
+     * @param \OxidEsales\EshopCommunity\Setup\Database $database
+     * @param string                                    $dbName
+     *
+     * @throws SetupControllerExitException
+     */
+    private function ensureDatabasePresent($database, $dbName)
+    {
+        try {
+            // if database is not there, try to create it
+            $database->createDb($dbName);
+        } catch (Exception $exception) {
+            $setup = $this->getSetupInstance();
+            $setup->setNextStep($setup->getStep('STEP_DB_INFO'));
+            $this->getView()->setMessage($exception->getMessage());
+
+            throw new SetupControllerExitException();
+        }
+        $this->getView()->setViewParam("blCreated", 1);
     }
 }

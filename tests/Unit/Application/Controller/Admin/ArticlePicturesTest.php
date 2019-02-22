@@ -1,30 +1,16 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
-namespace Unit\Application\Controller\Admin;
+namespace OxidEsales\EshopCommunity\Tests\Unit\Application\Controller\Admin;
 
+use OxidEsales\Eshop\Core\Config;
 use OxidEsales\EshopCommunity\Application\Model\Article;
 use OxidEsales\EshopCommunity\Core\Exception\ExceptionToDisplay;
 use \oxField;
 use \oxDb;
+use OxidEsales\EshopCommunity\Core\Registry;
 use \oxRegistry;
 use \oxTestModules;
 
@@ -63,7 +49,7 @@ class ArticlePicturesTest extends \OxidTestCase
         oxTestModules::addFunction('oxarticle', 'save', '{ return true; }');
         $this->getConfig()->setConfigParam('iPicCount', 0);
 
-        $oView = $this->getMock("Article_Pictures", array("resetContentCache"));
+        $oView = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\ArticlePictures::class, array("resetContentCache"));
         $oView->expects($this->once())->method('resetContentCache');
 
         $iCnt = 7;
@@ -102,7 +88,7 @@ class ArticlePicturesTest extends \OxidTestCase
 
         $oDb = oxDb::getDb(oxDB::FETCH_MODE_ASSOC);
 
-        $oArtPic = $this->getMock("Article_Pictures", array("_deleteThumbnail", "_deleteMasterPicture"));
+        $oArtPic = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\ArticlePictures::class, array("_deleteThumbnail", "_deleteMasterPicture"));
         $oArtPic->expects($this->never())->method('_deleteThumbnail');
         $oArtPic->expects($this->never())->method('_deleteMasterPicture');
 
@@ -123,7 +109,7 @@ class ArticlePicturesTest extends \OxidTestCase
         $this->setRequestParameter("masterPicIndex", "TH");
         $oDb = oxDb::getDb(oxDB::FETCH_MODE_ASSOC);
 
-        $oArtPic = $this->getMock("Article_Pictures", array("_deleteMainIcon", "_deleteMasterPicture"));
+        $oArtPic = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\ArticlePictures::class, array("_deleteMainIcon", "_deleteMasterPicture"));
         $oArtPic->expects($this->never())->method('_deleteMainIcon');
         $oArtPic->expects($this->never())->method('_deleteMasterPicture');
 
@@ -144,7 +130,7 @@ class ArticlePicturesTest extends \OxidTestCase
         $this->setRequestParameter("masterPicIndex", "2");
         $oDb = oxDb::getDb(oxDB::FETCH_MODE_ASSOC);
 
-        $oArtPic = $this->getMock("Article_Pictures", array("_deleteMainIcon", "_deleteThumbnail"));
+        $oArtPic = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\ArticlePictures::class, array("_deleteMainIcon", "_deleteThumbnail"));
         $oArtPic->expects($this->never())->method('_deleteMainIcon');
         $oArtPic->expects($this->never())->method('_deleteThumbnail');
 
@@ -164,7 +150,7 @@ class ArticlePicturesTest extends \OxidTestCase
         $this->setRequestParameter("oxid", "_testArtId");
         $this->setRequestParameter("masterPicIndex", "2");
 
-        $oArtPic = $this->getMock("Article_Pictures", array("_resetMasterPicture"));
+        $oArtPic = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\ArticlePictures::class, array("_resetMasterPicture"));
         $oArtPic->expects($this->once())->method('_resetMasterPicture');
 
         $this->_oArticle->save();
@@ -179,12 +165,12 @@ class ArticlePicturesTest extends \OxidTestCase
      */
     public function testDeleteMainIcon()
     {
-        $oArticle = $this->getMock("oxArticle", array('isDerived'));
+        $oArticle = $this->getMock(\OxidEsales\Eshop\Application\Model\Article::class, array('isDerived'));
         $oArticle->expects($this->atLeastOnce())->method('isDerived')->will($this->returnValue(null));
 
         $oArticle->oxarticles__oxicon = new oxField("testIcon.jpg");
 
-        $oPicHandler = $this->getMock("oxPictureHandler", array("deleteMainIcon"));
+        $oPicHandler = $this->getMock(\OxidEsales\Eshop\Core\PictureHandler::class, array("deleteMainIcon"));
         $oPicHandler->expects($this->once())->method('deleteMainIcon');
 
         oxTestModules::addModuleObject("oxPictureHandler", $oPicHandler);
@@ -201,12 +187,12 @@ class ArticlePicturesTest extends \OxidTestCase
     public function testDeleteThumbnail()
     {
 
-        $oArticle = $this->getMock("oxArticle", array('isDerived'));
+        $oArticle = $this->getMock(\OxidEsales\Eshop\Application\Model\Article::class, array('isDerived'));
         $oArticle->expects($this->atLeastOnce())->method('isDerived')->will($this->returnValue(null));
 
         $oArticle->oxarticles__oxthumb = new oxField("testThumb.jpg");
 
-        $oPicHandler = $this->getMock("oxPictureHandler", array("deleteThumbnail"));
+        $oPicHandler = $this->getMock(\OxidEsales\Eshop\Core\PictureHandler::class, array("deleteThumbnail"));
         $oPicHandler->expects($this->once())->method('deleteThumbnail');
 
         oxTestModules::addModuleObject("oxPictureHandler", $oPicHandler);
@@ -222,12 +208,12 @@ class ArticlePicturesTest extends \OxidTestCase
      */
     public function testResetMasterPicture()
     {
-        $oArticle = $this->getMock("oxArticle", array('isDerived'));
+        $oArticle = $this->getMock(\OxidEsales\Eshop\Application\Model\Article::class, array('isDerived'));
         $oArticle->expects($this->atLeastOnce())->method('isDerived')->will($this->returnValue(null));
 
         $oArticle->oxarticles__oxpic2 = new oxField("testPic2.jpg");
 
-        $oPicHandler = $this->getMock("oxPictureHandler", array("deleteArticleMasterPicture"));
+        $oPicHandler = $this->getMock(\OxidEsales\Eshop\Core\PictureHandler::class, array("deleteArticleMasterPicture"));
         $oPicHandler->expects($this->once())->method('deleteArticleMasterPicture')->with($this->equalTo($oArticle), $this->equalTo(2), $this->equalTo(false));
 
         oxTestModules::addModuleObject("oxPictureHandler", $oPicHandler);
@@ -244,22 +230,22 @@ class ArticlePicturesTest extends \OxidTestCase
      */
     public function testResetMasterPicture_makesCleanupOnFields()
     {
-        $oArticle = $this->getMock("oxArticle", array('isDerived'));
+        $oArticle = $this->getMock(\OxidEsales\Eshop\Application\Model\Article::class, array('isDerived'));
         $oArticle->expects($this->atLeastOnce())->method('isDerived')->will($this->returnValue(null));
 
         $oArticle->oxarticles__oxpic1 = new oxField("testPic1.jpg");
         $oArticle->oxarticles__oxpic2 = new oxField("testPic2.jpg");
 
-        $oPicHandler = $this->getMock("oxPictureHandler", array("deleteArticleMasterPicture"));
+        $oPicHandler = $this->getMock(\OxidEsales\Eshop\Core\PictureHandler::class, array("deleteArticleMasterPicture"));
         $oPicHandler->expects($this->exactly(2))->method('deleteArticleMasterPicture');
 
         oxTestModules::addModuleObject("oxPictureHandler", $oPicHandler);
 
-        $oArtPic = $this->getMock("Article_Pictures", array("_cleanupCustomFields"));
+        $oArtPic = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\ArticlePictures::class, array("_cleanupCustomFields"));
         $oArtPic->expects($this->never())->method('_cleanupCustomFields');
         $oArtPic->UNITresetMasterPicture($oArticle, 2);
 
-        $oArtPic = $this->getMock("Article_Pictures", array("_cleanupCustomFields"));
+        $oArtPic = $this->getMock(\OxidEsales\Eshop\Application\Controller\Admin\ArticlePictures::class, array("_cleanupCustomFields"));
         $oArtPic->expects($this->once())->method('_cleanupCustomFields');
         $oArtPic->UNITresetMasterPicture($oArticle, 1);
     }
@@ -313,13 +299,13 @@ class ArticlePicturesTest extends \OxidTestCase
      */
     public function testSave_demoShopMode()
     {
-        $oConfig = $this->getMock("oxConfig", array("isDemoShop"));
+        $oConfig = $this->getMock(\OxidEsales\Eshop\Core\Config::class, array("isDemoShop"));
         $oConfig->expects($this->once())->method('isDemoShop')->will($this->returnValue(true));
 
         oxRegistry::getSession()->deleteVariable("Errors");
 
         $oArtPic = $this->getProxyClass("Article_Pictures");
-        $oArtPic->setConfig($oConfig);
+        Registry::set(Config::class, $oConfig);
         $oArtPic->save();
 
         $aEx = oxRegistry::getSession()->getVariable("Errors");
@@ -335,13 +321,13 @@ class ArticlePicturesTest extends \OxidTestCase
      */
     public function testDeletePicture_demoShopMode()
     {
-        $oConfig = $this->getMock("oxConfig", array("isDemoShop"));
+        $oConfig = $this->getMock(\OxidEsales\Eshop\Core\Config::class, array("isDemoShop"));
         $oConfig->expects($this->once())->method('isDemoShop')->will($this->returnValue(true));
 
         oxRegistry::getSession()->deleteVariable("Errors");
 
         $oArtPic = $this->getProxyClass("Article_Pictures");
-        $oArtPic->setConfig($oConfig);
+        Registry::set(Config::class, $oConfig);
         $oArtPic->deletePicture();
 
         $aEx = oxRegistry::getSession()->getVariable("Errors");
@@ -355,7 +341,7 @@ class ArticlePicturesTest extends \OxidTestCase
      */
     public function testSubshopStaysSame()
     {
-        $oArticle = $this->getMock('oxarticle', array('load', 'save', 'assign'));
+        $oArticle = $this->getMock(\OxidEsales\Eshop\Application\Model\Article::class, array('load', 'save', 'assign'));
         $oArticle->expects($this->once())->method('load')->with($this->equalTo('asdasdasd'))->will($this->returnValue(true));
         $oArticle->expects($this->once())->method('assign')->with($this->equalTo(array('s' => 'test')))->will($this->returnValue(null));
         $oArticle->expects($this->once())->method('save')->will($this->returnValue(null));

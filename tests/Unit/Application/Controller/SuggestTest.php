@@ -1,26 +1,11 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
-namespace Unit\Application\Controller;
+namespace OxidEsales\EshopCommunity\Tests\Unit\Application\Controller;
 
+use OxidEsales\Eshop\Core\Config;
 use OxidEsales\EshopCommunity\Core\Model\ListModel;
 
 use \oxDb;
@@ -119,7 +104,7 @@ class SuggestTest extends \OxidTestCase
     {
         oxTestModules::addFunction("oxutilsserver", "getServerVar", "{ \$aArgs = func_get_args(); if ( \$aArgs[0] === 'HTTP_HOST' ) { return '" . $this->getConfig()->getShopUrl() . "'; } elseif ( \$aArgs[0] === 'SCRIPT_NAME' ) { return ''; } else { return \$_SERVER[\$aArgs[0]]; } }");
         $oCfg = $this->getConfig();
-        $oV = $this->getMock('suggest', array('_getRequestParams', '_getSeoRequestParams'));
+        $oV = $this->getMock(\OxidEsales\Eshop\Application\Controller\SuggestController::class, array('_getRequestParams', '_getSeoRequestParams'));
         $oV->expects($this->any())->method('_getRequestParams')->will($this->returnValue('cl=suggest'));
         $oV->expects($this->any())->method('_getSeoRequestParams')->will($this->returnValue('cl=suggest'));
 
@@ -138,10 +123,10 @@ class SuggestTest extends \OxidTestCase
      */
     public function testgetRecommListsIfOff()
     {
-        $oCfg = $this->getMock("stdClass", array("getShowListmania"));
+        $oCfg = $this->getMock(Config::class, array("getShowListmania"));
         $oCfg->expects($this->once())->method('getShowListmania')->will($this->returnValue(false));
 
-        $oSuggest = $this->getMock("suggest", array("getViewConfig", 'getArticleList'));
+        $oSuggest = $this->getMock(\OxidEsales\Eshop\Application\Controller\SuggestController::class, array("getViewConfig", 'getArticleList'));
         $oSuggest->expects($this->once())->method('getViewConfig')->will($this->returnValue($oCfg));
         $oSuggest->expects($this->never())->method('getArticleList');
 
@@ -185,12 +170,12 @@ class SuggestTest extends \OxidTestCase
 
         oxTestModules::addModuleObject('oxemail', $oEmail);
 
-        /** @var oxArticle|PHPUnit_Framework_MockObject_MockObject $oProduct */
-        $oProduct = $this->getMock("oxarticle", array('getId'));
+        /** @var oxArticle|PHPUnit\Framework\MockObject\MockObject $oProduct */
+        $oProduct = $this->getMock(\OxidEsales\Eshop\Application\Model\Article::class, array('getId'));
         $oProduct->expects($this->once())->method('getId')->will($this->returnValue('XProduct'));
 
-        /** @var Suggest|PHPUnit_Framework_MockObject_MockObject $oSuggest */
-        $oSuggest = $this->getMock("suggest", array("getProduct"));
+        /** @var Suggest|PHPUnit\Framework\MockObject\MockObject $oSuggest */
+        $oSuggest = $this->getMock(\OxidEsales\Eshop\Application\Controller\SuggestController::class, array("getProduct"));
         $oSuggest->expects($this->once())->method('getProduct')->will($this->returnValue($oProduct));
 
         $this->setRequestParameter('searchparam', "searchparam&&A");
@@ -227,8 +212,8 @@ class SuggestTest extends \OxidTestCase
         $oProduct = $this->getMock("stdclass", array('getId'));
         $oProduct->expects($this->never())->method('getId');
 
-        /** @var Suggest|PHPUnit_Framework_MockObject_MockObject $oSuggest */
-        $oSuggest = $this->getMock("suggest", array("getProduct"));
+        /** @var Suggest|PHPUnit\Framework\MockObject\MockObject $oSuggest */
+        $oSuggest = $this->getMock(\OxidEsales\Eshop\Application\Controller\SuggestController::class, array("getProduct"));
         $oSuggest->expects($this->never())->method('getProduct')->will($this->returnValue($oProduct));
 
         $oUtilsView = $this->getMock("stdclass", array('addErrorToDisplay'));

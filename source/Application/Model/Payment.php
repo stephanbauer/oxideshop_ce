@@ -1,23 +1,7 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 
 namespace OxidEsales\EshopCommunity\Application\Model;
@@ -30,9 +14,8 @@ use oxDb;
  * Performs payment methods, such as assigning to someone, returning value etc.
  *
  */
-class Payment extends \oxI18n
+class Payment extends \OxidEsales\Eshop\Core\Model\MultiLanguageModel
 {
-
     /**
      * Consider for calculation of base sum - Value of all goods in basket
      *
@@ -77,7 +60,7 @@ class Payment extends \oxI18n
 
     /**
      * Countries assigned to current payment. Value from outside accessible
-     * by calling oxPayment::getCountries
+     * by calling \OxidEsales\Eshop\Application\Model\Payment::getCountries
      *
      * @var array
      */
@@ -123,7 +106,7 @@ class Payment extends \oxI18n
      */
     public function __construct()
     {
-        $this->setPaymentVatOnTop($this->getConfig()->getConfigParam('blPaymentVatOnTop'));
+        $this->setPaymentVatOnTop(\OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('blPaymentVatOnTop'));
         parent::__construct();
         $this->init('oxpayments');
     }
@@ -194,7 +177,7 @@ class Payment extends \oxI18n
                 $sRawDynValue = $this->oxpayments__oxvaldesc->getRawValue();
             }
 
-            $this->_aDynValues = oxRegistry::getUtils()->assignValuesFromText($sRawDynValue);
+            $this->_aDynValues = \OxidEsales\Eshop\Core\Registry::getUtils()->assignValuesFromText($sRawDynValue);
         }
 
         return $this->_aDynValues;
@@ -209,12 +192,10 @@ class Payment extends \oxI18n
      */
     public function getPaymentValue($dBasePrice)
     {
-        $dRet = 0;
-
         if ($this->oxpayments__oxaddsumtype->value == "%") {
             $dRet = $dBasePrice * $this->oxpayments__oxaddsum->value / 100;
         } else {
-            $oCur = $this->getConfig()->getActShopCurrencyObject();
+            $oCur = \OxidEsales\Eshop\Core\Registry::getConfig()->getActShopCurrencyObject();
             $dRet = $this->oxpayments__oxaddsum->value * $oCur->rate;
         }
 
@@ -229,7 +210,7 @@ class Payment extends \oxI18n
      * Returns base basket price for payment cost calculations. Price depends on
      * payment setup (payment administration)
      *
-     * @param oxBasket $oBasket oxBasket object
+     * @param \OxidEsales\Eshop\Application\Model\Basket $oBasket oxBasket object
      *
      * @return double
      */
@@ -294,7 +275,7 @@ class Payment extends \oxI18n
     /**
      * Returns price object for current payment applied on basket
      *
-     * @param oxUserBasket $oBasket session basket
+     * @param \OxidEsales\Eshop\Application\Model\UserBasket $oBasket session basket
      */
     public function calculate($oBasket)
     {
@@ -305,7 +286,7 @@ class Payment extends \oxI18n
             $dPrice = 0;
         }
         // calculating total price
-        $oPrice = oxNew('oxPrice');
+        $oPrice = oxNew(\OxidEsales\Eshop\Core\Price::class);
         $oPrice->setNettoMode($this->_blPaymentVatOnTop);
 
         $oPrice->setPrice($dPrice);
@@ -336,7 +317,7 @@ class Payment extends \oxI18n
     public function getFNettoPrice()
     {
         if ($this->getPrice()) {
-            return oxRegistry::getLang()->formatCurrency($this->getPrice()->getNettoPrice());
+            return \OxidEsales\Eshop\Core\Registry::getLang()->formatCurrency($this->getPrice()->getNettoPrice());
         }
     }
 
@@ -350,7 +331,7 @@ class Payment extends \oxI18n
     public function getFBruttoPrice()
     {
         if ($this->getPrice()) {
-            return oxRegistry::getLang()->formatCurrency($this->getPrice()->getBruttoPrice());
+            return \OxidEsales\Eshop\Core\Registry::getLang()->formatCurrency($this->getPrice()->getBruttoPrice());
         }
     }
 
@@ -364,7 +345,7 @@ class Payment extends \oxI18n
     public function getFPriceVat()
     {
         if ($this->getPrice()) {
-            return oxRegistry::getLang()->formatCurrency($this->getPrice()->getVatValue());
+            return \OxidEsales\Eshop\Core\Registry::getLang()->formatCurrency($this->getPrice()->getVatValue());
         }
     }
 
@@ -376,8 +357,8 @@ class Payment extends \oxI18n
     public function getCountries()
     {
         if ($this->_aCountries === null) {
-            $oDb = oxDb::getDb();
-            $this->_aCountries = array();
+            $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
+            $this->_aCountries = [];
             $sSelect = 'select oxobjectid from oxobject2payment where oxpaymentid=' . $oDb->quote($this->getId()) . ' and oxtype = "oxcountry" ';
             $rs = $oDb->getCol($sSelect);
             $this->_aCountries = $rs;
@@ -397,7 +378,7 @@ class Payment extends \oxI18n
     {
         if (parent::delete($sOxId)) {
             $sOxId = $sOxId ? $sOxId : $this->getId();
-            $oDb = oxDb::getDb();
+            $oDb = \OxidEsales\Eshop\Core\DatabaseProvider::getDb();
 
             // deleting payment related data
             $rs = $oDb->execute("delete from oxobject2payment where oxpaymentid = " . $oDb->quote($sOxId));
@@ -411,17 +392,17 @@ class Payment extends \oxI18n
     /**
      * Function checks if loaded payment is valid to current basket
      *
-     * @param array  $aDynValue    dynamical value (in this case oxidcreditcard and oxiddebitnote are checked only)
-     * @param string $sShopId      id of current shop
-     * @param oxUser $oUser        the current user
-     * @param double $dBasketPrice the current basket price (oBasket->dPrice)
-     * @param string $sShipSetId   the current ship set
+     * @param array                                    $aDynValue    dynamical value (in this case oxidcreditcard and oxiddebitnote are checked only)
+     * @param string                                   $sShopId      id of current shop
+     * @param \OxidEsales\Eshop\Application\Model\User $oUser        the current user
+     * @param double                                   $dBasketPrice the current basket price (oBasket->dPrice)
+     * @param string                                   $sShipSetId   the current ship set
      *
      * @return bool true if payment is valid
      */
     public function isValidPayment($aDynValue, $sShopId, $oUser, $dBasketPrice, $sShipSetId)
     {
-        $myConfig = $this->getConfig();
+        $myConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
         if ($this->oxpayments__oxid->value == 'oxempty') {
             // inactive or blOtherCountryOrder is off
             if (!$this->oxpayments__oxactive->value || !$myConfig->getConfigParam("blOtherCountryOrder")) {
@@ -430,7 +411,7 @@ class Payment extends \oxI18n
                 return false;
             }
             if (count(
-                oxRegistry::get("oxDeliverySetList")
+                \OxidEsales\Eshop\Core\Registry::get(\OxidEsales\Eshop\Application\Model\DeliverySetList::class)
                     ->getDeliverySetList(
                         $oUser,
                         $oUser->getActiveCountry()
@@ -445,7 +426,7 @@ class Payment extends \oxI18n
             return true;
         }
 
-        $mxValidationResult = oxRegistry::get("oxInputValidator")->validatePaymentInputData($this->oxpayments__oxid->value, $aDynValue);
+        $mxValidationResult = \OxidEsales\Eshop\Core\Registry::getInputValidator()->validatePaymentInputData($this->oxpayments__oxid->value, $aDynValue);
 
         if (is_integer($mxValidationResult)) {
             $this->_iPaymentError = $mxValidationResult;
@@ -461,7 +442,7 @@ class Payment extends \oxI18n
         $dBasketPrice = $dBasketPrice / $oCur->rate;
 
         if ($sShipSetId) {
-            $aPaymentList = oxRegistry::get("oxPaymentList")->getPaymentList($sShipSetId, $dBasketPrice, $oUser);
+            $aPaymentList = \OxidEsales\Eshop\Core\Registry::get(\OxidEsales\Eshop\Application\Model\PaymentList::class)->getPaymentList($sShipSetId, $dBasketPrice, $oUser);
 
             if (!array_key_exists($this->getId(), $aPaymentList)) {
                 $this->_iPaymentError = -3;

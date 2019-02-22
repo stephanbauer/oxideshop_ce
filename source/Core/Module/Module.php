@@ -1,45 +1,46 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 
 namespace OxidEsales\EshopCommunity\Core\Module;
-
-use oxDb;
-use oxRegistry;
 
 /**
  * Module class.
  *
  * @internal Do not make a module extension for this class.
- * @see      http://oxidforge.org/en/core-oxid-eshop-classes-must-not-be-extended.html
+ * @see      https://oxidforge.org/en/core-oxid-eshop-classes-must-not-be-extended.html
  */
-class Module extends \oxSuperCfg
+class Module extends \OxidEsales\Eshop\Core\Base
 {
+    /**
+     * Metadata version as defined in metadata.php
+     */
+    protected $metaDataVersion;
+
+    /**
+     * @return mixed
+     */
+    public function getMetaDataVersion()
+    {
+        return $this->metaDataVersion;
+    }
+
+    /**
+     * @param mixed $metaDataVersion
+     */
+    public function setMetaDataVersion($metaDataVersion)
+    {
+        $this->metaDataVersion = $metaDataVersion;
+    }
 
     /**
      * Modules info array
      *
      * @var array
      */
-    protected $_aModule = array();
+    protected $_aModule = [];
 
     /**
      * Defines if module has metadata file or not
@@ -66,6 +67,16 @@ class Module extends \oxSuperCfg
     }
 
     /**
+     * Get the modules metadata array
+     *
+     * @return  array Module meta data array
+     */
+    public function getModuleData()
+    {
+        return $this->_aModule;
+    }
+
+    /**
      * Load module info
      *
      * @param string $sModuleId Module ID
@@ -77,10 +88,8 @@ class Module extends \oxSuperCfg
         $sModulePath = $this->getModuleFullPath($sModuleId);
         $sMetadataPath = $sModulePath . "/metadata.php";
 
-        if ($sModulePath && file_exists($sMetadataPath) && is_readable($sMetadataPath)) {
-            $aModule = array();
-            include $sMetadataPath;
-            $this->_aModule = $aModule;
+        if ($sModulePath && is_readable($sMetadataPath)) {
+            $this->includeModuleMetaData($sMetadataPath);
             $this->_blRegistered = true;
             $this->_blMetadata = true;
             $this->_aModule['active'] = $this->isActive();
@@ -122,7 +131,7 @@ class Module extends \oxSuperCfg
      */
     public function getDescription()
     {
-        $iLang = oxRegistry::getLang()->getTplLanguage();
+        $iLang = \OxidEsales\Eshop\Core\Registry::getLang()->getTplLanguage();
 
         return $this->getInfo("description", $iLang);
     }
@@ -134,7 +143,7 @@ class Module extends \oxSuperCfg
      */
     public function getTitle()
     {
-        $iLang = oxRegistry::getLang()->getTplLanguage();
+        $iLang = \OxidEsales\Eshop\Core\Registry::getLang()->getTplLanguage();
 
         return $this->getInfo("title", $iLang);
     }
@@ -156,7 +165,35 @@ class Module extends \oxSuperCfg
      */
     public function getExtensions()
     {
-        return isset($this->_aModule['extend']) ? $this->_aModule['extend'] : array();
+        $rawExtensions = isset($this->_aModule['extend']) ? $this->_aModule['extend'] : [];
+
+        return $this->getUnifiedShopClassExtensionsForBc($rawExtensions);
+    }
+
+    /**
+     * Returns associative array of module controller ids and corresponding classes.
+     *
+     * @return array
+     */
+    public function getControllers()
+    {
+        if (isset($this->_aModule['controllers']) && ! is_array($this->_aModule['controllers'])) {
+            throw new \InvalidArgumentException('Value for metadata key "controllers" must be an array');
+        }
+
+        return isset($this->_aModule['controllers']) ? array_change_key_case($this->_aModule['controllers']) : [];
+    }
+
+    /**
+     * @return array
+     */
+    public function getSmartyPluginDirectories()
+    {
+        if (isset($this->_aModule['smartyPluginDirectories']) && !is_array($this->_aModule['smartyPluginDirectories'])) {
+            throw new \InvalidArgumentException('Value for metadata key "smartyPluginDirectories" must be an array');
+        }
+
+        return isset($this->_aModule['smartyPluginDirectories']) ? $this->_aModule['smartyPluginDirectories'] : [];
     }
 
     /**
@@ -166,7 +203,7 @@ class Module extends \oxSuperCfg
      */
     public function getFiles()
     {
-        return isset($this->_aModule['files']) ? $this->_aModule['files'] : array();
+        return isset($this->_aModule['files']) ? $this->_aModule['files'] : [];
     }
 
     /**
@@ -182,7 +219,7 @@ class Module extends \oxSuperCfg
         $moduleFile = $module;
         $moduleId = $this->getIdFromExtension($module);
         if (!$moduleId) {
-            $modulePaths = $this->getConfig()->getConfigParam('aModulePaths');
+            $modulePaths = \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('aModulePaths');
 
             if (is_array($modulePaths)) {
                 foreach ($modulePaths as $id => $path) {
@@ -203,6 +240,8 @@ class Module extends \oxSuperCfg
     }
 
     /**
+     * @deprecated since v6.0.0 (2017-03-21); Use self::getModuleIdByClassName()
+     *
      * Get the module id of given extended class name or namespace.
      *
      * @param string $className
@@ -211,11 +250,28 @@ class Module extends \oxSuperCfg
      */
     public function getIdFromExtension($className)
     {
+        return $this->getModuleIdByClassName($className);
+    }
+
+    /**
+     * Get the module id for a given class name. If there are duplicates, the first module id will be returned.
+     *
+     * @param string $className
+     *
+     * @return string
+     */
+    public function getModuleIdByClassName($className)
+    {
+        if (!\OxidEsales\Eshop\Core\NamespaceInformationProvider::isNamespacedClass($className)) {
+            return $this->backwardsCompatibleGetModuleIdByClassName($className);
+        }
+
         $moduleId = '';
-        $extensions = (array) $this->getConfig()->getConfigParam('aModuleExtensions');
+        $extensions = (array) \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('aModuleExtensions');
         foreach ($extensions as $id => $moduleClasses) {
             if (in_array($className, $moduleClasses)) {
                 $moduleId = $id;
+                break;
             }
         }
 
@@ -237,7 +293,7 @@ class Module extends \oxSuperCfg
             if ($iLang !== null && is_array($this->_aModule[$sName])) {
                 $sValue = null;
 
-                $sLang = oxRegistry::getLang()->getLanguageAbbr($iLang);
+                $sLang = \OxidEsales\Eshop\Core\Registry::getLang()->getLanguageAbbr($iLang);
 
                 if (!empty($this->_aModule[$sName])) {
                     if (!empty($this->_aModule[$sName][$sLang])) {
@@ -343,7 +399,7 @@ class Module extends \oxSuperCfg
         $sModulePath = (isset($aModulePaths[$sModuleId])) ? $aModulePaths[$sModuleId] : '';
 
         // if still no module dir, try using module ID as dir name
-        if (!$sModulePath && is_dir($this->getConfig()->getModulesDir() . $sModuleId)) {
+        if (!$sModulePath && is_dir(\OxidEsales\Eshop\Core\Registry::getConfig()->getModulesDir() . $sModuleId)) {
             $sModulePath = $sModuleId;
         }
 
@@ -364,7 +420,7 @@ class Module extends \oxSuperCfg
         }
 
         if ($sModuleDir = $this->getModulePath($sModuleId)) {
-            return $this->getConfig()->getModulesDir() . $sModuleDir;
+            return \OxidEsales\Eshop\Core\Registry::getConfig()->getModulesDir() . $sModuleDir;
         }
 
         return false;
@@ -377,7 +433,7 @@ class Module extends \oxSuperCfg
      */
     public function getModulePaths()
     {
-        return $this->getConfig()->getConfigParam('aModulePaths');
+        return \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('aModulePaths');
     }
 
     /**
@@ -396,12 +452,12 @@ class Module extends \oxSuperCfg
         }
 
         if (!$sModuleId) {
-            return array();
+            return [];
         }
 
-        $sShopId = $this->getConfig()->getShopId();
+        $sShopId = \OxidEsales\Eshop\Core\Registry::getConfig()->getShopId();
 
-        return oxDb::getDb()->getCol("SELECT oxtemplate FROM oxtplblocks WHERE oxmodule = '$sModuleId' AND oxshopid = '$sShopId'");
+        return \OxidEsales\Eshop\Core\DatabaseProvider::getDb()->getCol("SELECT oxtemplate FROM oxtplblocks WHERE oxmodule = '$sModuleId' AND oxshopid = '$sShopId'");
     }
 
     /**
@@ -460,7 +516,7 @@ class Module extends \oxSuperCfg
     {
         $aModuleExtensions = $this->getExtensions();
 
-        $aInstalledExtensions = $this->getConfig()->getModulesWithExtendedClass();
+        $aInstalledExtensions = \OxidEsales\Eshop\Core\Registry::getConfig()->getModulesWithExtendedClass();
         $iModuleExtensionsCount = $this->_countExtensions($aModuleExtensions);
         $iActivatedModuleExtensionsCount = $this->_countActivatedExtensions($aModuleExtensions, $aInstalledExtensions);
 
@@ -476,6 +532,76 @@ class Module extends \oxSuperCfg
      */
     protected function _isInDisabledList($sId)
     {
-        return in_array($sId, (array) $this->getConfig()->getConfigParam('aDisabledModules'));
+        return in_array($sId, (array) \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('aDisabledModules'));
+    }
+
+    /**
+     * Include data from metadata.php
+     *
+     * @param string $metadataPath Path to metadata.php
+     */
+    protected function includeModuleMetaData($metadataPath)
+    {
+        include $metadataPath;
+        /**
+         * metadata.php should include a variable called $aModule, if this variable is not set,
+         * an empty array is assigned to self::aModule
+         */
+        if (!isset($aModule)) {
+            $aModule = [];
+        }
+        $this->setModuleData($aModule);
+
+        /**
+         * metadata.php should include a variable called $sMetadataVersion
+         */
+        if (isset($sMetadataVersion)) {
+            $this->setMetaDataVersion($sMetadataVersion);
+        }
+    }
+
+    /**
+     * Translate module metadata information about the patched shop classes
+     * into Unified Namespace. There might still be BC class names used in module metadata.php.
+     *
+     * @param array $rawExtensions Extension information from module metadata.php.
+     *
+     * @return array
+     */
+    protected function getUnifiedShopClassExtensionsForBc($rawExtensions)
+    {
+        $extensions = [];
+
+        foreach ($rawExtensions as $classToBePatched => $moduleClass) {
+            if (!\OxidEsales\Eshop\Core\NamespaceInformationProvider::isNamespacedClass($classToBePatched)) {
+                $bcMap = \OxidEsales\Eshop\Core\Registry::getBackwardsCompatibilityClassMap();
+                $classToBePatched = array_key_exists(strtolower($classToBePatched), $bcMap) ? $bcMap[strtolower($classToBePatched)]: $classToBePatched;
+            }
+            $extensions[$classToBePatched] = $moduleClass;
+        }
+        return $extensions;
+    }
+
+    /**
+     * @deprecated since v6.0.0 (2017-03-21); Needed to ensure backwards compatibility.
+     *
+     * Backwards compatible version of self::getModuleIdByClassName()
+     *
+     * @param string $classPath The class path as defined in metadata.php section 'extend'. This is not a valid file path.
+     *
+     * @return bool
+     */
+    private function backwardsCompatibleGetModuleIdByClassName($classPath)
+    {
+        $moduleId = '';
+        $extensions = (array) \OxidEsales\Eshop\Core\Registry::getConfig()->getConfigParam('aModuleExtensions');
+        foreach ($extensions as $id => $moduleClasses) {
+            if (in_array($classPath, $moduleClasses)) {
+                $moduleId = $id;
+                break;
+            }
+        }
+
+        return $moduleId;
     }
 }

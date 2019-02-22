@@ -1,34 +1,15 @@
 <?php
 /**
- * This file is part of OXID eShop Community Edition.
- *
- * OXID eShop Community Edition is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * OXID eShop Community Edition is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with OXID eShop Community Edition.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @link      http://www.oxid-esales.com
- * @copyright (C) OXID eSales AG 2003-2016
- * @version   OXID eShop CE
+ * Copyright © OXID eSales AG. All rights reserved.
+ * See LICENSE file for license details.
  */
 
 namespace OxidEsales\EshopCommunity\Core;
 
-use oxRegistry;
-use oxStrRegular;
-
 /**
  * URL utility class
  */
-class UtilsUrl extends \oxSuperCfg
+class UtilsUrl extends \OxidEsales\Eshop\Core\Base
 {
     const PARAMETER_SEPARATOR = '&amp;';
 
@@ -53,7 +34,7 @@ class UtilsUrl extends \oxSuperCfg
      */
     public function getBaseAddUrlParams()
     {
-        return array();
+        return [];
     }
 
     /**
@@ -67,7 +48,7 @@ class UtilsUrl extends \oxSuperCfg
             $this->_aAddUrlParams = $this->getBaseAddUrlParams();
 
             // appending currency
-            if (($iCur = $this->getConfig()->getShopCurrency())) {
+            if (($iCur = \OxidEsales\Eshop\Core\Registry::getConfig()->getShopCurrency())) {
                 $this->_aAddUrlParams['cur'] = $iCur;
             }
         }
@@ -86,14 +67,14 @@ class UtilsUrl extends \oxSuperCfg
      */
     public function prepareUrlForNoSession($sUrl)
     {
-        /** @var oxStrRegular $oStr */
+        /** @var \OxidEsales\Eshop\Core\StrRegular $oStr */
         $oStr = getStr();
 
         // cleaning up session id..
         $sUrl = $oStr->preg_replace('/(\?|&(amp;)?)(force_)?(admin_)?sid=[a-z0-9\._]+&?(amp;)?/i', '\1', $sUrl);
         $sUrl = $oStr->preg_replace('/(&amp;|\?)$/', '', $sUrl);
 
-        if (oxRegistry::getUtils()->seoIsActive()) {
+        if (\OxidEsales\Eshop\Core\Registry::getUtils()->seoIsActive()) {
             return $sUrl;
         }
 
@@ -108,16 +89,15 @@ class UtilsUrl extends \oxSuperCfg
         }
 
         if (!$oStr->preg_match('/[&?](amp;)?lang=[0-9]+/i', $sUrl)) {
-            $sUrl .= "{$sSep}lang=" . oxRegistry::getLang()->getBaseLanguage();
+            $sUrl .= "{$sSep}lang=" . \OxidEsales\Eshop\Core\Registry::getLang()->getBaseLanguage();
             $sSep = '&amp;';
         }
 
-        $oConfig = $this->getConfig();
+        $oConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
         if (!$oStr->preg_match('/[&?](amp;)?cur=[0-9]+/i', $sUrl)) {
             $iCur = (int) $oConfig->getShopCurrency();
             if ($iCur) {
                 $sUrl .= "{$sSep}cur=" . $iCur;
-                $sSep = '&amp;';
             }
         }
 
@@ -134,8 +114,8 @@ class UtilsUrl extends \oxSuperCfg
      */
     public function prepareCanonicalUrl($sUrl)
     {
-        $oConfig = $this->getConfig();
-        /** @var oxStrRegular $oStr */
+        $oConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
+        /** @var \OxidEsales\Eshop\Core\StrRegular $oStr */
         $oStr = getStr();
 
         // cleaning up session id..
@@ -143,9 +123,9 @@ class UtilsUrl extends \oxSuperCfg
         $sUrl = $oStr->preg_replace('/(&amp;|\?)$/', '', $sUrl);
         $sSep = ($oStr->strpos($sUrl, '?') === false) ? '?' : '&amp;';
 
-        if (!oxRegistry::getUtils()->seoIsActive()) {
+        if (!\OxidEsales\Eshop\Core\Registry::getUtils()->seoIsActive()) {
             // non seo url has no language identifier..
-            $iLang = oxRegistry::getLang()->getBaseLanguage();
+            $iLang = \OxidEsales\Eshop\Core\Registry::getLang()->getBaseLanguage();
             if (!$oStr->preg_match('/[&?](amp;)?lang=[0-9]+/i', $sUrl) &&
                 $iLang != $oConfig->getConfigParam('sDefaultLang')
             ) {
@@ -203,7 +183,7 @@ class UtilsUrl extends \oxSuperCfg
      */
     public function cleanUrl($sUrl, $aParams = null)
     {
-        /** @var oxStrRegular $oStr */
+        /** @var \OxidEsales\Eshop\Core\StrRegular $oStr */
         $oStr = getStr();
         if (is_array($aParams)) {
             foreach ($aParams as $sParam) {
@@ -231,7 +211,7 @@ class UtilsUrl extends \oxSuperCfg
     public function addShopHost($sUrl)
     {
         if (!preg_match("#^https?://#i", $sUrl)) {
-            $sShopUrl = $this->getConfig()->getSslShopUrl();
+            $sShopUrl = \OxidEsales\Eshop\Core\Registry::getConfig()->getSslShopUrl();
             $sUrl = $sShopUrl . $sUrl;
         }
 
@@ -273,8 +253,8 @@ class UtilsUrl extends \oxSuperCfg
         $aAddParams = $this->getAddUrlParams();
 
         $sUrl = $this->appendUrl($sUrl, $aAddParams, $blFinalUrl);
-        $sUrl = oxRegistry::getLang()->processUrl($sUrl, $iLang);
-        $sUrl = oxRegistry::getSession()->processUrl($sUrl);
+        $sUrl = \OxidEsales\Eshop\Core\Registry::getLang()->processUrl($sUrl, $iLang);
+        $sUrl = \OxidEsales\Eshop\Core\Registry::getSession()->processUrl($sUrl);
 
         if ($blFinalUrl) {
             $sUrl = $this->rightTrimAmp($sUrl);
@@ -290,7 +270,7 @@ class UtilsUrl extends \oxSuperCfg
      */
     public function getActiveShopHost()
     {
-        $shopUrl = $this->getConfig()->getShopUrl();
+        $shopUrl = \OxidEsales\Eshop\Core\Registry::getConfig()->getShopUrl();
 
         return $this->extractHost($shopUrl);
     }
@@ -314,7 +294,7 @@ class UtilsUrl extends \oxSuperCfg
      */
     public function getActiveShopUrlPath()
     {
-        $shopUrl = oxRegistry::getConfig()->getShopUrl();
+        $shopUrl = \OxidEsales\Eshop\Core\Registry::getConfig()->getShopUrl();
 
         return $this->extractUrlPath($shopUrl);
     }
@@ -415,11 +395,11 @@ class UtilsUrl extends \oxSuperCfg
         $sUrl = $aUrlParts[0];
         $sUrlParams = $aUrlParts[1];
 
-        /** @var oxStrRegular $oStrUtils */
+        /** @var \OxidEsales\Eshop\Core\StrRegular $oStrUtils */
         $oStrUtils = getStr();
         $sUrlParams = $oStrUtils->preg_replace(
-            array('@(\&(amp;){1,})@ix', '@\&{1,}@', '@\?&@x'),
-            array('&', '&', '?'),
+            ['@(\&(amp;){1,})@ix', '@\&{1,}@', '@\?&@x'],
+            ['&', '&', '?'],
             $sUrlParams
         );
 
@@ -429,8 +409,8 @@ class UtilsUrl extends \oxSuperCfg
 
         // replace brackets
         $sUrl = str_replace(
-            array('%5B', '%5D'),
-            array('[', ']'),
+            ['%5B', '%5D'],
+            ['[', ']'],
             $sUrl
         );
 
@@ -456,7 +436,7 @@ class UtilsUrl extends \oxSuperCfg
      */
     public function getCurrentUrl()
     {
-        $oUtilsServer = oxRegistry::get("oxUtilsServer");
+        $oUtilsServer = \OxidEsales\Eshop\Core\Registry::getUtilsServer();
 
         $aServerParams["HTTPS"] = $oUtilsServer->getServerVar("HTTPS");
         $aServerParams["HTTP_X_FORWARDED_PROTO"] = $oUtilsServer->getServerVar("HTTP_X_FORWARDED_PROTO");
@@ -490,7 +470,7 @@ class UtilsUrl extends \oxSuperCfg
         $sValue = str_replace("&amp;", "&", $sValue);
         $aNavParams = explode("&", $sValue);
         $aNavParams = array_filter($aNavParams);
-        $aParams = array();
+        $aParams = [];
         foreach ($aNavParams as $sValue) {
             $exp = explode("=", $sValue);
             $aParams[$exp[0]] = $exp[1];
@@ -508,7 +488,7 @@ class UtilsUrl extends \oxSuperCfg
      */
     public function getUrlLanguageParameter($languageId)
     {
-        return [oxRegistry::getLang()->getName() => $languageId];
+        return [\OxidEsales\Eshop\Core\Registry::getLang()->getName() => $languageId];
     }
 
     /**
@@ -534,7 +514,7 @@ class UtilsUrl extends \oxSuperCfg
      */
     protected function _addLanguageHost($aLanguageUrls, &$aHosts)
     {
-        $iLanguageId = oxRegistry::getLang()->getBaseLanguage();
+        $iLanguageId = \OxidEsales\Eshop\Core\Registry::getLang()->getBaseLanguage();
 
         if (isset($aLanguageUrls[$iLanguageId])) {
             $this->_addHost($aLanguageUrls[$iLanguageId], $aHosts);
@@ -549,8 +529,8 @@ class UtilsUrl extends \oxSuperCfg
     protected function _getHosts()
     {
         if ($this->_aHosts === null) {
-            $this->_aHosts = array();
-            $oConfig = $this->getConfig();
+            $this->_aHosts = [];
+            $oConfig = \OxidEsales\Eshop\Core\Registry::getConfig();
 
             $this->_addMallHosts($this->_aHosts);
 
@@ -588,7 +568,7 @@ class UtilsUrl extends \oxSuperCfg
      */
     private function getUrlParametersSeparator($url)
     {
-        /** @var oxStrRegular $oStr */
+        /** @var \OxidEsales\Eshop\Core\StrRegular $oStr */
         $oStr = getStr();
 
         $urlSeparator = '&amp;';
